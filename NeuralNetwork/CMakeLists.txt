@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB_RECURSE SRC_FILES
     ${CMAKE_SOURCE_DIR}/main.cpp
     ${CMAKE_SOURCE_DIR}/NeuralNetwork.h
+    ${CMAKE_SOURCE_DIR}/Node.h
 )
 
 # Create executable
