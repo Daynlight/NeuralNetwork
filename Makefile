@@ -8,7 +8,7 @@ OUT := $(OUTDIR)/NeuralNetwork.exe
 
 $(OUT): $(SRC)
 	mkdir -p $(OUTDIR)
-	$(CXX) $(CXXFLAGS) $(SRC) main.cpp -o $(OUT)
+	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 
 run: $(OUT)
 	./$(OUT)
