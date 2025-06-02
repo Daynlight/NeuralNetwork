@@ -1,16 +1,17 @@
-# Makefile to build NeuralNetwork
+# Makefile for NeuralNetwork project
 
-CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17
-SRC = src/Node.cpp tests/example.cpp
-OBJ = $(SRC:.cpp=.o)
-TARGET = build/NeuralNetwork.exe
+CXX := g++
+CXXFLAGS := -std=c++20 -Wall -Wextra -I. -I./NeuralNetwork
+SRC := main.cpp
+OUTDIR := build
+OUT := $(OUTDIR)/NeuralNetwork.exe
 
-all: $(TARGET)
+$(OUT): $(SRC)
+	mkdir -p $(OUTDIR)
+	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 
-$(TARGET): $(SRC)
-	@mkdir -p build
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
+run: $(OUT)
+	./$(OUT)
 
 clean:
-	rm -rf build
+	rm -rf $(OUTDIR)
