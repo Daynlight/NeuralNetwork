@@ -5,10 +5,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:  # 👈 adds the manual "Run workflow" button
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
