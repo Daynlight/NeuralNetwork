@@ -24,10 +24,9 @@ namespace UnitTests
 void testDefaultConstructor() {
     NeuralNetwork::Node<3> node;
     assert(node.getValue() == 0.0f);
-    for (auto w : node.getWeights()) {
+    for (auto w : node.getWeights())
         assert(w == 0.0f);
-    }
-}
+};
 
 void testConstructorWithWeightsAndValue() {
     std::array<float, 4> weights = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -36,7 +35,7 @@ void testConstructorWithWeightsAndValue() {
 
     assert(node.getValue() == value);
     assert(node.getWeights() == weights);
-}
+};
 
 void testCalculate() {
     std::array<float, 3> prevValues = {1.0f, 2.0f, 3.0f};
@@ -47,7 +46,7 @@ void testCalculate() {
 
     // Expected: 1*0.5 + 2*1.0 + 3*(-1.5) + 2.0 = 0.5 + 2 - 4.5 + 2 = 0
     assert(node.getValue() == 0.0f);
-}
+};
 
 void testSerializeDeserialize() {
     std::array<float, 4> weights = {1.1f, 2.2f, 3.3f, 4.4f};
@@ -61,7 +60,7 @@ void testSerializeDeserialize() {
 
     assert(newNode.getValue() == value);
     assert(newNode.getWeights() == weights);
-}
+};
 
 void testGetSetData() {
     std::array<float, 5> data = {7.7f, 1.0f, 2.0f, 3.0f, 4.0f};
@@ -77,7 +76,7 @@ void testGetSetData() {
 
     auto retrievedData = node.getData();
     assert(retrievedData == data);
-}
+};
 
 void testDeserializeInvalidThrows() {
     NeuralNetwork::Node<3> node;
@@ -97,7 +96,7 @@ void testDeserializeInvalidThrows() {
         caught = true;
     }
     assert(caught);
-}
+};
 
 // Helper to run all tests and print summary
 void runAllTests() {
@@ -109,5 +108,5 @@ void runAllTests() {
     testDeserializeInvalidThrows();
 
     std::cout << "All Node tests passed!" << std::endl;
-}
+};
 };

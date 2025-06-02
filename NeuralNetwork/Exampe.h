@@ -4,7 +4,7 @@
 namespace Examples
 {
   void NodeExample(){
-        // Define weights (for 3 inputs + bias)
+    // Define weights (for 3 inputs + bias)
     std::array<float, 4> weights = {0.2f, -0.5f, 1.0f, 0.1f};
     // Initial value (can be 0)
     float initialValue = 0.0f;
