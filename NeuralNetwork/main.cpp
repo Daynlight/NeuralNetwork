@@ -1,9 +1,7 @@
-#include "Node.hpp"
-#include "UnitTests.h"
 #include "Exampe.h"
+#include "UnitTests.h"
+#include "Node.hpp"
 #include <cstdio>
-
-// [TODO] write Example and UnitTests
 
 int main(){
   UnitTests::runAllTests();

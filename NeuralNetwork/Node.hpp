@@ -19,7 +19,8 @@ private:
 public:
   // [Constructors]
   Node() = default;
-  Node(const std::array<float, W + 1> &weights, const float value) { setValue(value); setWeights(weights); };
+  Node(const std::array<float, W + 1> &weights, const float value = 0) 
+    { setValue(value); setWeights(weights); };
   Node(const std::array<float, W + 2> &data) { setData(data); };
   explicit Node(const std::string &str) { deserialize(str); };
   
