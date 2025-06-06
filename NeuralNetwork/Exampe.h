@@ -1,8 +1,7 @@
 #include "Node.hpp"
-#include <cstdlib>
+#include <iostream>
 
-namespace Examples
-{
+namespace Examples{
   void NodeExample(){
     std::cout << "------------------- [Node Example] -------------------\n";
     // Define weights (for 3 inputs + bias)
