@@ -4,7 +4,6 @@
 #include <string>        // for std::string
 #include <sstream>       // for stringstream & ostringstream
 #include <stdexcept>     // for std::runtime_error
-#include <charconv>      // for std::from_chars
 #include <algorithm>     // for std::copy
 
 namespace NeuralNetwork {
@@ -71,9 +70,11 @@ public:
       if (token.empty()) continue;
 
       float val;
-      auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), val);
-      if (ec != std::errc())
+      try {
+        val = std::stof(token);  // Convert token to float
+      } catch (const std::exception &) {
         throw std::runtime_error("Invalid float format: " + token);
+      }
 
       if (id == 0) setValue(val);
       else if (id <= W + 1) weights[id - 1] = val;
