@@ -13,6 +13,7 @@ file(GLOB_RECURSE SRC_FILES
     ${CMAKE_SOURCE_DIR}/Example.h
     ${CMAKE_SOURCE_DIR}/NeuralNetwork.h
     ${CMAKE_SOURCE_DIR}/Node.hpp
+    ${CMAKE_SOURCE_DIR}/Layer.hpp
 )
 
 # Create executable
