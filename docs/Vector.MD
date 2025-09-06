@@ -83,7 +83,7 @@ char vector_is_empty(Vector* vec);
 ## Example Usage
 
 ```c
-#include "vector.h"
+#include "DSL/dsl.h"
 #include <stdio.h>
 
 int main() {
