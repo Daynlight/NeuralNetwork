@@ -11,7 +11,6 @@ typedef struct {
   unsigned int size_elem;
   char sorted;
 } Vector;
-
 // Constructor/Destructor
 void vector_init(Vector* vec, unsigned int size_elem);                                              // O(1)
 void vector_destroy(Vector* vec);                                                                   // O(1)
