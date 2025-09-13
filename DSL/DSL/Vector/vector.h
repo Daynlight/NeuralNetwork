@@ -6,11 +6,19 @@
 // Structure
 typedef struct {
   void* data;
-  unsigned int size;
+  void* hashmap;
+  unsigned int buckets;
   unsigned int capacity;
   unsigned int size_elem;
+  unsigned int size;
+
   char sorted;
+  char hashed;
+
+  unsigned int first;
+  unsigned int last;
 } Vector;
+
 // Constructor/Destructor
 void vector_init(Vector* vec, unsigned int size_elem);                                              // O(1)
 void vector_destroy(Vector* vec);                                                                   // O(1)
