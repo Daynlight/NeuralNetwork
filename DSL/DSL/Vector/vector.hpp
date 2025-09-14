@@ -23,58 +23,39 @@
 
 #include "vector.h"
 
-template<typename T>
-Vector<T>::Vector() {
-  capacity = 1;
-  buckets = 0;
-  
-  size = 0;
-
-  head = 0;
-  back = capacity - 1;
-  
-  sorted = 1;
-  hashed = 0;
-  
-  data = new T[capacity];
-  hashmap = NULL;
-  if (!data) 
-    throw std::runtime_error("Can't create data ptr in constructor");
-};
-
-template<typename T>
-Vector<T>::~Vector() noexcept {
-  delete data;
-  delete hashmap;
+template <typename T>
+Vector<T>::~Vector() noexcept
+{
+  if(data) 
+    delete[] data;
+  if(hashmap) 
+    delete hashmap;
 };
 
 template<typename T>
 void Vector<T>::setCapacity(unsigned int new_capacity) {
   if (size > new_capacity) 
     new_capacity = size;
+  
+  if(new_capacity < 2) new_capacity = 2;
 
   T* newData = new T[new_capacity];
-  if(!newData) 
-    throw std::runtime_error("Can't create newData in setCapicity");
 
-  unsigned int first_size = head + 1;
-  unsigned int second_size = back > 0 ? capacity - back : 0;
+  if(size){
+    unsigned int first_chunk = std::min(size, capacity - back);
+    unsigned int second_chunk = size - first_chunk;
 
-  // Copy First Part
-  if(first_size)
-    for(unsigned int i = 0; i < first_size; i++)
-      newData[i] = data[i];
-    
-  // Copy Second Part
-  if(second_size)
-    for(unsigned int i = capacity - second_size; i < new_capacity; i++)
-      newData[i] = data[i];
+    std::copy(data + back, data + back + first_chunk, newData);
+    if (second_chunk)
+        std::copy(data, data + second_chunk, newData + first_chunk);
+  };
 
   // Set Variables
-  delete data;
+  delete[] data;
   data = newData;
   capacity = new_capacity;
-  back = back > 0 ? new_capacity - second_size : 0;
+  back = 0;
+  head = size <= 0 ? capacity - 1 : size - 1;
 };
 
 template <typename T>
@@ -86,7 +67,7 @@ void Vector<T>::reserve(unsigned int additional){
 
 template<typename T>
 void Vector<T>::resize() {
-  unsigned int new_capacity = capacity ? capacity * 2 : 1;
+  unsigned int new_capacity = capacity >= 2 ? capacity * 2 : 2;
   setCapacity(new_capacity);
 };
 
@@ -131,7 +112,7 @@ void Vector<T>::pushHead(T el) {
 };
 
 template<typename T>
-void Vector<T>::pushFront(T el) {
+void Vector<T>::pushBack(T el) {
   if(!data) 
     throw std::runtime_error("Can't pushFront, data is nullptr");
 
@@ -145,28 +126,33 @@ void Vector<T>::pushFront(T el) {
   sorted = 0;
 };
 
+template <typename T>
+inline bool Vector<T>::inRange(unsigned int index){
+  return back <= head ? (index >= back && index <= head)
+                      : (index >= back || index <= head);
+}
+
 template<typename T>
 void Vector<T>::pushAt(unsigned int index, T el) {
+  if(!inRange(index)) 
+    throw std::logic_error("Can't pushAt, index out of range");
+  
   if(!data)
     throw std::runtime_error("Can't pushAt, data is nullptr");
-    
-  if(index > head && index < back) 
-    throw std::logic_error("Can't pushAt, index out of range");
 
   if(size >= capacity)
     resize();
 
   if(index < head){
     for(unsigned int i = index; i < head; i++)
-      data[i + 1] = data[i];
+      data[i % capacity] = data[(i + 1) % capacity];
     data[index] = el;
-    head++;
+    head = head >= capacity - 1 ? 0 : head + 1;
   }
   else {
     for(unsigned int i = index; i > back; i--)
-      data[i - 1] = data[i];
-    data[index] = el;
-    back--;
+      data[i] = data[(i + capacity - 1) % capacity];
+    back = back <= 0 ? capacity - 1 : back - 1;
   }
 
   size++;
@@ -191,7 +177,7 @@ const T Vector<T>::popHead() {
 template<typename T>
 const T Vector<T>::popBack(){
   if (size <= 0) 
-    throw std::out_of_range("Can't popHead, vector is empty");
+    throw std::out_of_range("Can't popBack, vector is empty");
   
   if (!data) 
     throw std::runtime_error("Can't popBack, data is nullptr");
@@ -215,13 +201,13 @@ const T Vector<T>::popAt(unsigned int index) {
 
   if(index < head){
     for(unsigned int i = index; i < head; i++)
-      data[i] = data[i + 1];
-      head--;
+      data[i] = data[(i + 1) % capacity];
+    head = head <= 0 ? capacity - 1 : head - 1;
   }
   else {
     for(unsigned int i = index; i > back; i--)
-      data[i] = data[i - 1];
-    back++;
+      data[i % capacity] = data[(i + capacity - 1) % capacity];
+    back = back >= capacity - 1 ? 0 : back + 1;
   }
 
   size--;
@@ -230,9 +216,11 @@ const T Vector<T>::popAt(unsigned int index) {
 
 template<typename T>
 void Vector<T>::clear() noexcept {
-  delete data;
+  delete[] data;
   data = new T[capacity];
   size = 0;
+  head = capacity - 1;
+  back = 0;
   sorted = 1;
 }
 

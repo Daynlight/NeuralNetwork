@@ -42,21 +42,23 @@ struct HashMap{
 template<typename T>
 class Vector {
 private:
-  T* data;
-  Vector<HashMap>* hashmap = nullptr;
-  unsigned int buckets;
-  unsigned int capacity;
-  unsigned int size;
+  T* data = new T[2];
+  [[maybe_unused]] Vector<HashMap>* hashmap = nullptr;
+  [[maybe_unused]] unsigned int buckets = 0;
+  unsigned int capacity = 2;
+  unsigned int size = 0;
 
-  char sorted;
-  char hashed;
+  bool sorted = 1;
+  bool hashed = 1;
 
-  unsigned int head;
-  unsigned int back;
+  unsigned int head = 1;
+  unsigned int back = 0;
+
+private:
+  bool inRange(unsigned int index);
 
 public:
   // Constructor/Destructor
-  Vector();    // O(1)
   ~Vector() noexcept;    // O(1)
 
   // Vector management
@@ -73,7 +75,7 @@ public:
 
   // Pushers
   void pushHead(T el);    // O(log2(n))
-  void pushFront(T el);    // O(log2(n))
+  void pushBack(T el);    // O(log2(n))
   void pushAt(unsigned int index, T el);    // O(log2(n))
 
   // Popers

@@ -53,6 +53,8 @@ bool test_set_capacity() {
 bool test_shrink() {
     Vector<int> v;
     v.pushHead(1);
+    v.pushHead(1);
+    v.pushHead(1);
     v.shrink();
     ASSERT_EQ_SIZE("shrink size==capacity", v.getSize(), v.getCapacity());
     return true;
@@ -70,7 +72,7 @@ bool test_push_front() {
     Vector<int> v;
     v.pushHead(1);
     v.pushHead(2);
-    v.pushFront(99);
+    v.pushBack(99);
     ASSERT_EQ_INT("push_front value", 99, v.first());
     return true;
 }
@@ -241,7 +243,7 @@ bool test_is_empty() {
 // ===== MIXED PUSH / POP =====
 bool test_mixed_push_pop() {
     Vector<int> v;
-    v.pushHead(1); v.pushFront(2); v.pushHead(3); v.pushFront(4);
+    v.pushHead(1); v.pushBack(2); v.pushHead(3); v.pushBack(4);
     ASSERT_EQ_INT("mixed first",4,v.first());
     ASSERT_EQ_INT("mixed last",3,v.last());
     ASSERT_EQ_INT("pop_front",4,v.popBack());
@@ -252,7 +254,7 @@ bool test_mixed_push_pop() {
 // bool test_mixed_algorithms() {
 //     Vector<int> v;
 //     for(int i=0;i<10;i++) {
-//         if(i%2==0) v.pushFront(i);
+//         if(i%2==0) v.pushBack(i);
 //         else v.pushHead(i);
 //     }
 //     v.qsort(cmp_int);
@@ -280,7 +282,7 @@ bool test_large_push() {
 bool test_large_push_front() {
     Vector<int> v;
     int N=1000;
-    for(int i=0;i<N;i++) v.pushFront(i);
+    for(int i=0;i<N;i++) v.pushBack(i);
     ASSERT_EQ_SIZE("large push_front size",N,v.getSize());
     ASSERT_EQ_INT("large push_front first",N-1,v.first());
     ASSERT_EQ_INT("large push_front last",0,v.last());
