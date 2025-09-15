@@ -24,8 +24,7 @@
 #include "vector.h"
 
 template <typename T>
-Vector<T>::~Vector() noexcept
-{
+Essential::Vector<T>::~Vector() noexcept {
   if(data) 
     delete[] data;
   if(hashmap) 
@@ -33,7 +32,7 @@ Vector<T>::~Vector() noexcept
 };
 
 template<typename T>
-void Vector<T>::setCapacity(unsigned int new_capacity) {
+void Essential::Vector<T>::setCapacity(unsigned int new_capacity) {
   if (size > new_capacity) 
     new_capacity = size;
   
@@ -54,57 +53,59 @@ void Vector<T>::setCapacity(unsigned int new_capacity) {
   delete[] data;
   data = newData;
   capacity = new_capacity;
-  back = 0;
-  head = size <= 0 ? capacity - 1 : size - 1;
+  back = Math::ModuloZ(new_capacity, 0);
+  head = size <= 0 ? Math::ModuloZ(new_capacity, new_capacity) 
+                   : Math::ModuloZ(new_capacity, size);
+  head -= 1;
 };
 
 template <typename T>
-void Vector<T>::reserve(unsigned int additional){
+void Essential::Vector<T>::reserve(unsigned int additional){
   if (additional == 0) 
     return;
   setCapacity(capacity + additional);
 };
 
 template<typename T>
-void Vector<T>::resize() {
+void Essential::Vector<T>::resize() {
   unsigned int new_capacity = capacity >= 2 ? capacity * 2 : 2;
   setCapacity(new_capacity);
 };
 
 template<typename T>
-void Vector<T>::shrink() {
+void Essential::Vector<T>::shrink() {
   setCapacity(size);
 };
 
 template<typename T>
-constexpr unsigned int Vector<T>::getSize() const noexcept {
+constexpr unsigned int Essential::Vector<T>::getSize() const noexcept {
   return size;
 };
 
 template<typename T>
-constexpr unsigned int Vector<T>::getCapacity() const noexcept {
+constexpr unsigned int Essential::Vector<T>::getCapacity() const noexcept {
   return capacity;
 };
 
 template<typename T>
-constexpr bool Vector<T>::getSorted() const noexcept {
+constexpr bool Essential::Vector<T>::getSorted() const noexcept {
   return sorted;
 };
 
 template<typename T>
-constexpr bool Vector<T>::isEmpty() const noexcept {
+constexpr bool Essential::Vector<T>::isEmpty() const noexcept {
   return size == 0;
 };
 
 template<typename T>
-void Vector<T>::pushHead(T el) {
+void Essential::Vector<T>::pushHead(T el) {
   if(!data) 
     throw std::runtime_error("Can't pushHead, data is nullptr");
 
   if(size >= capacity) 
     resize();
   
-  head = head >= capacity - 1 ? 0 : head + 1;
+  head += 1;
   data[head] = el;
   
   size++;
@@ -112,14 +113,14 @@ void Vector<T>::pushHead(T el) {
 };
 
 template<typename T>
-void Vector<T>::pushBack(T el) {
+void Essential::Vector<T>::pushBack(T el) {
   if(!data) 
     throw std::runtime_error("Can't pushFront, data is nullptr");
 
   if(size >= capacity) 
     resize();
 
-  back = back <= 0 ? capacity - 1 : back - 1;
+  back -= 1;
   data[back] = el;
 
   size++;
@@ -127,13 +128,13 @@ void Vector<T>::pushBack(T el) {
 };
 
 template <typename T>
-constexpr inline bool Vector<T>::inRange(unsigned int index) const {
+constexpr inline bool Essential::Vector<T>::inRange(unsigned int index) const noexcept {
   return back <= head ? (index >= back && index <= head)
                       : (index >= back || index <= head);
 }
 
 template<typename T>
-void Vector<T>::pushAt(unsigned int index, T el) {
+void Essential::Vector<T>::pushAt(unsigned int index, T el) {
   if(!inRange(index)) 
     throw std::logic_error("Can't pushAt, index out of range");
   
@@ -144,15 +145,26 @@ void Vector<T>::pushAt(unsigned int index, T el) {
     resize();
 
   if(index < head){
-    for(unsigned int i = index; i < head; i++)
-      data[i % capacity] = data[(i + 1) % capacity];
+    Math::ModuloZ iterator = Math::ModuloZ(capacity, index);
+    Math::ModuloZ iterator_next = Math::ModuloZ(capacity, index + 1);
+    for(unsigned int i = index; i < head; i++){
+      data[iterator] = data[iterator_next];
+      iterator += 1;
+      iterator_next += 1;
+    }
     data[index] = el;
-    head = head >= capacity - 1 ? 0 : head + 1;
+    head += 1;
   }
   else {
-    for(unsigned int i = index; i > back; i--)
-      data[i] = data[(i + capacity - 1) % capacity];
-    back = back <= 0 ? capacity - 1 : back - 1;
+    Math::ModuloZ iterator = Math::ModuloZ(capacity, index);
+    Math::ModuloZ iterator_next = Math::ModuloZ(capacity, index);
+    iterator_next -= 1;
+    for(unsigned int i = index; i > back; i--){
+      data[iterator] = data[iterator_next];
+      iterator -= 1;
+      iterator_next -= 1;
+    }
+    back -= 1;
   }
 
   size++;
@@ -160,7 +172,7 @@ void Vector<T>::pushAt(unsigned int index, T el) {
 }
 
 template<typename T>
-const T Vector<T>::popHead() {
+const T Essential::Vector<T>::popHead() {
   if(size <= 0) 
     throw std::out_of_range("Can't popHead, vector is empty");
 
@@ -168,14 +180,14 @@ const T Vector<T>::popHead() {
     throw std::runtime_error("Can't popHead, data is nullptr");
 
   T temp = last();
-  head = head <= 0 ? capacity - 1 : head - 1;
+  head -= 1;
   
   size--;
   return temp;
 }
 
 template<typename T>
-const T Vector<T>::popBack(){
+const T Essential::Vector<T>::popBack(){
   if (size <= 0) 
     throw std::out_of_range("Can't popBack, vector is empty");
   
@@ -183,14 +195,14 @@ const T Vector<T>::popBack(){
     throw std::runtime_error("Can't popBack, data is nullptr");
 
   T temp = first();
-  back = back >= capacity - 1 ? 0 : back + 1;
+  back += 1;
   
   size--;
   return temp;
 };
 
 template<typename T>
-const T Vector<T>::popAt(unsigned int index) {
+const T Essential::Vector<T>::popAt(unsigned int index) {
   if(index > head && index < back) 
     throw std::out_of_range("Can't popAt, index out of range");
   
@@ -200,14 +212,25 @@ const T Vector<T>::popAt(unsigned int index) {
   T temp = data[index];
 
   if(index < head){
-    for(unsigned int i = index; i < head; i++)
-      data[i] = data[(i + 1) % capacity];
-    head = head <= 0 ? capacity - 1 : head - 1;
+    Math::ModuloZ iterator = Math::ModuloZ(capacity, index);
+    Math::ModuloZ iterator_next = Math::ModuloZ(capacity, index + 1);
+    for(unsigned int i = index; i < head; i++){
+      data[iterator] = data[iterator_next];
+      iterator += 1;
+      iterator_next += 1;
+    } 
+    head -= 1;
   }
   else {
-    for(unsigned int i = index; i > back; i--)
-      data[i % capacity] = data[(i + capacity - 1) % capacity];
-    back = back >= capacity - 1 ? 0 : back + 1;
+    Math::ModuloZ iterator = Math::ModuloZ(capacity, index);
+    Math::ModuloZ iterator_next = Math::ModuloZ(capacity, index);
+    iterator_next -= 1;
+    for(unsigned int i = index; i > back; i--){
+      data[iterator] = data[iterator_next];
+      iterator -= 1;
+      iterator_next -= 1;
+    }
+    back += 1;
   }
 
   size--;
@@ -215,7 +238,7 @@ const T Vector<T>::popAt(unsigned int index) {
 };
 
 template<typename T>
-void Vector<T>::clear() noexcept {
+void Essential::Vector<T>::clear() noexcept {
   delete[] data;
   data = new T[capacity];
   size = 0;
@@ -225,7 +248,7 @@ void Vector<T>::clear() noexcept {
 }
 
 template<typename T>
-void Vector<T>::erase(unsigned int index) noexcept {
+void Essential::Vector<T>::erase(unsigned int index) noexcept {
   if(index > head && index < back) 
     return;
 
@@ -236,7 +259,7 @@ void Vector<T>::erase(unsigned int index) noexcept {
 };
 
 template<typename T>
-T& Vector<T>::first() const {
+T& Essential::Vector<T>::first() const {
   if(isEmpty()) 
     throw std::out_of_range("Can't first, vector is empty");
 
@@ -247,7 +270,7 @@ T& Vector<T>::first() const {
 };
 
 template<typename T>
-T& Vector<T>::last() const {
+T& Essential::Vector<T>::last() const {
   if(isEmpty()) 
     throw std::out_of_range("Can't last, vector is empty");
 
@@ -258,7 +281,7 @@ T& Vector<T>::last() const {
 };
 
 template<typename T>
-T& Vector<T>::at(unsigned int index) const {
+T& Essential::Vector<T>::at(unsigned int index) const {
   if(index > head && index < back) 
     throw std::out_of_range("Can't at, index out of range");
 

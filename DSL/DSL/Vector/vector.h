@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <string.h>
+#include "../Math/ModuloZ.h"
 
 // HashMap for lookup
 struct HashMap{
@@ -53,11 +54,11 @@ private:
   bool sorted = 1;
   bool hashed = 1;
 
-  unsigned int head = 1;
-  unsigned int back = 0;
+  Math::ModuloZ head = Math::ModuloZ(1, 1);
+  Math::ModuloZ back = Math::ModuloZ(1, 0);
 
 private:
-  constexpr bool inRange(unsigned int index) const;
+  constexpr bool inRange(unsigned int index) const noexcept;
 
 public:
   // Constructor/Destructor
@@ -108,7 +109,7 @@ public:
   // void qsort_helper(int (*cmp)(const void*, const void*), int low, int high);
   // int qsort_partition(int (*cmp)(const void*, const void*), int low, int high);
 };
+};
+
 
 #include "vector.hpp"
-
-};

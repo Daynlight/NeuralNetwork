@@ -10,6 +10,8 @@ set(header
   dsl.h
   Vector/vector.h
   Vector/vector.hpp
+  Math/ModuloZ.h
+  Math/ModuloZ.hpp
 )
 
 
