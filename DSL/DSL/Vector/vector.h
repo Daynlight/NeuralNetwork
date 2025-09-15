@@ -38,6 +38,8 @@ struct HashMap{
   unsigned int index;
 };
 
+//namespace Essential
+namespace Essential{
 // VectorClass
 template<typename T>
 class Vector {
@@ -55,7 +57,7 @@ private:
   unsigned int back = 0;
 
 private:
-  bool inRange(unsigned int index);
+  constexpr bool inRange(unsigned int index) const;
 
 public:
   // Constructor/Destructor
@@ -108,3 +110,5 @@ public:
 };
 
 #include "vector.hpp"
+
+};

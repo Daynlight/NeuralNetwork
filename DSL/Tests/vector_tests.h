@@ -20,7 +20,7 @@ void multiply(int &el) { el *= 2; }
 
 // ===== INIT & DESTROY =====
 bool test_init() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     ASSERT_EQ_SIZE("init size", 0, v.getSize());
     ASSERT_TRUE("init capacity>=1", v.getCapacity()>=1);
     return true;
@@ -28,7 +28,7 @@ bool test_init() {
 
 // ===== RESIZE & CAPACITY =====
 bool test_resize() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     unsigned old = v.getCapacity();
     v.resize();
     ASSERT_TRUE("resize doubles capacity", v.getCapacity()>=old*2);
@@ -36,7 +36,7 @@ bool test_resize() {
 }
 
 bool test_reserve() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     unsigned old = v.getCapacity();
     v.reserve(10);
     ASSERT_TRUE("reserve increases capacity", v.getCapacity()>=old+10);
@@ -44,14 +44,14 @@ bool test_reserve() {
 }
 
 bool test_set_capacity() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.setCapacity(20);
     ASSERT_EQ_SIZE("set_capacity=20", 20, v.getCapacity());
     return true;
 }
 
 bool test_shrink() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(1);
     v.pushHead(1);
     v.pushHead(1);
@@ -62,14 +62,14 @@ bool test_shrink() {
 
 // ===== PUSH METHODS =====
 bool test_push() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(42);
     ASSERT_EQ_INT("push value", 42, v.first());
     return true;
 }
 
 bool test_push_front() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(1);
     v.pushHead(2);
     v.pushBack(99);
@@ -78,7 +78,7 @@ bool test_push_front() {
 }
 
 bool test_push_at() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(1); v.pushHead(2); v.pushHead(3);
     v.pushAt(1, 77);
     ASSERT_EQ_INT("push_at middle", 77, v.at(1));
@@ -87,21 +87,21 @@ bool test_push_at() {
 
 // ===== POP METHODS =====
 bool test_pop() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(5); v.pushHead(6);
     ASSERT_EQ_INT("pop last", 6, v.popHead());
     return true;
 }
 
 bool test_pop_front() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(5); v.pushHead(6);
     ASSERT_EQ_INT("pop front", 5, v.popBack());
     return true;
 }
 
 bool test_pop_at() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(1); v.pushHead(2); v.pushHead(3);
     ASSERT_EQ_INT("pop_at middle", 2, v.popAt(1));
     return true;
@@ -109,7 +109,7 @@ bool test_pop_at() {
 
 // ===== ERASE & CLEAR =====
 bool test_erase() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(1); v.pushHead(2); v.pushHead(3);
     v.erase(1);
     ASSERT_EQ_INT("erase shifts", 3, v.at(1));
@@ -117,7 +117,7 @@ bool test_erase() {
 }
 
 bool test_clear() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(1);
     v.clear();
     ASSERT_EQ_SIZE("clear resets size", 0, v.getSize());
@@ -126,7 +126,7 @@ bool test_clear() {
 
 // ===== FIRST / LAST / AT =====
 bool test_first_last_at() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(11); v.pushHead(22); v.pushHead(33);
     ASSERT_EQ_INT("last", 33, v.last());
     ASSERT_EQ_INT("first", 11, v.first());
@@ -136,7 +136,7 @@ bool test_first_last_at() {
 
 // // ===== SEARCH METHODS =====
 // bool test_find_methods() {
-//     Vector<int> v;
+//     Essential::Vector<int> v;
 //     v.pushHead(1); v.pushHead(2); v.pushHead(3);
 //     ASSERT_EQ_SIZE("find 2", 1, v.find(2, cmp_int));
 //     ASSERT_EQ_SIZE("find_if even", 1, v.find_if(is_even));
@@ -150,15 +150,15 @@ bool test_first_last_at() {
 
 // // ===== QSORT =====
 // bool test_qsort_variants() {
-//     Vector<int> vi; vi.pushHead(30); vi.pushHead(10); vi.pushHead(20);
+//     Essential::Vector<int> vi; vi.pushHead(30); vi.pushHead(10); vi.pushHead(20);
 //     vi.qsort(cmp_int);
 //     ASSERT_EQ_INT("qsort int first", 10, vi.first());
 
-//     Vector<float> vf; vf.pushHead(3.3f); vf.pushHead(1.1f); vf.pushHead(2.2f);
+//     Essential::Vector<float> vf; vf.pushHead(3.3f); vf.pushHead(1.1f); vf.pushHead(2.2f);
 //     vf.qsort([](const float &a,const float &b){return (a>b)-(a<b);});
 //     ASSERT_EQ_FLOAT("qsort float first", 1.1f, vf.first(), 1e-6f);
 
-//     Vector<Point> vs; vs.pushHead({2,2}); vs.pushHead({1,1}); vs.pushHead({3,3});
+//     Essential::Vector<Point> vs; vs.pushHead({2,2}); vs.pushHead({1,1}); vs.pushHead({3,3});
 //     vs.qsort(point_cmp);
 //     ASSERT_EQ_INT("qsort struct first x",1, vs.first().x);
 
@@ -167,7 +167,7 @@ bool test_first_last_at() {
 
 // // ===== MAP / FOREACH =====
 // bool test_map_foreach() {
-//     Vector<int> v; v.pushHead(1); v.pushHead(2); v.pushHead(3);
+//     Essential::Vector<int> v; v.pushHead(1); v.pushHead(2); v.pushHead(3);
 //     v.map(multiply);
 //     int sum=0;
 //     v.foreach([&](int el){ add(el,sum); });
@@ -177,7 +177,7 @@ bool test_first_last_at() {
 
 // // ===== SWAP =====
 // bool test_swap() {
-//     Vector<int> a,b; a.pushHead(1); b.pushHead(2);
+//     Essential::Vector<int> a,b; a.pushHead(1); b.pushHead(2);
 //     a.swap(b);
 //     ASSERT_EQ_INT("swap a",2,a.first());
 //     ASSERT_EQ_INT("swap b",1,b.first());
@@ -186,7 +186,7 @@ bool test_first_last_at() {
 
 // ===== GETTERS =====
 bool test_get_size() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     ASSERT_EQ_SIZE("get_size empty",0,v.getSize());
     v.pushHead(5);
     ASSERT_EQ_SIZE("get_size=1",1,v.getSize());
@@ -194,13 +194,13 @@ bool test_get_size() {
 }
 
 bool test_get_capacity() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     ASSERT_TRUE("get_capacity>=1",v.getCapacity()>=1);
     return true;
 }
 
 // bool test_get_sorted() {
-//     Vector<int> v;
+//     Essential::Vector<int> v;
 //     ASSERT_EQ_INT("get_sorted init",1,v.getSorted());
 //     v.pushHead(2);
 //     ASSERT_EQ_INT("get_sorted after push",0,v.getSorted());
@@ -210,7 +210,7 @@ bool test_get_capacity() {
 // }
 
 bool test_is_empty() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     ASSERT_TRUE("is_empty true",v.isEmpty());
     v.pushHead(3);
     ASSERT_TRUE("is_empty false",!v.isEmpty());
@@ -219,21 +219,21 @@ bool test_is_empty() {
 
 // // ===== CONTAINS =====
 // bool test_contains_unsorted() {
-//     Vector<int> v; v.pushHead(3); v.pushHead(1); v.pushHead(2);
+//     Essential::Vector<int> v; v.pushHead(3); v.pushHead(1); v.pushHead(2);
 //     ASSERT_TRUE("contains 1",v.contains(1, cmp_int));
 //     ASSERT_TRUE("contains 99 false", !v.contains(99, cmp_int));
 //     return true;
 // }
 
 // bool test_contains_sorted() {
-//     Vector<int> v; v.pushHead(1); v.pushHead(2); v.pushHead(3);
+//     Essential::Vector<int> v; v.pushHead(1); v.pushHead(2); v.pushHead(3);
 //     v.qsort(cmp_int);
 //     ASSERT_TRUE("bcontains sorted ok",v.contains(2, cmp_int));
 //     return true;
 // }
 
 // bool test_bcontains() {
-//     Vector<int> v; v.pushHead(10); v.pushHead(20); v.pushHead(30);
+//     Essential::Vector<int> v; v.pushHead(10); v.pushHead(20); v.pushHead(30);
 //     v.qsort(cmp_int);
 //     ASSERT_TRUE("bcontains 20",v.bcontains(20, cmp_int));
 //     ASSERT_TRUE("bcontains missing",!v.bcontains(100, cmp_int));
@@ -242,7 +242,7 @@ bool test_is_empty() {
 
 // ===== MIXED PUSH / POP =====
 bool test_mixed_push_pop() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     v.pushHead(1); v.pushBack(2); v.pushHead(3); v.pushBack(4);
     ASSERT_EQ_INT("mixed first",4,v.first());
     ASSERT_EQ_INT("mixed last",3,v.last());
@@ -252,7 +252,7 @@ bool test_mixed_push_pop() {
 }
 
 // bool test_mixed_algorithms() {
-//     Vector<int> v;
+//     Essential::Vector<int> v;
 //     for(int i=0;i<10;i++) {
 //         if(i%2==0) v.pushBack(i);
 //         else v.pushHead(i);
@@ -270,7 +270,7 @@ bool test_mixed_push_pop() {
 
 // ===== LARGE DATASET TESTS =====
 bool test_large_push() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     int N=1000;
     for(int i=0;i<N;i++) v.pushHead(i);
     ASSERT_EQ_SIZE("large push size",N,v.getSize());
@@ -280,7 +280,7 @@ bool test_large_push() {
 }
 
 bool test_large_push_front() {
-    Vector<int> v;
+    Essential::Vector<int> v;
     int N=1000;
     for(int i=0;i<N;i++) v.pushBack(i);
     ASSERT_EQ_SIZE("large push_front size",N,v.getSize());
@@ -328,5 +328,5 @@ void VectorTests() {
     RUN(test_large_push_front);
 
 #undef RUN
-    std::cout << "\n=== Vector Test Score: " << passed << "/" << total << " passed ===\n";
+    std::cout << "\n=== Essential::Vector Test Score: " << passed << "/" << total << " passed ===\n";
 }

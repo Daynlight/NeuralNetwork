@@ -127,7 +127,7 @@ void Vector<T>::pushBack(T el) {
 };
 
 template <typename T>
-inline bool Vector<T>::inRange(unsigned int index){
+constexpr inline bool Vector<T>::inRange(unsigned int index) const {
   return back <= head ? (index >= back && index <= head)
                       : (index >= back || index <= head);
 }
