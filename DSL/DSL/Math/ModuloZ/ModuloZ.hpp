@@ -1,8 +1,8 @@
 #include "ModuloZ.h"
 
 constexpr void Math::ModuloZ::bound() noexcept {
-  number = number % modulo;
-  if(number < 0) number *= (-1);
+  number %= modulo;
+  if (number < 0) number += modulo;
 };
 
 constexpr Math::ModuloZ::ModuloZ(unsigned int modulo) {

@@ -115,7 +115,7 @@ void Essentials::Vector<T>::pushHead(T el) {
 template<typename T>
 void Essentials::Vector<T>::pushBack(T el) {
   if(!data) 
-    throw std::runtime_error("Can't pushFront, data is nullptr");
+    throw std::runtime_error("Can't pushBack, data is nullptr");
 
   if(size >= capacity) 
     resize();

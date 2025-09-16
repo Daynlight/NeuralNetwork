@@ -31,10 +31,10 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <string.h>
-#include "ModuloZ/ModuloZ.h"
+#include "Math/ModuloZ/ModuloZ.h"
 
 //namespace Essential
-namespace Essentials{
+namespace Essentials {
   
 // HashMap for lookup
 struct HashMap{
@@ -55,8 +55,8 @@ private:
   bool sorted = 1;
   bool hashed = 1;
 
-  Math::ModuloZ head = Math::ModuloZ(1, 1);
-  Math::ModuloZ back = Math::ModuloZ(1, 0);
+  Math::ModuloZ head = Math::ModuloZ(2, 1);
+  Math::ModuloZ back = Math::ModuloZ(2, 0);
 
 private:
   constexpr bool inRange(unsigned int index) const noexcept;
