@@ -24,7 +24,7 @@
 #include "vector.h"
 
 template <typename T>
-Essential::Vector<T>::~Vector() noexcept {
+Essentials::Vector<T>::~Vector() noexcept {
   if(data) 
     delete[] data;
   if(hashmap) 
@@ -32,7 +32,7 @@ Essential::Vector<T>::~Vector() noexcept {
 };
 
 template<typename T>
-void Essential::Vector<T>::setCapacity(unsigned int new_capacity) {
+void Essentials::Vector<T>::setCapacity(unsigned int new_capacity) {
   if (size > new_capacity) 
     new_capacity = size;
   
@@ -60,45 +60,45 @@ void Essential::Vector<T>::setCapacity(unsigned int new_capacity) {
 };
 
 template <typename T>
-void Essential::Vector<T>::reserve(unsigned int additional){
+void Essentials::Vector<T>::reserve(unsigned int additional){
   if (additional == 0) 
     return;
   setCapacity(capacity + additional);
 };
 
 template<typename T>
-void Essential::Vector<T>::resize() {
+void Essentials::Vector<T>::resize() {
   unsigned int new_capacity = capacity >= 2 ? capacity * 2 : 2;
   setCapacity(new_capacity);
 };
 
 template<typename T>
-void Essential::Vector<T>::shrink() {
+void Essentials::Vector<T>::shrink() {
   setCapacity(size);
 };
 
 template<typename T>
-constexpr unsigned int Essential::Vector<T>::getSize() const noexcept {
+constexpr unsigned int Essentials::Vector<T>::getSize() const noexcept {
   return size;
 };
 
 template<typename T>
-constexpr unsigned int Essential::Vector<T>::getCapacity() const noexcept {
+constexpr unsigned int Essentials::Vector<T>::getCapacity() const noexcept {
   return capacity;
 };
 
 template<typename T>
-constexpr bool Essential::Vector<T>::getSorted() const noexcept {
+constexpr bool Essentials::Vector<T>::getSorted() const noexcept {
   return sorted;
 };
 
 template<typename T>
-constexpr bool Essential::Vector<T>::isEmpty() const noexcept {
+constexpr bool Essentials::Vector<T>::isEmpty() const noexcept {
   return size == 0;
 };
 
 template<typename T>
-void Essential::Vector<T>::pushHead(T el) {
+void Essentials::Vector<T>::pushHead(T el) {
   if(!data) 
     throw std::runtime_error("Can't pushHead, data is nullptr");
 
@@ -113,7 +113,7 @@ void Essential::Vector<T>::pushHead(T el) {
 };
 
 template<typename T>
-void Essential::Vector<T>::pushBack(T el) {
+void Essentials::Vector<T>::pushBack(T el) {
   if(!data) 
     throw std::runtime_error("Can't pushFront, data is nullptr");
 
@@ -128,13 +128,13 @@ void Essential::Vector<T>::pushBack(T el) {
 };
 
 template <typename T>
-constexpr inline bool Essential::Vector<T>::inRange(unsigned int index) const noexcept {
+constexpr inline bool Essentials::Vector<T>::inRange(unsigned int index) const noexcept {
   return back <= head ? (index >= back && index <= head)
                       : (index >= back || index <= head);
 }
 
 template<typename T>
-void Essential::Vector<T>::pushAt(unsigned int index, T el) {
+void Essentials::Vector<T>::pushAt(unsigned int index, T el) {
   if(!inRange(index)) 
     throw std::logic_error("Can't pushAt, index out of range");
   
@@ -172,7 +172,7 @@ void Essential::Vector<T>::pushAt(unsigned int index, T el) {
 }
 
 template<typename T>
-const T Essential::Vector<T>::popHead() {
+const T Essentials::Vector<T>::popHead() {
   if(size <= 0) 
     throw std::out_of_range("Can't popHead, vector is empty");
 
@@ -187,7 +187,7 @@ const T Essential::Vector<T>::popHead() {
 }
 
 template<typename T>
-const T Essential::Vector<T>::popBack(){
+const T Essentials::Vector<T>::popBack(){
   if (size <= 0) 
     throw std::out_of_range("Can't popBack, vector is empty");
   
@@ -202,7 +202,7 @@ const T Essential::Vector<T>::popBack(){
 };
 
 template<typename T>
-const T Essential::Vector<T>::popAt(unsigned int index) {
+const T Essentials::Vector<T>::popAt(unsigned int index) {
   if(index > head && index < back) 
     throw std::out_of_range("Can't popAt, index out of range");
   
@@ -238,7 +238,7 @@ const T Essential::Vector<T>::popAt(unsigned int index) {
 };
 
 template<typename T>
-void Essential::Vector<T>::clear() noexcept {
+void Essentials::Vector<T>::clear() noexcept {
   delete[] data;
   data = new T[capacity];
   size = 0;
@@ -248,7 +248,7 @@ void Essential::Vector<T>::clear() noexcept {
 }
 
 template<typename T>
-void Essential::Vector<T>::erase(unsigned int index) noexcept {
+void Essentials::Vector<T>::erase(unsigned int index) noexcept {
   if(index > head && index < back) 
     return;
 
@@ -259,7 +259,7 @@ void Essential::Vector<T>::erase(unsigned int index) noexcept {
 };
 
 template<typename T>
-T& Essential::Vector<T>::first() const {
+T& Essentials::Vector<T>::first() const {
   if(isEmpty()) 
     throw std::out_of_range("Can't first, vector is empty");
 
@@ -270,7 +270,7 @@ T& Essential::Vector<T>::first() const {
 };
 
 template<typename T>
-T& Essential::Vector<T>::last() const {
+T& Essentials::Vector<T>::last() const {
   if(isEmpty()) 
     throw std::out_of_range("Can't last, vector is empty");
 
@@ -281,7 +281,7 @@ T& Essential::Vector<T>::last() const {
 };
 
 template<typename T>
-T& Essential::Vector<T>::at(unsigned int index) const {
+T& Essentials::Vector<T>::at(unsigned int index) const {
   if(index > head && index < back) 
     throw std::out_of_range("Can't at, index out of range");
 
