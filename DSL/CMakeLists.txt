@@ -5,6 +5,7 @@ add_subdirectory(DSL)
 project(Main LANGUAGES CXX)
 
 set(headers
+  DSL
   Tests
   Examples
 )

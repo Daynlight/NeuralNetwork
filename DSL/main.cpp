@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include "DSL/dsl.h"
-#include "Tests/Vector/vector_tests.h"
-#include "Examples/Vector/vector_example.h"
+#include "Tests/Vector/vector.h"
+#include "Tests/ModuloZ/moduloz.h"
+#include "Examples/Vector/vector.h"
+#include "Examples/ModuloZ/moduloz.h"
 
 int main(){
-  VectorTests();
-  VectorExample();
+  Tests::Vector();
+  Examples::Vector();
 
   return 0;
 }

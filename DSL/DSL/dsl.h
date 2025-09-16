@@ -23,6 +23,5 @@
 
 #pragma once
 
-#include "Vector/vector.h"
-
-#include "Math/ModuloZ.h"
+#include "Essentials/Vector/vector.h"
+#include "Math/ModuloZ/ModuloZ.h"

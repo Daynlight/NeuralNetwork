@@ -31,16 +31,17 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <string.h>
-#include "../Math/ModuloZ.h"
+#include "ModuloZ/ModuloZ.h"
 
+//namespace Essential
+namespace Essentials{
+  
 // HashMap for lookup
 struct HashMap{
   unsigned int hash;
   unsigned int index;
 };
 
-//namespace Essential
-namespace Essential{
 // VectorClass
 template<typename T>
 class Vector {
