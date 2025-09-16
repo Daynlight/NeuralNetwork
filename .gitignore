@@ -20,4 +20,4 @@ CMakeUserPresets.json
 
 build/
 .vscode/
-vendor/
+vendor/**
