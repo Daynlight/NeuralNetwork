@@ -4,7 +4,7 @@
 #include <string>
 #include "dsl.h"
 
-namespace Tests {
+namespace UnitTests {
 // =============== Helping Struct ===============
 struct Point { int x, y; };
 
@@ -63,7 +63,7 @@ bool ASSERT_TRUE(std::string name, bool cond) noexcept {
 //=========================================================
 
 // ===== INIT & DESTROY =====
-bool test_init() {
+bool test_vector_init() {
   Essentials::Vector<int> v;
   ASSERT_EQ_SIZE("init size", 0, v.getSize());
   ASSERT_TRUE("init capacity>=1", v.getCapacity() >= 1);
@@ -71,15 +71,17 @@ bool test_init() {
 }
 
 // ===== RESIZE & CAPACITY =====
-bool test_resize() {
+bool test_vector_resize() {
   Essentials::Vector<int> v;
-  unsigned old = v.getCapacity();
+  unsigned initial = v.getCapacity();
   v.resize();
-  ASSERT_TRUE("resize doubles capacity", v.getCapacity()>=old*2);
+  ASSERT_TRUE("resize doubles capacity", v.getCapacity() >= initial*2);
+  v.resize();
+  ASSERT_TRUE("resize quadruple capacity", v.getCapacity() >= initial*4);
   return true;
 }
 
-bool test_reserve() {
+bool test_vector_reserve() {
   Essentials::Vector<int> v;
   unsigned old = v.getCapacity();
   v.reserve(10);
@@ -87,14 +89,14 @@ bool test_reserve() {
   return true;
 }
 
-bool test_set_capacity() {
+bool test_vector_set_capacity() {
   Essentials::Vector<int> v;
   v.setCapacity(20);
   ASSERT_EQ_SIZE("set_capacity=20", 20, v.getCapacity());
   return true;
 }
 
-bool test_shrink() {
+bool test_vector_shrink() {
   Essentials::Vector<int> v;
   v.pushHead(1);
   v.pushHead(1);
@@ -105,14 +107,14 @@ bool test_shrink() {
 }
 
 // ===== PUSH METHODS =====
-bool test_push() {
+bool test_vector_push() {
   Essentials::Vector<int> v;
   v.pushHead(42);
   ASSERT_EQ_INT("push value", 42, v.first());
   return true;
 }
 
-bool test_push_front() {
+bool test_vector_push_front() {
   Essentials::Vector<int> v;
   v.pushHead(1);
   v.pushHead(2);
@@ -121,7 +123,7 @@ bool test_push_front() {
   return true;
 }
 
-bool test_push_at() {
+bool test_vector_push_at() {
   Essentials::Vector<int> v;
   v.pushHead(1); v.pushHead(2); v.pushHead(3);
   v.pushAt(1, 77);
@@ -130,21 +132,21 @@ bool test_push_at() {
 }
 
 // ===== POP METHODS =====
-bool test_pop() {
+bool test_vector_pop() {
   Essentials::Vector<int> v;
   v.pushHead(5); v.pushHead(6);
   ASSERT_EQ_INT("pop last", 6, v.popHead());
   return true;
 }
 
-bool test_pop_front() {
+bool test_vector_pop_front() {
   Essentials::Vector<int> v;
   v.pushHead(5); v.pushHead(6);
   ASSERT_EQ_INT("pop front", 5, v.popBack());
   return true;
 }
 
-bool test_pop_at() {
+bool test_vector_pop_at() {
   Essentials::Vector<int> v;
   v.pushHead(1); v.pushHead(2); v.pushHead(3);
   ASSERT_EQ_INT("pop_at middle", 2, v.popAt(1));
@@ -152,7 +154,7 @@ bool test_pop_at() {
 }
 
 // ===== ERASE & CLEAR =====
-bool test_erase() {
+bool test_vector_erase() {
   Essentials::Vector<int> v;
   v.pushHead(1); v.pushHead(2); v.pushHead(3);
   v.erase(1);
@@ -160,7 +162,7 @@ bool test_erase() {
   return true;
 }
 
-bool test_clear() {
+bool test_vector_clear() {
   Essentials::Vector<int> v;
   v.pushHead(1);
   v.clear();
@@ -169,7 +171,7 @@ bool test_clear() {
 }
 
 // ===== FIRST / LAST / AT =====
-bool test_first_last_at() {
+bool test_vector_first_last_at() {
   Essentials::Vector<int> v;
   v.pushHead(11); v.pushHead(22); v.pushHead(33);
   ASSERT_EQ_INT("last", 33, v.last());
@@ -178,58 +180,8 @@ bool test_first_last_at() {
   return true;
 }
 
-// // ===== SEARCH METHODS =====
-// bool test_find_methods() {
-//     Essentials::Vector<int> v;
-//     v.pushHead(1); v.pushHead(2); v.pushHead(3);
-//     ASSERT_EQ_SIZE("find 2", 1, v.find(2, cmp_int));
-//     ASSERT_EQ_SIZE("find_if even", 1, v.find_if(is_even));
-//     ASSERT_TRUE("contains 3", v.contains(3, cmp_int));
-//     v.qsort(cmp_int);
-//     ASSERT_EQ_SIZE("bfind 2", 1, v.bfind(2, cmp_int));
-//     ASSERT_EQ_SIZE("bfind_if even", 1, v.bfind_if(is_even));
-//     ASSERT_TRUE("bcontains 3", v.bcontains(3, cmp_int));
-//     return true;
-// }
-
-// // ===== QSORT =====
-// bool test_qsort_variants() {
-//     Essentials::Vector<int> vi; vi.pushHead(30); vi.pushHead(10); vi.pushHead(20);
-//     vi.qsort(cmp_int);
-//     ASSERT_EQ_INT("qsort int first", 10, vi.first());
-
-//     Essentials::Vector<float> vf; vf.pushHead(3.3f); vf.pushHead(1.1f); vf.pushHead(2.2f);
-//     vf.qsort([](const float &a,const float &b){return (a>b)-(a<b);});
-//     ASSERT_EQ_FLOAT("qsort float first", 1.1f, vf.first(), 1e-6f);
-
-//     Essentials::Vector<Point> vs; vs.pushHead({2,2}); vs.pushHead({1,1}); vs.pushHead({3,3});
-//     vs.qsort(point_cmp);
-//     ASSERT_EQ_INT("qsort struct first x",1, vs.first().x);
-
-//     return true;
-// }
-
-// // ===== MAP / FOREACH =====
-// bool test_map_foreach() {
-//     Essentials::Vector<int> v; v.pushHead(1); v.pushHead(2); v.pushHead(3);
-//     v.map(multiply);
-//     int sum=0;
-//     v.foreach([&](int el){ add(el,sum); });
-//     ASSERT_EQ_INT("map*2 + foreach sum",12,sum);
-//     return true;
-// }
-
-// // ===== SWAP =====
-// bool test_swap() {
-//     Essentials::Vector<int> a,b; a.pushHead(1); b.pushHead(2);
-//     a.swap(b);
-//     ASSERT_EQ_INT("swap a",2,a.first());
-//     ASSERT_EQ_INT("swap b",1,b.first());
-//     return true;
-// }
-
 // ===== GETTERS =====
-bool test_get_size() {
+bool test_vector_get_size() {
   Essentials::Vector<int> v;
   ASSERT_EQ_SIZE("get_size empty",0,v.getSize());
   v.pushHead(5);
@@ -237,23 +189,13 @@ bool test_get_size() {
   return true;
 }
 
-bool test_get_capacity() {
+bool test_vector_get_capacity() {
   Essentials::Vector<int> v;
   ASSERT_TRUE("get_capacity>=1",v.getCapacity()>=1);
   return true;
 }
 
-// bool test_get_sorted() {
-//     Essentials::Vector<int> v;
-//     ASSERT_EQ_INT("get_sorted init",1,v.getSorted());
-//     v.pushHead(2);
-//     ASSERT_EQ_INT("get_sorted after push",0,v.getSorted());
-//     v.qsort(cmp_int);
-//     ASSERT_EQ_INT("get_sorted after sort",1,v.getSorted());
-//     return true;
-// }
-
-bool test_is_empty() {
+bool test_vector_is_empty() {
   Essentials::Vector<int> v;
   ASSERT_TRUE("is_empty true",v.isEmpty());
   v.pushHead(3);
@@ -261,31 +203,8 @@ bool test_is_empty() {
   return true;
 }
 
-// // ===== CONTAINS =====
-// bool test_contains_unsorted() {
-//     Essentials::Vector<int> v; v.pushHead(3); v.pushHead(1); v.pushHead(2);
-//     ASSERT_TRUE("contains 1",v.contains(1, cmp_int));
-//     ASSERT_TRUE("contains 99 false", !v.contains(99, cmp_int));
-//     return true;
-// }
-
-// bool test_contains_sorted() {
-//     Essentials::Vector<int> v; v.pushHead(1); v.pushHead(2); v.pushHead(3);
-//     v.qsort(cmp_int);
-//     ASSERT_TRUE("bcontains sorted ok",v.contains(2, cmp_int));
-//     return true;
-// }
-
-// bool test_bcontains() {
-//     Essentials::Vector<int> v; v.pushHead(10); v.pushHead(20); v.pushHead(30);
-//     v.qsort(cmp_int);
-//     ASSERT_TRUE("bcontains 20",v.bcontains(20, cmp_int));
-//     ASSERT_TRUE("bcontains missing",!v.bcontains(100, cmp_int));
-//     return true;
-// }
-
 // ===== MIXED PUSH / POP =====
-bool test_mixed_push_pop() {
+bool test_vector_mixed_push_pop() {
   Essentials::Vector<int> v;
   v.pushHead(1); v.pushBack(2); v.pushHead(3); v.pushBack(4);
   ASSERT_EQ_INT("mixed first",4,v.first());
@@ -295,25 +214,8 @@ bool test_mixed_push_pop() {
   return true;
 }
 
-// bool test_mixed_algorithms() {
-//     Essentials::Vector<int> v;
-//     for(int i=0;i<10;i++) {
-//         if(i%2==0) v.pushBack(i);
-//         else v.pushHead(i);
-//     }
-//     v.qsort(cmp_int);
-//     ASSERT_EQ_INT("mixed sort first",0,v.first());
-//     ASSERT_EQ_INT("mixed sort last",9,v.last());
-//     ASSERT_TRUE("mixed contains 6", v.bcontains(6, cmp_int));
-//     ASSERT_TRUE("mixed contains missing", !v.bcontains(42, cmp_int));
-//     int sum=0; v.map(multiply); v.foreach([&](int el){ add(el,sum); });
-//     int expected=90; // sum 0..9 doubled
-//     ASSERT_EQ_INT("mixed map+foreach sum",expected,sum);
-//     return true;
-// }
-
 // ===== LARGE DATASET TESTS =====
-bool test_large_push() {
+bool test_vector_large_push() {
   Essentials::Vector<int> v;
   int N=1000;
   for(int i=0;i<N;i++) v.pushHead(i);
@@ -323,7 +225,7 @@ bool test_large_push() {
   return true;
 }
 
-bool test_large_push_front() {
+bool test_vector_large_push_front() {
   Essentials::Vector<int> v;
   int N=1000;
   for(int i=0;i<N;i++) v.pushBack(i);
@@ -333,48 +235,37 @@ bool test_large_push_front() {
   return true;
 }
 
-// ... (other large tests: large_qsort, large_find_bfind, large_contains, large_struct_qsort, large_map_foreach, mixed_large) ...
-
 // ===== RUN ALL =====
-void Vector() {
+bool Vector() {
   int total=0, passed=0;
 #define RUN(f) total++; if(f()) passed++;
 
-  RUN(test_init);
-  RUN(test_resize);
-  RUN(test_reserve);
-  RUN(test_set_capacity);
-  RUN(test_shrink);
-  RUN(test_push);
-  RUN(test_push_front);
-  RUN(test_push_at);
-  RUN(test_pop);
-  RUN(test_pop_front);
-  RUN(test_pop_at);
-  RUN(test_erase);
-  RUN(test_clear);
-  RUN(test_first_last_at);
-  RUN(test_get_size);
-  RUN(test_get_capacity);
-  RUN(test_is_empty);
-  RUN(test_mixed_push_pop);
-  // RUN(test_find_methods);
-  // RUN(test_qsort_variants);
-  // RUN(test_map_foreach);
-  // RUN(test_swap);
-  // RUN(test_get_sorted);
-  // RUN(test_contains_unsorted);
-  // RUN(test_contains_sorted);
-  // RUN(test_bcontains);
-  // RUN(test_mixed_algorithms);
-
-  RUN(test_large_push);
-  RUN(test_large_push_front);
+  RUN(test_vector_init);
+  RUN(test_vector_resize);
+  RUN(test_vector_reserve);
+  RUN(test_vector_set_capacity);
+  RUN(test_vector_shrink);
+  RUN(test_vector_push);
+  RUN(test_vector_push_front);
+  RUN(test_vector_push_at);
+  RUN(test_vector_pop);
+  RUN(test_vector_pop_front);
+  RUN(test_vector_pop_at);
+  RUN(test_vector_erase);
+  RUN(test_vector_clear);
+  RUN(test_vector_first_last_at);
+  RUN(test_vector_get_size);
+  RUN(test_vector_get_capacity);
+  RUN(test_vector_is_empty);
+  RUN(test_vector_mixed_push_pop);
+  RUN(test_vector_large_push);
+  RUN(test_vector_large_push_front);
 
 #undef RUN
   if(passed == total) 
     fmt::print(fg(fmt::color::blue_violet), "\n=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
   else 
     fmt::print(fg(fmt::color::dark_orange), "\n=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
+  return passed == total;
 };
 };

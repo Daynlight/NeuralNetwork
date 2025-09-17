@@ -24,7 +24,7 @@ project(Main LANGUAGES CXX)
 set(headers
   DSL/
   vendor/
-  Tests/
+  UnitTests/
   Examples/
 )
 
