@@ -1,53 +1,72 @@
 #pragma once
 #include <fmt/core.h>
 #include <fmt/color.h>
+#include <string>
 #include "dsl.h"
 
 namespace Tests {
+// =============== Helping Struct ===============
 struct Point { int x, y; };
 
-// ===== Comparators & Predicates =====
+
+
+// =============== Comparators & Predicates ===============
 int cmp_int(const int &a, const int &b) { return a - b; }
 int is_even(const int &val) { return (val % 2) == 0; }
 int point_cmp(const Point &a, const Point &b) { return a.x - b.x; }
-
 void add(const int &el, int &ud) { ud += el; }
 void multiply(int &el) { el *= 2; }
 
-// ===== ASSERT MACROS =====
-#define ASSERT_EQ_INT(name, expected, actual) do { \
-  int e=(expected), a=(actual); bool res=(e==a); \
-  if(res) fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={:d} got={:d}\n", name, e, a); \
-  else    fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={:d} got={:d}\n", name, e, a); \
-  if(!res) return false; \
-} while(0)
 
-#define ASSERT_EQ_SIZE(name, expected, actual) do { \
-  size_t e=(expected), a=(actual); bool res=(e==a); \
-  if(res) fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={}\n", name, e, a); \
-  else    fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={}\n", name, e, a); \
-  if(!res) return false; \
-} while(0)
 
-#define ASSERT_EQ_FLOAT(name, expected, actual, eps) do { \
-  float e=(expected), a=(actual); float diff = std::abs(e-a); bool res=(diff<(eps)); \
-  if(res) fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={} (eps={})\n", name, e, a, eps); \
-  else    fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={} (eps={})\n", name, e, a, eps); \
-  if(!res) return false; \
-} while(0)
+// ========================= ASSERT =========================
+bool ASSERT_EQ_INT(std::string name, int expected, int actual) noexcept {
+  if(expected == actual) 
+    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={:d} got={:d}\n", name, expected, actual);
+  else    
+    fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={:d} got={:d}\n", name, expected, actual); 
+  return expected == actual;
+};
 
-#define ASSERT_TRUE(name, cond) do { \
-  bool res=(cond); \
-  if(res) fmt::print(fg(fmt::color::green), "[PASS] {:s}\n", name); \
-  else    fmt::print(fg(fmt::color::red),   "[FAIL] {:s}\n", name); \
-  if(!res) return false; \
-} while(0)
+bool ASSERT_EQ_SIZE(std::string name, size_t expected, size_t actual) noexcept {
+  if(expected == actual) 
+    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={}\n", name, expected, actual);
+  else    
+    fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={}\n", name, expected, actual);
+  return expected == actual;
+};
+
+bool ASSERT_EQ_FLOAT(std::string name, float expected, float actual, float eps) noexcept {
+  float diff = std::abs(expected - actual);
+  if(diff < eps) 
+    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={} (eps={})\n", name, expected, actual, eps);
+  else    
+    fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={} (eps={})\n", name, expected, actual, eps);
+  return diff < eps;
+};
+
+bool ASSERT_TRUE(std::string name, bool cond) noexcept {
+  if(cond) 
+    fmt::print(fg(fmt::color::green), "[PASS] {:s}\n", name);
+  else    
+    fmt::print(fg(fmt::color::red),   "[FAIL] {:s}\n", name);
+  return cond;
+};
+
+
+
+
+
+
+//=========================================================
+//========================= Tests =========================
+//=========================================================
 
 // ===== INIT & DESTROY =====
 bool test_init() {
   Essentials::Vector<int> v;
   ASSERT_EQ_SIZE("init size", 0, v.getSize());
-  ASSERT_TRUE("init capacity>=1", v.getCapacity()>=1);
+  ASSERT_TRUE("init capacity>=1", v.getCapacity() >= 1);
   return true;
 }
 

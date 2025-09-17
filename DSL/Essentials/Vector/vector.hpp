@@ -93,11 +93,6 @@ constexpr unsigned int Essentials::Vector<T>::getCapacity() const noexcept {
 };
 
 template<typename T>
-constexpr bool Essentials::Vector<T>::getSorted() const noexcept {
-  return sorted;
-};
-
-template<typename T>
 constexpr bool Essentials::Vector<T>::isEmpty() const noexcept {
   return size == 0;
 };
@@ -114,7 +109,6 @@ void Essentials::Vector<T>::pushHead(T el) {
   data[head] = el;
   
   size++;
-  sorted = 0;
 };
 
 template<typename T>
@@ -129,7 +123,6 @@ void Essentials::Vector<T>::pushBack(T el) {
   data[back] = el;
 
   size++;
-  sorted = 0;
 };
 
 template <typename T>
@@ -173,7 +166,6 @@ void Essentials::Vector<T>::pushAt(unsigned int index, T el) {
   }
 
   size++;
-  sorted = 0;
 }
 
 template<typename T>
@@ -249,7 +241,6 @@ void Essentials::Vector<T>::clear() noexcept {
   size = 0;
   head = capacity - 1;
   back = 0;
-  sorted = 1;
 }
 
 template<typename T>

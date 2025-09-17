@@ -52,9 +52,6 @@ private:
   unsigned int capacity = 2;
   unsigned int size = 0;
 
-  bool sorted = 1;
-  bool hashed = 1;
-
   Math::ModuloZ head = Math::ModuloZ(2, 1);
   Math::ModuloZ back = Math::ModuloZ(2, 0);
 
@@ -75,7 +72,6 @@ public:
   // Get Info
   constexpr unsigned int getSize() const noexcept;    // O(1)
   constexpr unsigned int getCapacity() const noexcept;    // O(1)
-  constexpr bool getSorted() const noexcept;    // O(1)
   constexpr bool isEmpty() const noexcept;    // O(1)
 
   // Pushers
@@ -97,19 +93,8 @@ public:
   T& last() const;    // O(1)
   T& at(unsigned int index) const;    // O(1)
 
-  // // Algorithms
-  // void foreach(void (*func)(void*, void*), void* user_data);                      // O(n)
-  // void map(void (*func)(void*));                                                  // O(n)
-  // unsigned int find(void* el, int (*cmp)(const void*, const void*));              // O(n)
-  // unsigned int find_if(int (*predicate)(const void*));                            // O(n)
-  // char contains(void* el, int (*cmp)(const void*, const void*));                  // O(n)
-  // unsigned int bfind(void* el, int (*cmp)(const void*, const void*));             // O(log n)
-  // unsigned int bfind_if(int (*predicate)(const void*));                           // O(log n)
-  // char bcontains(void* el, int (*cmp)(const void*, const void*));                 // O(log n)
-  // void swap(Vector* a, Vector* b);                                                             // O(1)
-  // void qsort(int (*cmp)(const void*, const void*));                               // O(n log n) worst O(n^2)
-  // void qsort_helper(int (*cmp)(const void*, const void*), int low, int high);
-  // int qsort_partition(int (*cmp)(const void*, const void*), int low, int high);
+  // operators
+
 };
 };
 
