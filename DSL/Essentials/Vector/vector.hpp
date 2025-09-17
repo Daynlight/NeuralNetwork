@@ -60,6 +60,11 @@ void Essentials::Vector<T>::setCapacity(unsigned int new_capacity) {
 };
 
 template <typename T>
+inline void Essentials::Vector<T>::reorder() {
+  setCapacity(capacity);
+};
+
+template <typename T>
 void Essentials::Vector<T>::reserve(unsigned int additional){
   if (additional == 0) 
     return;

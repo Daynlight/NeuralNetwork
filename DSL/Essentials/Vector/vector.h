@@ -67,6 +67,7 @@ public:
 
   // Vector management
   void setCapacity(unsigned int new_capacity);    // O(log2(n))
+  void reorder();    // O(log2(n))
   void reserve(unsigned int additional);    // O(log2(n))
   void resize();    // O(log2(n))
   void shrink();    // O(log2(n))
