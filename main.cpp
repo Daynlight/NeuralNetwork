@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "DSL/dsl.h"
-#include "UnitTests/unit_tests.h"
+#include "Tests/Unit/unit_tests.h"
 #include "Examples/Essentials/Vector/vector.h"
 #include "Examples/Math/ModuloZ/moduloz.h"
 
