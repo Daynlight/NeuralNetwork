@@ -28,8 +28,7 @@ Essentials::Vector<T>::Vector() noexcept {};
 
 template<typename T>
 Essentials::Vector<T>::~Vector() noexcept {
-  if(data) 
-    delete[] data;
+  delete[] data;
 };
 
 template<typename T>
