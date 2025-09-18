@@ -21,7 +21,7 @@ void Vector() {
     vec.pushBack(-20);
 
     // push at
-    vec.pushAt(0, 56);
+    vec.pushAt(-1, 56);
 
     fmt::print(fg(fmt::color::aquamarine) , "Print vector Data: \n");
     const int size = vec.getSize();
