@@ -300,28 +300,39 @@ bool Vector() {
   unsigned int passed = 0;
 
 
+  // Init
   test_vector_init(&total, &passed);
 
-  test_vector_resize(&total, &passed); 
+  // Resizes
+  test_vector_set_capacity(&total, &passed);
   test_vector_reorder(&total, &passed); 
   test_vector_reserve(&total, &passed);
-  test_vector_set_capacity(&total, &passed);
+  test_vector_resize(&total, &passed); 
   test_vector_shrink(&total, &passed);
+  
+  // Getters
+  test_vector_get_size(&total, &passed);
+  test_vector_get_capacity(&total, &passed);
+  test_vector_is_empty(&total, &passed);
+  test_vector_head_back_at(&total, &passed);
 
+  // Pushers
   test_vector_push_head(&total, &passed);
   test_vector_push_back(&total, &passed);
   test_vector_push_at(&total, &passed);
+  
+  // Popers
   test_vector_pop_head(&total, &passed);
   test_vector_pop_back(&total, &passed);
   test_vector_pop_at(&total, &passed);
 
+  // Erasers
   test_vector_erase(&total, &passed);
   test_vector_clear(&total, &passed);
+  
+  // operators
 
-  test_vector_head_back_at(&total, &passed);
-  test_vector_get_size(&total, &passed);
-  test_vector_get_capacity(&total, &passed);
-  test_vector_is_empty(&total, &passed);
+  // mixed and large
   test_vector_mixed_push_pop(&total, &passed);
   test_vector_large_push_head(&total, &passed);
   test_vector_large_push_back(&total, &passed);
