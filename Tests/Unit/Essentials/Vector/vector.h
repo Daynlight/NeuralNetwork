@@ -6,6 +6,10 @@
 #include "dsl.h"
 
 namespace UnitTests {
+// =============== Counter ===============
+static unsigned int total = 0;
+static unsigned int passed = 0;
+
 // =============== Helping Struct ===============
 struct Point { int x, y; };
 template<typename T>
@@ -24,27 +28,30 @@ void multiply(int &el) { el *= 2; }
 
 
 // ========================= ASSERT =========================
-bool ASSERT_EQ_INT(std::string name, int expected, int actual) noexcept {
+void ASSERT_EQ_INT(std::string name, int expected, int actual) noexcept {
+  total++;
 #ifdef LoudTests
   if(expected == actual) 
     fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={:d} got={:d}\n", name, expected, actual);  
 #endif
   if(expected != actual)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={:d} got={:d}\n", name, expected, actual); 
-  return expected == actual;
+  if(expected == actual) passed++;
 };
 
-bool ASSERT_EQ_SIZE(std::string name, size_t expected, size_t actual) noexcept {
+void ASSERT_EQ_SIZE(std::string name, size_t expected, size_t actual) noexcept {
+  total++;
 #ifdef LoudTests
   if(expected == actual) 
     fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={}\n", name, expected, actual);  
 #endif
   if(expected != actual)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={}\n", name, expected, actual);
-  return expected == actual;
+  if(expected == actual) passed++;
 };
 
-bool ASSERT_EQ_FLOAT(std::string name, float expected, float actual, float eps) noexcept {
+void ASSERT_EQ_FLOAT(std::string name, float expected, float actual, float eps) noexcept {
+  total++;
   float diff = std::abs(expected - actual);
 #ifdef LoudTests
   if(diff < eps) 
@@ -52,17 +59,18 @@ bool ASSERT_EQ_FLOAT(std::string name, float expected, float actual, float eps) 
 #endif   
   if(diff >= eps)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={} (eps={})\n", name, expected, actual, eps);
-  return diff < eps;
+  if(diff < eps) passed++;
 };
 
-bool ASSERT_TRUE(std::string name, bool cond) noexcept {
+void ASSERT_TRUE(std::string name, bool cond) noexcept {
+  total++;
 #ifdef LoudTests
   if(cond) 
     fmt::print(fg(fmt::color::green), "[PASS] {:s}\n", name);
 #endif
   if(!cond)     
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s}\n", name);
-  return cond;
+  if(cond) passed++;
 };
 
 
@@ -220,19 +228,22 @@ bool test_vector_erase() {
 
 bool test_vector_clear() {
   Essentials::Vector<int> v;
-  v.pushHead(1);
+  v.pushHead(1); v.pushHead(5); v.pushHead(3);
+  v.pushBack(1); v.pushBack(2);
   v.clear();
   ASSERT_EQ_SIZE("clear resets size", 0, v.getSize());
   return true;
 }
 
-// ===== FIRST / LAST / AT =====
-bool test_vector_first_last_at() {
+// ===== Head / Back / AT =====
+bool test_vector_head_back_at() {
   Essentials::Vector<int> v;
-  v.pushHead(11); v.pushHead(22); v.pushHead(33);
-  ASSERT_EQ_INT("last", 33, v.head());
-  ASSERT_EQ_INT("first", 11, v.back());
-  ASSERT_EQ_INT("at[1]", 22, v.at(1));
+  v.setCapacity(10);
+  v.pushHead(12); v.pushHead(45); v.pushHead(56);
+  v.pushBack(32); v.pushBack(213); v.pushBack(512);
+  ASSERT_EQ_INT("head", 56, v.head());
+  ASSERT_EQ_INT("back", 512, v.back());
+  ASSERT_EQ_INT("at[1]", 213, v.at(1));
   return true;
 }
 
@@ -293,36 +304,33 @@ bool test_vector_large_push_front() {
 
 // ===== RUN ALL =====
 bool Vector() {
-  int total=0, passed=0;
-#define RUN(f) total++; if(f()) passed++;
+  test_vector_init();
 
-  RUN(test_vector_init);
+  test_vector_resize(); 
+  test_vector_reorder(); 
+  test_vector_reserve();
+  test_vector_set_capacity();
+  test_vector_shrink();
 
-  RUN(test_vector_resize); 
-  RUN(test_vector_reorder); 
-  RUN(test_vector_reserve);
-  RUN(test_vector_set_capacity);
-  RUN(test_vector_shrink);
+  test_vector_push_head();
+  test_vector_push_back();
+  test_vector_push_at();
+  test_vector_pop_head();
+  test_vector_pop_back();
+  test_vector_pop_at();
 
-  RUN(test_vector_push_head);
-  RUN(test_vector_push_back);
-  RUN(test_vector_push_at);
-  RUN(test_vector_pop_head);
-  RUN(test_vector_pop_back);
-  RUN(test_vector_pop_at);
+  test_vector_erase();
+  test_vector_clear();
 
-  RUN(test_vector_erase);
-  RUN(test_vector_clear);
+  test_vector_head_back_at();
+  test_vector_get_size();
+  test_vector_get_capacity();
+  test_vector_is_empty();
+  test_vector_mixed_push_pop();
+  test_vector_large_push();
+  test_vector_large_push_front();
 
-  RUN(test_vector_first_last_at);
-  RUN(test_vector_get_size);
-  RUN(test_vector_get_capacity);
-  RUN(test_vector_is_empty);
-  RUN(test_vector_mixed_push_pop);
-  RUN(test_vector_large_push);
-  RUN(test_vector_large_push_front);
 
-#undef RUN
   if(passed == total) 
     fmt::print(fg(fmt::color::blue_violet), "=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
   else 
