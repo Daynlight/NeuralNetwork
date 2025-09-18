@@ -244,8 +244,8 @@ void test_vector_get_size(unsigned int* total, unsigned int* passed) {
   *total += 2;
   Essentials::Vector<int> v;
   if(ASSERT_EQ_SIZE("get_size empty",0,v.getSize()))*passed += 1;
-  v.pushHead(5);
-  if(ASSERT_EQ_SIZE("get_size=1",1,v.getSize()))*passed += 1;
+  v.pushHead(5);v.pushHead(5);v.pushHead(5);v.pushHead(5);
+  if(ASSERT_EQ_SIZE("get_size=1",4,v.getSize()))*passed += 1;
 }
 
 void test_vector_get_capacity(unsigned int* total, unsigned int* passed) {
@@ -298,6 +298,8 @@ void test_vector_large_push_back(unsigned int* total, unsigned int* passed) {
 bool Vector() {
   unsigned int total = 0;
   unsigned int passed = 0;
+
+
   test_vector_init(&total, &passed);
 
   test_vector_resize(&total, &passed); 
