@@ -49,6 +49,7 @@ protected:
 
 private:
   constexpr bool inRange(unsigned int index) const noexcept;
+  constexpr unsigned int toPhysicalIndex(int index) const noexcept;
 
 public:
   // Constructor/Destructor
@@ -69,21 +70,21 @@ public:
   // Pushers
   void pushHead(T el);    // O(log2(n))
   void pushBack(T el);    // O(log2(n))
-  void pushAt(unsigned int index, T el);    // O(log2(n))
+  void pushAt(int index, T el);    // O(log2(n))
 
   // Popers
   const T popHead();    // O(1)
   const T popBack();    // O(1)
-  const T popAt(unsigned int index);    // O(n)
+  const T popAt(int index);    // O(n)
 
   // Removers
   void clear() noexcept;    // O(1)
-  void erase(unsigned int index) noexcept;    // O(n)
+  void erase(int index) noexcept;    // O(n)
 
   // Get Without Removing       
   T& back() const;    // O(1)
   T& head() const;    // O(1)
-  T& at(unsigned int index) const;    // O(1)
+  T& at(int index) const;    // O(1)
 
   // operators
 };

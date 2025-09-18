@@ -162,7 +162,7 @@ void test_vector_push_back(unsigned int* total, unsigned int* passed) {
 }
 
 void test_vector_push_at(unsigned int* total, unsigned int* passed) {
-  *total += 4;
+  *total += 6;
   Essentials::Vector<int> v;
   v.setCapacity(20);
   v.pushHead(1); v.pushHead(2); v.pushHead(3); v.pushHead(5); v.pushHead(3);
@@ -171,6 +171,9 @@ void test_vector_push_at(unsigned int* total, unsigned int* passed) {
   if(ASSERT_EQ_INT("push at 1", 77, v.at(1)))*passed += 1;
   v.pushAt(3, 12);
   if(ASSERT_EQ_INT("push at 3", 12, v.at(3)))*passed += 1;
+  v.pushAt(-1, 98);
+  if(ASSERT_EQ_INT("push at -1", 3, v.at(-1)))*passed += 1;
+  if(ASSERT_EQ_INT("push at -2", 98, v.at(-2)))*passed += 1;
   if(ASSERT_EQ_INT("push at back", 123, v.back()))*passed += 1;
   if(ASSERT_EQ_INT("push at head", 3, v.head()))*passed += 1;
 }
@@ -193,7 +196,7 @@ void test_vector_pop_back(unsigned int* total, unsigned int* passed) {
 }
 
 void test_vector_pop_at(unsigned int* total, unsigned int* passed) {
-  *total += 6;
+  *total += 7;
   Essentials::Vector<int> v;
   v.setCapacity(20);
   v.pushHead(1); v.pushHead(2); v.pushHead(3); v.pushHead(5);
@@ -201,21 +204,24 @@ void test_vector_pop_at(unsigned int* total, unsigned int* passed) {
   if(ASSERT_EQ_INT("pop_at 1", 12, v.popAt(1)))*passed += 1;
   if(ASSERT_EQ_INT("pop back size", 5, v.getSize()))*passed += 1;
   if(ASSERT_EQ_INT("pop_at 2", 2, v.popAt(2)))*passed += 1;
-  if(ASSERT_EQ_INT("pop back size", 4, v.getSize()))*passed += 1;
+  if(ASSERT_EQ_INT("pop_at -1", 5, v.popAt(-1)))*passed += 1;
+  if(ASSERT_EQ_INT("pop back size", 3, v.getSize()))*passed += 1;
   if(ASSERT_EQ_INT("pop at back", 54, v.back()))*passed += 1;
-  if(ASSERT_EQ_INT("pop at head", 5, v.head()))*passed += 1;
+  if(ASSERT_EQ_INT("pop at head", 3, v.head()))*passed += 1;
 }
 
 // ===== ERASE & CLEAR =====
 void test_vector_erase(unsigned int* total, unsigned int* passed) {
-  *total += 2;
+  *total += 3;
   Essentials::Vector<int> v;
   v.setCapacity(10);
   v.pushHead(231); v.pushHead(2); v.pushHead(3);
   v.pushBack(1); v.pushBack(2);
   v.erase(1);
+  v.erase(-1);
   if(ASSERT_EQ_INT("erase at 1", 231, v.at(1)))*passed += 1;
-  if(ASSERT_EQ_INT("pop back size", 4, v.getSize()))*passed += 1;
+  if(ASSERT_EQ_INT("erase at -1", 2, v.at(-1)))*passed += 1;
+  if(ASSERT_EQ_INT("pop back size", 3, v.getSize()))*passed += 1;
 }
 
 void test_vector_clear(unsigned int* total, unsigned int* passed) {

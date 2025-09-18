@@ -129,9 +129,20 @@ constexpr inline bool Essentials::Vector<T>::inRange(unsigned int index) const n
                         : (index >= _back || index <= _head);
 }
 
+template <typename T>
+inline constexpr unsigned int Essentials::Vector<T>::toPhysicalIndex(int index) const noexcept {
+  unsigned int p_index;
+  if(index >= 0)
+    p_index = Math::ModuloZ(capacity, _back + index);
+  else
+    p_index = Math::ModuloZ(capacity, _head + index + 1);
+  return p_index;
+}
+
 template<typename T>
-void Essentials::Vector<T>::pushAt(unsigned int index, T el) {
-  unsigned int p_index = Math::ModuloZ(capacity, _back + index);
+void Essentials::Vector<T>::pushAt(int index, T el) {
+  unsigned int p_index = toPhysicalIndex(index);
+
   if(!inRange(index)) 
     throw std::logic_error("Can't pushAt, index out of range");
   
@@ -186,8 +197,9 @@ const T Essentials::Vector<T>::popBack(){
 };
 
 template<typename T>
-const T Essentials::Vector<T>::popAt(unsigned int index) {
-  unsigned int p_index = Math::ModuloZ(capacity, _back + index);
+const T Essentials::Vector<T>::popAt(int index) {
+  unsigned int p_index = toPhysicalIndex(index);
+
   if(!inRange(index)) 
     throw std::out_of_range("Can't popAt, index out of range");
   
@@ -220,15 +232,16 @@ void Essentials::Vector<T>::clear() noexcept {
 }
 
 template<typename T>
-void Essentials::Vector<T>::erase(unsigned int index) noexcept {
-  unsigned int p_index = Math::ModuloZ(capacity, _back + index);
+void Essentials::Vector<T>::erase(int index) noexcept {
+  unsigned int p_index = toPhysicalIndex(index);
+
   if(!inRange(p_index)) 
     return;
 
   if (!data) 
     return;
 
-  popAt(p_index);
+  popAt(index);
 };
 
 template<typename T>
@@ -254,8 +267,9 @@ T& Essentials::Vector<T>::head() const {
 };
 
 template<typename T>
-T& Essentials::Vector<T>::at(unsigned int index) const {
-  unsigned int p_index = Math::ModuloZ(capacity, _back + index);
+T& Essentials::Vector<T>::at(int index) const {
+  unsigned int p_index = toPhysicalIndex(index);
+  
   if(!inRange(p_index)) 
     throw std::out_of_range("Can't at, index out of range");
 
