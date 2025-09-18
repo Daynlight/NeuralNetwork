@@ -35,25 +35,17 @@
 
 //namespace Essential
 namespace Essentials {
-  
-// HashMap for lookup
-struct HashMap{
-  unsigned int hash;
-  unsigned int index;
-};
-
 // VectorClass
 template<typename T>
 class Vector {
 private:
   T* data = new T[2];
-  [[maybe_unused]] Vector<HashMap>* hashmap = nullptr;
-  [[maybe_unused]] unsigned int buckets = 0;
   unsigned int capacity = 2;
   unsigned int size = 0;
 
-  Math::ModuloZ head = Math::ModuloZ(2, 1);
-  Math::ModuloZ back = Math::ModuloZ(2, 0);
+protected:
+  Math::ModuloZ _head = Math::ModuloZ(2, 1);
+  Math::ModuloZ _back = Math::ModuloZ(2, 0);
 
 private:
   constexpr bool inRange(unsigned int index) const noexcept;
@@ -89,12 +81,11 @@ public:
   void erase(unsigned int index) noexcept;    // O(n)
 
   // Get Without Removing       
-  T& first() const;    // O(1)
-  T& last() const;    // O(1)
+  T& back() const;    // O(1)
+  T& head() const;    // O(1)
   T& at(unsigned int index) const;    // O(1)
 
   // operators
-
 };
 };
 

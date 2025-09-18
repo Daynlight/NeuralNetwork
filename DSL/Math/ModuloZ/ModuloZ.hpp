@@ -1,8 +1,8 @@
 #include "ModuloZ.h"
 
 constexpr void Math::ModuloZ::bound() noexcept {
+  if (number < 0) number += modulo * (modulo/number - 1) * (-1);
   number %= modulo;
-  if (number < 0) number += modulo;
 };
 
 constexpr Math::ModuloZ::ModuloZ(unsigned int modulo) {
@@ -16,6 +16,7 @@ constexpr Math::ModuloZ::ModuloZ(unsigned int modulo, int number) {
     throw std::logic_error("Can't modulo by 0");
   this->modulo = modulo;
   this->number = number;
+  bound();
 };
 
 Math::ModuloZ::operator unsigned int() const {

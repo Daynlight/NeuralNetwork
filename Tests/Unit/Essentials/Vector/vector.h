@@ -7,7 +7,11 @@
 namespace UnitTests {
 // =============== Helping Struct ===============
 struct Point { int x, y; };
-
+template<typename T>
+class TestVector : public Essentials::Vector<T> {
+public:
+    unsigned int getBackIndex() { return this->_back; }
+};
 
 
 // =============== Comparators & Predicates ===============
@@ -81,6 +85,20 @@ bool test_vector_resize() {
   return true;
 }
 
+bool test_vector_reorder() {
+  TestVector<int> v;
+  v.reserve(5);
+  v.pushHead(21);
+  v.pushHead(24);
+  v.pushBack(21);
+  unsigned int back = v.getBackIndex();
+  ASSERT_TRUE("reorder check back before reorder", back != 0);
+  v.reorder();
+  back = v.getBackIndex();
+  ASSERT_TRUE("reorder check back after reorder", back == 0);
+  return true;
+}
+
 bool test_vector_reserve() {
   Essentials::Vector<int> v;
   unsigned old = v.getCapacity();
@@ -93,63 +111,90 @@ bool test_vector_set_capacity() {
   Essentials::Vector<int> v;
   v.setCapacity(20);
   ASSERT_EQ_SIZE("set_capacity=20", 20, v.getCapacity());
+  v.setCapacity(2);
+  ASSERT_EQ_SIZE("set_capacity=2", 2, v.getCapacity());
   return true;
 }
 
 bool test_vector_shrink() {
   Essentials::Vector<int> v;
+  v.setCapacity(60);
   v.pushHead(1);
   v.pushHead(1);
   v.pushHead(1);
+  ASSERT_EQ_SIZE("shrink check before shrink", 60, v.getCapacity());
   v.shrink();
   ASSERT_EQ_SIZE("shrink size==capacity", v.getSize(), v.getCapacity());
   return true;
 }
 
 // ===== PUSH METHODS =====
-bool test_vector_push() {
+bool test_vector_push_head() {
   Essentials::Vector<int> v;
-  v.pushHead(42);
-  ASSERT_EQ_INT("push value", 42, v.first());
+  v.reserve(10);
+  v.pushHead(12);
+  v.pushHead(32);
+  v.pushHead(54);
+  v.pushHead(11);
+  v.pushHead(77);
+  ASSERT_EQ_INT("push head value", 77, v.head());
   return true;
 }
 
-bool test_vector_push_front() {
+bool test_vector_push_back() {
   Essentials::Vector<int> v;
-  v.pushHead(1);
-  v.pushHead(2);
+  v.pushBack(1);
+  v.pushBack(2);
+  v.pushBack(67);
   v.pushBack(99);
-  ASSERT_EQ_INT("push_front value", 99, v.first());
+  v.pushBack(32);
+  v.pushBack(12454);
+  ASSERT_EQ_INT("push back value", 12454, v.back());
   return true;
 }
 
 bool test_vector_push_at() {
   Essentials::Vector<int> v;
-  v.pushHead(1); v.pushHead(2); v.pushHead(3);
+  v.setCapacity(20);
+  v.pushHead(1); v.pushHead(2); v.pushHead(3); v.pushHead(5); v.pushHead(3);
+  v.pushBack(12); v.pushBack(123);
   v.pushAt(1, 77);
-  ASSERT_EQ_INT("push_at middle", 77, v.at(1));
+  ASSERT_EQ_INT("push at 1", 77, v.at(1));
+  v.pushAt(3, 12);
+  ASSERT_EQ_INT("push at 3", 12, v.at(3));
+  ASSERT_EQ_INT("push at back", 123, v.back());
+  ASSERT_EQ_INT("push at head", 3, v.head());
   return true;
 }
 
 // ===== POP METHODS =====
-bool test_vector_pop() {
+bool test_vector_pop_head() {
   Essentials::Vector<int> v;
   v.pushHead(5); v.pushHead(6);
-  ASSERT_EQ_INT("pop last", 6, v.popHead());
+  ASSERT_EQ_INT("pop head", 6, v.popHead());
+  ASSERT_EQ_INT("pop head size", 1, v.getSize());
   return true;
 }
 
-bool test_vector_pop_front() {
+bool test_vector_pop_back() {
   Essentials::Vector<int> v;
   v.pushHead(5); v.pushHead(6);
   ASSERT_EQ_INT("pop front", 5, v.popBack());
+  ASSERT_EQ_INT("pop back size", 1, v.getSize());
   return true;
 }
 
 bool test_vector_pop_at() {
   Essentials::Vector<int> v;
-  v.pushHead(1); v.pushHead(2); v.pushHead(3);
-  ASSERT_EQ_INT("pop_at middle", 2, v.popAt(1));
+  v.setCapacity(20);
+  v.pushHead(1); v.pushHead(2); v.pushHead(3); v.pushHead(5);
+  v.pushBack(12); v.pushBack(54);
+  ASSERT_EQ_INT("pop_at 1", 12, v.popAt(1));
+  ASSERT_EQ_INT("pop back size", 5, v.getSize());
+  ASSERT_EQ_INT("pop_at 2", 2, v.popAt(2));
+  ASSERT_EQ_INT("pop back size", 4, v.getSize());
+  ASSERT_EQ_INT("pop at back", 54, v.back());
+  ASSERT_EQ_INT("pop at head", 5, v.head());
   return true;
 }
 
@@ -174,8 +219,8 @@ bool test_vector_clear() {
 bool test_vector_first_last_at() {
   Essentials::Vector<int> v;
   v.pushHead(11); v.pushHead(22); v.pushHead(33);
-  ASSERT_EQ_INT("last", 33, v.last());
-  ASSERT_EQ_INT("first", 11, v.first());
+  ASSERT_EQ_INT("last", 33, v.head());
+  ASSERT_EQ_INT("first", 11, v.back());
   ASSERT_EQ_INT("at[1]", 22, v.at(1));
   return true;
 }
@@ -207,10 +252,10 @@ bool test_vector_is_empty() {
 bool test_vector_mixed_push_pop() {
   Essentials::Vector<int> v;
   v.pushHead(1); v.pushBack(2); v.pushHead(3); v.pushBack(4);
-  ASSERT_EQ_INT("mixed first",4,v.first());
-  ASSERT_EQ_INT("mixed last",3,v.last());
-  ASSERT_EQ_INT("pop_front",4,v.popBack());
-  ASSERT_EQ_INT("pop_back",3,v.popHead());
+  ASSERT_EQ_INT("mixed back",4,v.back());
+  ASSERT_EQ_INT("mixed head",3,v.head());
+  ASSERT_EQ_INT("pop Back",4,v.popBack());
+  ASSERT_EQ_INT("pop Head",3,v.popHead());
   return true;
 }
 
@@ -220,8 +265,8 @@ bool test_vector_large_push() {
   int N=1000;
   for(int i=0;i<N;i++) v.pushHead(i);
   ASSERT_EQ_SIZE("large push size",N,v.getSize());
-  ASSERT_EQ_INT("large push last",N-1,v.last());
-  ASSERT_EQ_INT("large push first",0,v.first());
+  ASSERT_EQ_INT("large push head",N-1,v.head());
+  ASSERT_EQ_INT("large push back",0,v.back());
   return true;
 }
 
@@ -229,9 +274,9 @@ bool test_vector_large_push_front() {
   Essentials::Vector<int> v;
   int N=1000;
   for(int i=0;i<N;i++) v.pushBack(i);
-  ASSERT_EQ_SIZE("large push_front size",N,v.getSize());
-  ASSERT_EQ_INT("large push_front first",N-1,v.first());
-  ASSERT_EQ_INT("large push_front last",0,v.last());
+  ASSERT_EQ_SIZE("large push head size",N,v.getSize());
+  ASSERT_EQ_INT("large push head back",N-1,v. back());
+  ASSERT_EQ_INT("large push head head",0,v.head());
   return true;
 }
 
@@ -241,18 +286,23 @@ bool Vector() {
 #define RUN(f) total++; if(f()) passed++;
 
   RUN(test_vector_init);
-  RUN(test_vector_resize);
+
+  RUN(test_vector_resize); 
+  RUN(test_vector_reorder); 
   RUN(test_vector_reserve);
   RUN(test_vector_set_capacity);
   RUN(test_vector_shrink);
-  RUN(test_vector_push);
-  RUN(test_vector_push_front);
+
+  RUN(test_vector_push_head);
+  RUN(test_vector_push_back);
   RUN(test_vector_push_at);
-  RUN(test_vector_pop);
-  RUN(test_vector_pop_front);
+  RUN(test_vector_pop_head);
+  RUN(test_vector_pop_back);
   RUN(test_vector_pop_at);
+
   RUN(test_vector_erase);
   RUN(test_vector_clear);
+
   RUN(test_vector_first_last_at);
   RUN(test_vector_get_size);
   RUN(test_vector_get_capacity);
