@@ -26,6 +26,7 @@ set(headers
   vendor/
   Tests/
   Examples/
+  ${CMAKE_SOURCE_DIR}/
 )
 
 set(src 

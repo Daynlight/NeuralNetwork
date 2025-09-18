@@ -1,8 +1,31 @@
+/*
+ * DSL - short description
+ * Copyright (C) 2025 Your Name
+ *
+ * This file is part of DSL.
+ *
+ * DSL is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * DSL is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+
+
+
 #include "ModuloZ.h"
 
 constexpr void Math::ModuloZ::bound() noexcept {
+  if (number < 0) number += modulo * (modulo/number - 1) * (-1);
   number %= modulo;
-  if (number < 0) number += modulo;
 };
 
 constexpr Math::ModuloZ::ModuloZ(unsigned int modulo) {
@@ -16,6 +39,7 @@ constexpr Math::ModuloZ::ModuloZ(unsigned int modulo, int number) {
     throw std::logic_error("Can't modulo by 0");
   this->modulo = modulo;
   this->number = number;
+  bound();
 };
 
 Math::ModuloZ::operator unsigned int() const {

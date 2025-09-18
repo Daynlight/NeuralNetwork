@@ -1,19 +1,34 @@
 #pragma once
 #include <fmt/core.h>
 #include <fmt/color.h>
+#include <fmt/ranges.h>
+#include <vector>
 #include "dsl.h"
 
 namespace Examples{
 void Vector() {
+    fmt::print(fg(fmt::color::aquamarine) , "=== Vector Example ===\n");
+    
+    // Create vector with int type
     Essentials::Vector<int> vec;
 
-    int x = 10;
-    vec.pushHead(x);  // pushBack equivalent in circular buffer
+    // push values
+    vec.pushHead(10);
+    vec.pushHead(20);
 
-    x = 20;
-    vec.pushHead(x);
+    // push back
+    vec.pushBack(30);
+    vec.pushBack(-20);
 
-    int value = vec.at(1); // access second element
-    fmt::print(fg(fmt::color::blue) , "Second element: {:d}", value);
+    // push at
+    vec.pushAt(-1, 56);
+
+    fmt::print(fg(fmt::color::aquamarine) , "Print vector Data: \n");
+    const int size = vec.getSize();
+    std::vector<int> vec_data(vec.getSize());
+    while(vec.getSize())
+        vec_data.emplace_back(vec.popBack());
+
+    fmt::print(fg(fmt::color::violet) , "{}\n\n", vec_data);
 };
 };
