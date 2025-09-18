@@ -29,6 +29,6 @@ void Vector() {
     while(vec.getSize())
         vec_data.emplace_back(vec.popBack());
 
-    fmt::print(fg(fmt::color::violet) , "{}\n", vec_data);
+    fmt::print(fg(fmt::color::violet) , "{}\n\n", vec_data);
 };
 };

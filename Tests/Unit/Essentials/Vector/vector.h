@@ -1,5 +1,5 @@
 #pragma once
-#include "conf.h"
+#include "Tests/conf.h"
 #include <fmt/core.h>
 #include <fmt/color.h>
 #include <string>
@@ -301,7 +301,7 @@ void test_vector_large_push_back(unsigned int* total, unsigned int* passed) {
 }
 
 // ===== RUN ALL =====
-bool Vector() {
+std::pair<unsigned int, unsigned int> Vector() {
   unsigned int total = 0;
   unsigned int passed = 0;
 
@@ -348,6 +348,7 @@ bool Vector() {
     fmt::print(fg(fmt::color::blue_violet), "=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
   else 
     fmt::print(fg(fmt::color::dark_orange), "=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
-  return passed == total;
+  
+  return std::pair<unsigned int, unsigned int>(passed, total);
 };
 };
