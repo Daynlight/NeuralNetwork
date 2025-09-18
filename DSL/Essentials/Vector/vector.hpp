@@ -23,7 +23,10 @@
 
 #include "vector.h"
 
-template <typename T>
+template<typename T>
+Essentials::Vector<T>::Vector() noexcept {};
+
+template<typename T>
 Essentials::Vector<T>::~Vector() noexcept {
   if(data) 
     delete[] data;
@@ -245,7 +248,7 @@ void Essentials::Vector<T>::erase(int index) noexcept {
 };
 
 template<typename T>
-T& Essentials::Vector<T>::back() const {
+T& Essentials::Vector<T>::back() {
   if(isEmpty()) 
     throw std::out_of_range("Can't first, vector is empty");
 
@@ -256,7 +259,7 @@ T& Essentials::Vector<T>::back() const {
 };
 
 template<typename T>
-T& Essentials::Vector<T>::head() const {
+T& Essentials::Vector<T>::head() {
   if(isEmpty()) 
     throw std::out_of_range("Can't last, vector is empty");
 
@@ -267,7 +270,7 @@ T& Essentials::Vector<T>::head() const {
 };
 
 template<typename T>
-T& Essentials::Vector<T>::at(int index) const {
+T& Essentials::Vector<T>::at(int index) {
   unsigned int p_index = toPhysicalIndex(index);
   
   if(!inRange(p_index)) 

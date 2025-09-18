@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <string.h>
+#include <vector>
 #include "Math/ModuloZ/ModuloZ.h"
 
 //namespace Essential
@@ -53,6 +54,10 @@ private:
 
 public:
   // Constructor/Destructor
+  Vector() noexcept;    // O(1)
+  Vector(unsigned int capacity) noexcept;
+  Vector(const Vector& other) noexcept;
+  Vector(Vector&& other) noexcept;
   ~Vector() noexcept;    // O(1)
 
   // Vector management
@@ -66,11 +71,12 @@ public:
   constexpr unsigned int getSize() const noexcept;    // O(1)
   constexpr unsigned int getCapacity() const noexcept;    // O(1)
   constexpr bool isEmpty() const noexcept;    // O(1)
+  constexpr bool isFull() const noexcept;
 
   // Pushers
-  void pushHead(T el);    // O(log2(n))
-  void pushBack(T el);    // O(log2(n))
-  void pushAt(int index, T el);    // O(log2(n))
+  void pushHead(T el);    // O(n)
+  void pushBack(T el);    // O(n)
+  void pushAt(int index, T el);    // O(n)
 
   // Popers
   const T popHead();    // O(1)
@@ -82,13 +88,32 @@ public:
   void erase(int index) noexcept;    // O(n)
 
   // Get Without Removing       
-  T& back() const;    // O(1)
-  T& head() const;    // O(1)
-  T& at(int index) const;    // O(1)
+  T& back();    // O(1)
+  const T& back() const;
+  T& head();    // O(1)
+  const T& head() const;
+  T& at(int index);    // O(1)
+  const T& at(int index) const;
 
   // operators
-};
-};
+  T& operator[](int index);
+  Vector& operator=(const Vector &second);
+  Vector& operator=(Vector &&second);
+  operator std::vector<T>(); 
+  friend std::ostream& operator<<(std::ostream& os, const Vector<T>& v);
+  
+  // compare
+  bool operator==(const Vector &second);
+  bool operator!=(const Vector &second);
+  bool operator>(const Vector &second);
+  bool operator>=(const Vector &second);
+  bool operator<(const Vector &second);
+  bool operator<=(const Vector &second);
 
+  // save/load
+  const std::string& serialize();
+  void deserialize();
+};
+};
 
 #include "vector.hpp"
