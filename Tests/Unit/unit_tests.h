@@ -1,7 +1,6 @@
 #pragma once
 #include "Essentials/Vector/vector.h"
 
-
 namespace UnitTests {
 void AllTests() {
   int total=0, passed=0;

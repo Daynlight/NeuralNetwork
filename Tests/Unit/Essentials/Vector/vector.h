@@ -1,4 +1,5 @@
 #pragma once
+#include "conf.h"
 #include <fmt/core.h>
 #include <fmt/color.h>
 #include <string>
@@ -22,37 +23,44 @@ void add(const int &el, int &ud) { ud += el; }
 void multiply(int &el) { el *= 2; }
 
 
-
 // ========================= ASSERT =========================
 bool ASSERT_EQ_INT(std::string name, int expected, int actual) noexcept {
+#ifdef LoudTests
   if(expected == actual) 
-    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={:d} got={:d}\n", name, expected, actual);
-  else    
+    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={:d} got={:d}\n", name, expected, actual);  
+#endif
+  if(expected != actual)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={:d} got={:d}\n", name, expected, actual); 
   return expected == actual;
 };
 
 bool ASSERT_EQ_SIZE(std::string name, size_t expected, size_t actual) noexcept {
+#ifdef LoudTests
   if(expected == actual) 
-    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={}\n", name, expected, actual);
-  else    
+    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={}\n", name, expected, actual);  
+#endif
+  if(expected != actual)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={}\n", name, expected, actual);
   return expected == actual;
 };
 
 bool ASSERT_EQ_FLOAT(std::string name, float expected, float actual, float eps) noexcept {
   float diff = std::abs(expected - actual);
+#ifdef LoudTests
   if(diff < eps) 
-    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={} (eps={})\n", name, expected, actual, eps);
-  else    
+    fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={} (eps={})\n", name, expected, actual, eps); 
+#endif   
+  if(diff >= eps)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={} (eps={})\n", name, expected, actual, eps);
   return diff < eps;
 };
 
 bool ASSERT_TRUE(std::string name, bool cond) noexcept {
+#ifdef LoudTests
   if(cond) 
     fmt::print(fg(fmt::color::green), "[PASS] {:s}\n", name);
-  else    
+#endif
+  if(!cond)     
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s}\n", name);
   return cond;
 };
@@ -201,9 +209,12 @@ bool test_vector_pop_at() {
 // ===== ERASE & CLEAR =====
 bool test_vector_erase() {
   Essentials::Vector<int> v;
-  v.pushHead(1); v.pushHead(2); v.pushHead(3);
+  v.setCapacity(10);
+  v.pushHead(231); v.pushHead(2); v.pushHead(3);
+  v.pushBack(1); v.pushBack(2);
   v.erase(1);
-  ASSERT_EQ_INT("erase shifts", 3, v.at(1));
+  ASSERT_EQ_INT("erase at 1", 231, v.at(1));
+  ASSERT_EQ_INT("pop back size", 4, v.getSize());
   return true;
 }
 
@@ -313,9 +324,9 @@ bool Vector() {
 
 #undef RUN
   if(passed == total) 
-    fmt::print(fg(fmt::color::blue_violet), "\n=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
+    fmt::print(fg(fmt::color::blue_violet), "=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
   else 
-    fmt::print(fg(fmt::color::dark_orange), "\n=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
+    fmt::print(fg(fmt::color::dark_orange), "=== Essentials::Vector Test Score: {:d}\\{:d} passed ===\n", passed, total);
   return passed == total;
 };
 };
