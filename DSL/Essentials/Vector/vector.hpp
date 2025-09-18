@@ -26,6 +26,11 @@
 template<typename T>
 Essentials::Vector<T>::Vector() noexcept {};
 
+template <typename T>
+inline Essentials::Vector<T>::Vector(unsigned int capacity) noexcept {
+  setCapacity(capacity);
+};
+
 template<typename T>
 Essentials::Vector<T>::~Vector() noexcept {
   delete[] data;

@@ -76,10 +76,13 @@ bool ASSERT_TRUE(std::string name, bool cond) noexcept {
 
 // ===== INIT & DESTROY =====
 void test_vector_init(unsigned int* total, unsigned int* passed) {
-  *total += 2;
+  *total += 4;
   Essentials::Vector<int> v;
+  Essentials::Vector<int> v2(20);
   if(ASSERT_EQ_SIZE("init size", 0, v.getSize()))*passed += 1;
   if(ASSERT_TRUE("init capacity>=1", v.getCapacity() >= 1))*passed += 1;
+  if(ASSERT_EQ_SIZE("init with capacity=20 size", 0, v2.getSize()))*passed += 1;
+  if(ASSERT_TRUE("init with capacity=20 capacity>=20", v2.getCapacity() >= 20))*passed += 1;
 }
 
 // ===== RESIZE & CAPACITY =====
