@@ -6,10 +6,6 @@
 #include "dsl.h"
 
 namespace UnitTests {
-// =============== Counter ===============
-static unsigned int total = 0;
-static unsigned int passed = 0;
-
 // =============== Helping Struct ===============
 struct Point { int x, y; };
 template<typename T>
@@ -28,30 +24,27 @@ void multiply(int &el) { el *= 2; }
 
 
 // ========================= ASSERT =========================
-void ASSERT_EQ_INT(std::string name, int expected, int actual) noexcept {
-  total++;
+bool ASSERT_EQ_INT(std::string name, int expected, int actual) noexcept {
 #ifdef LoudTests
   if(expected == actual) 
     fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={:d} got={:d}\n", name, expected, actual);  
 #endif
   if(expected != actual)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={:d} got={:d}\n", name, expected, actual); 
-  if(expected == actual) passed++;
+  return expected == actual;
 };
 
-void ASSERT_EQ_SIZE(std::string name, size_t expected, size_t actual) noexcept {
-  total++;
+bool ASSERT_EQ_SIZE(std::string name, size_t expected, size_t actual) noexcept {
 #ifdef LoudTests
   if(expected == actual) 
     fmt::print(fg(fmt::color::green), "[PASS] {:s} exp={} got={}\n", name, expected, actual);  
 #endif
   if(expected != actual)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={}\n", name, expected, actual);
-  if(expected == actual) passed++;
+  return expected == actual;
 };
 
-void ASSERT_EQ_FLOAT(std::string name, float expected, float actual, float eps) noexcept {
-  total++;
+bool ASSERT_EQ_FLOAT(std::string name, float expected, float actual, float eps) noexcept {
   float diff = std::abs(expected - actual);
 #ifdef LoudTests
   if(diff < eps) 
@@ -59,18 +52,17 @@ void ASSERT_EQ_FLOAT(std::string name, float expected, float actual, float eps) 
 #endif   
   if(diff >= eps)
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s} exp={} got={} (eps={})\n", name, expected, actual, eps);
-  if(diff < eps) passed++;
+  return diff < eps;
 };
 
-void ASSERT_TRUE(std::string name, bool cond) noexcept {
-  total++;
+bool ASSERT_TRUE(std::string name, bool cond) noexcept {
 #ifdef LoudTests
   if(cond) 
     fmt::print(fg(fmt::color::green), "[PASS] {:s}\n", name);
 #endif
   if(!cond)     
     fmt::print(fg(fmt::color::red),   "[FAIL] {:s}\n", name);
-  if(cond) passed++;
+  return cond;
 };
 
 
@@ -83,69 +75,70 @@ void ASSERT_TRUE(std::string name, bool cond) noexcept {
 //=========================================================
 
 // ===== INIT & DESTROY =====
-bool test_vector_init() {
+void test_vector_init(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
-  ASSERT_EQ_SIZE("init size", 0, v.getSize());
-  ASSERT_TRUE("init capacity>=1", v.getCapacity() >= 1);
-  return true;
+  if(ASSERT_EQ_SIZE("init size", 0, v.getSize()))*passed += 1;
+  if(ASSERT_TRUE("init capacity>=1", v.getCapacity() >= 1))*passed += 1;
 }
 
 // ===== RESIZE & CAPACITY =====
-bool test_vector_resize() {
+void test_vector_resize(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
   unsigned initial = v.getCapacity();
   v.resize();
-  ASSERT_TRUE("resize doubles capacity", v.getCapacity() >= initial*2);
+  if(ASSERT_TRUE("resize doubles capacity", v.getCapacity() >= initial*2))*passed += 1;
   v.resize();
-  ASSERT_TRUE("resize quadruple capacity", v.getCapacity() >= initial*4);
-  return true;
+  if(ASSERT_TRUE("resize quadruple capacity", v.getCapacity() >= initial*4))*passed += 1;
 }
 
-bool test_vector_reorder() {
+void test_vector_reorder(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   TestVector<int> v;
   v.reserve(5);
   v.pushHead(21);
   v.pushHead(24);
   v.pushBack(21);
   unsigned int back = v.getBackIndex();
-  ASSERT_TRUE("reorder check back before reorder", back != 0);
+  if(ASSERT_TRUE("reorder check back before reorder", back != 0))*passed += 1;
   v.reorder();
   back = v.getBackIndex();
-  ASSERT_TRUE("reorder check back after reorder", back == 0);
-  return true;
+  if(ASSERT_TRUE("reorder check back after reorder", back == 0))*passed += 1;
 }
 
-bool test_vector_reserve() {
+void test_vector_reserve(unsigned int* total, unsigned int* passed) {
+  *total += 1;
   Essentials::Vector<int> v;
   unsigned old = v.getCapacity();
   v.reserve(10);
-  ASSERT_TRUE("reserve increases capacity", v.getCapacity()>=old+10);
-  return true;
+  if(ASSERT_TRUE("reserve increases capacity", v.getCapacity()>=old+10))*passed += 1;
 }
 
-bool test_vector_set_capacity() {
+void test_vector_set_capacity(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
   v.setCapacity(20);
-  ASSERT_EQ_SIZE("set_capacity=20", 20, v.getCapacity());
+  if(ASSERT_EQ_SIZE("set_capacity=20", 20, v.getCapacity()))*passed += 1;
   v.setCapacity(2);
-  ASSERT_EQ_SIZE("set_capacity=2", 2, v.getCapacity());
-  return true;
+  if(ASSERT_EQ_SIZE("set_capacity=2", 2, v.getCapacity()))*passed += 1;
 }
 
-bool test_vector_shrink() {
+void test_vector_shrink(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
   v.setCapacity(60);
   v.pushHead(1);
   v.pushHead(1);
   v.pushHead(1);
-  ASSERT_EQ_SIZE("shrink check before shrink", 60, v.getCapacity());
+  if(ASSERT_EQ_SIZE("shrink check before shrink", 60, v.getCapacity()))*passed += 1;
   v.shrink();
-  ASSERT_EQ_SIZE("shrink size==capacity", v.getSize(), v.getCapacity());
-  return true;
+  if(ASSERT_EQ_SIZE("shrink size==capacity", v.getSize(), v.getCapacity()))*passed += 1;
 }
 
 // ===== PUSH METHODS =====
-bool test_vector_push_head() {
+void test_vector_push_head(unsigned int* total, unsigned int* passed) {
+  *total += 1;
   Essentials::Vector<int> v;
   v.reserve(10);
   v.pushHead(12);
@@ -153,11 +146,11 @@ bool test_vector_push_head() {
   v.pushHead(54);
   v.pushHead(11);
   v.pushHead(77);
-  ASSERT_EQ_INT("push head value", 77, v.head());
-  return true;
+  if(ASSERT_EQ_INT("push head value", 77, v.head()))*passed += 1;
 }
 
-bool test_vector_push_back() {
+void test_vector_push_back(unsigned int* total, unsigned int* passed) {
+  *total += 1;
   Essentials::Vector<int> v;
   v.pushBack(1);
   v.pushBack(2);
@@ -165,170 +158,171 @@ bool test_vector_push_back() {
   v.pushBack(99);
   v.pushBack(32);
   v.pushBack(12454);
-  ASSERT_EQ_INT("push back value", 12454, v.back());
-  return true;
+  if(ASSERT_EQ_INT("push back value", 12454, v.back()))*passed += 1;
 }
 
-bool test_vector_push_at() {
+void test_vector_push_at(unsigned int* total, unsigned int* passed) {
+  *total += 4;
   Essentials::Vector<int> v;
   v.setCapacity(20);
   v.pushHead(1); v.pushHead(2); v.pushHead(3); v.pushHead(5); v.pushHead(3);
   v.pushBack(12); v.pushBack(123);
   v.pushAt(1, 77);
-  ASSERT_EQ_INT("push at 1", 77, v.at(1));
+  if(ASSERT_EQ_INT("push at 1", 77, v.at(1)))*passed += 1;
   v.pushAt(3, 12);
-  ASSERT_EQ_INT("push at 3", 12, v.at(3));
-  ASSERT_EQ_INT("push at back", 123, v.back());
-  ASSERT_EQ_INT("push at head", 3, v.head());
-  return true;
+  if(ASSERT_EQ_INT("push at 3", 12, v.at(3)))*passed += 1;
+  if(ASSERT_EQ_INT("push at back", 123, v.back()))*passed += 1;
+  if(ASSERT_EQ_INT("push at head", 3, v.head()))*passed += 1;
 }
 
 // ===== POP METHODS =====
-bool test_vector_pop_head() {
+void test_vector_pop_head(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
   v.pushHead(5); v.pushHead(6);
-  ASSERT_EQ_INT("pop head", 6, v.popHead());
-  ASSERT_EQ_INT("pop head size", 1, v.getSize());
-  return true;
+  if(ASSERT_EQ_INT("pop head", 6, v.popHead()))*passed += 1;
+  if(ASSERT_EQ_INT("pop head size", 1, v.getSize()))*passed += 1;
 }
 
-bool test_vector_pop_back() {
+void test_vector_pop_back(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
   v.pushHead(5); v.pushHead(6);
-  ASSERT_EQ_INT("pop front", 5, v.popBack());
-  ASSERT_EQ_INT("pop back size", 1, v.getSize());
-  return true;
+  if(ASSERT_EQ_INT("pop front", 5, v.popBack()))*passed += 1;
+  if(ASSERT_EQ_INT("pop back size", 1, v.getSize()))*passed += 1;
 }
 
-bool test_vector_pop_at() {
+void test_vector_pop_at(unsigned int* total, unsigned int* passed) {
+  *total += 6;
   Essentials::Vector<int> v;
   v.setCapacity(20);
   v.pushHead(1); v.pushHead(2); v.pushHead(3); v.pushHead(5);
   v.pushBack(12); v.pushBack(54);
-  ASSERT_EQ_INT("pop_at 1", 12, v.popAt(1));
-  ASSERT_EQ_INT("pop back size", 5, v.getSize());
-  ASSERT_EQ_INT("pop_at 2", 2, v.popAt(2));
-  ASSERT_EQ_INT("pop back size", 4, v.getSize());
-  ASSERT_EQ_INT("pop at back", 54, v.back());
-  ASSERT_EQ_INT("pop at head", 5, v.head());
-  return true;
+  if(ASSERT_EQ_INT("pop_at 1", 12, v.popAt(1)))*passed += 1;
+  if(ASSERT_EQ_INT("pop back size", 5, v.getSize()))*passed += 1;
+  if(ASSERT_EQ_INT("pop_at 2", 2, v.popAt(2)))*passed += 1;
+  if(ASSERT_EQ_INT("pop back size", 4, v.getSize()))*passed += 1;
+  if(ASSERT_EQ_INT("pop at back", 54, v.back()))*passed += 1;
+  if(ASSERT_EQ_INT("pop at head", 5, v.head()))*passed += 1;
 }
 
 // ===== ERASE & CLEAR =====
-bool test_vector_erase() {
+void test_vector_erase(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
   v.setCapacity(10);
   v.pushHead(231); v.pushHead(2); v.pushHead(3);
   v.pushBack(1); v.pushBack(2);
   v.erase(1);
-  ASSERT_EQ_INT("erase at 1", 231, v.at(1));
-  ASSERT_EQ_INT("pop back size", 4, v.getSize());
-  return true;
+  if(ASSERT_EQ_INT("erase at 1", 231, v.at(1)))*passed += 1;
+  if(ASSERT_EQ_INT("pop back size", 4, v.getSize()))*passed += 1;
 }
 
-bool test_vector_clear() {
+void test_vector_clear(unsigned int* total, unsigned int* passed) {
+  *total += 1;
   Essentials::Vector<int> v;
   v.pushHead(1); v.pushHead(5); v.pushHead(3);
   v.pushBack(1); v.pushBack(2);
   v.clear();
-  ASSERT_EQ_SIZE("clear resets size", 0, v.getSize());
-  return true;
+  if(ASSERT_EQ_SIZE("clear resets size", 0, v.getSize()))*passed += 1;
 }
 
 // ===== Head / Back / AT =====
-bool test_vector_head_back_at() {
+void test_vector_head_back_at(unsigned int* total, unsigned int* passed) {
+  *total += 3;
   Essentials::Vector<int> v;
   v.setCapacity(10);
   v.pushHead(12); v.pushHead(45); v.pushHead(56);
   v.pushBack(32); v.pushBack(213); v.pushBack(512);
-  ASSERT_EQ_INT("head", 56, v.head());
-  ASSERT_EQ_INT("back", 512, v.back());
-  ASSERT_EQ_INT("at[1]", 213, v.at(1));
-  return true;
+  if(ASSERT_EQ_INT("head", 56, v.head()))*passed += 1;
+  if(ASSERT_EQ_INT("back", 512, v.back()))*passed += 1;
+  if(ASSERT_EQ_INT("at[1]", 213, v.at(1)))*passed += 1;
 }
 
 // ===== GETTERS =====
-bool test_vector_get_size() {
+void test_vector_get_size(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
-  ASSERT_EQ_SIZE("get_size empty",0,v.getSize());
+  if(ASSERT_EQ_SIZE("get_size empty",0,v.getSize()))*passed += 1;
   v.pushHead(5);
-  ASSERT_EQ_SIZE("get_size=1",1,v.getSize());
-  return true;
+  if(ASSERT_EQ_SIZE("get_size=1",1,v.getSize()))*passed += 1;
 }
 
-bool test_vector_get_capacity() {
+void test_vector_get_capacity(unsigned int* total, unsigned int* passed) {
+  *total += 1;
   Essentials::Vector<int> v;
-  ASSERT_TRUE("get_capacity>=1",v.getCapacity()>=1);
-  return true;
+  if(ASSERT_TRUE("get_capacity>=1",v.getCapacity()>=1))*passed += 1;
 }
 
-bool test_vector_is_empty() {
+void test_vector_is_empty(unsigned int* total, unsigned int* passed) {
+  *total += 2;
   Essentials::Vector<int> v;
-  ASSERT_TRUE("is_empty true",v.isEmpty());
+  if(ASSERT_TRUE("is_empty true",v.isEmpty()))*passed += 1;
   v.pushHead(3);
-  ASSERT_TRUE("is_empty false",!v.isEmpty());
-  return true;
+  if(ASSERT_TRUE("is_empty false",!v.isEmpty()))*passed += 1;
 }
 
 // ===== MIXED PUSH / POP =====
-bool test_vector_mixed_push_pop() {
+void test_vector_mixed_push_pop(unsigned int* total, unsigned int* passed) {
+  *total += 4;
   Essentials::Vector<int> v;
   v.pushHead(1); v.pushBack(2); v.pushHead(3); v.pushBack(4);
-  ASSERT_EQ_INT("mixed back",4,v.back());
-  ASSERT_EQ_INT("mixed head",3,v.head());
-  ASSERT_EQ_INT("pop Back",4,v.popBack());
-  ASSERT_EQ_INT("pop Head",3,v.popHead());
-  return true;
+  if(ASSERT_EQ_INT("mixed back",4,v.back()))*passed += 1;
+  if(ASSERT_EQ_INT("mixed head",3,v.head()))*passed += 1;
+  if(ASSERT_EQ_INT("pop Back",4,v.popBack()))*passed += 1;
+  if(ASSERT_EQ_INT("pop Head",3,v.popHead()))*passed += 1;
 }
 
 // ===== LARGE DATASET TESTS =====
-bool test_vector_large_push() {
+void test_vector_large_push_head(unsigned int* total, unsigned int* passed) {
+  *total += 3;
   Essentials::Vector<int> v;
   int N=1000;
   for(int i=0;i<N;i++) v.pushHead(i);
-  ASSERT_EQ_SIZE("large push size",N,v.getSize());
-  ASSERT_EQ_INT("large push head",N-1,v.head());
-  ASSERT_EQ_INT("large push back",0,v.back());
-  return true;
+  if(ASSERT_EQ_SIZE("large push size",N,v.getSize()))*passed += 1;
+  if(ASSERT_EQ_INT("large push head",N-1,v.head()))*passed += 1;
+  if(ASSERT_EQ_INT("large push back",0,v.back()))*passed += 1;
 }
 
-bool test_vector_large_push_front() {
+void test_vector_large_push_back(unsigned int* total, unsigned int* passed) {
+  *total += 3;
   Essentials::Vector<int> v;
   int N=1000;
   for(int i=0;i<N;i++) v.pushBack(i);
-  ASSERT_EQ_SIZE("large push head size",N,v.getSize());
-  ASSERT_EQ_INT("large push head back",N-1,v. back());
-  ASSERT_EQ_INT("large push head head",0,v.head());
-  return true;
+  if(ASSERT_EQ_SIZE("large push head size",N,v.getSize()))*passed += 1;
+  if(ASSERT_EQ_INT("large push head back",N-1,v. back()))*passed += 1;
+  if(ASSERT_EQ_INT("large push head head",0,v.head()))*passed += 1;
 }
 
 // ===== RUN ALL =====
 bool Vector() {
-  test_vector_init();
+  unsigned int total = 0;
+  unsigned int passed = 0;
+  test_vector_init(&total, &passed);
 
-  test_vector_resize(); 
-  test_vector_reorder(); 
-  test_vector_reserve();
-  test_vector_set_capacity();
-  test_vector_shrink();
+  test_vector_resize(&total, &passed); 
+  test_vector_reorder(&total, &passed); 
+  test_vector_reserve(&total, &passed);
+  test_vector_set_capacity(&total, &passed);
+  test_vector_shrink(&total, &passed);
 
-  test_vector_push_head();
-  test_vector_push_back();
-  test_vector_push_at();
-  test_vector_pop_head();
-  test_vector_pop_back();
-  test_vector_pop_at();
+  test_vector_push_head(&total, &passed);
+  test_vector_push_back(&total, &passed);
+  test_vector_push_at(&total, &passed);
+  test_vector_pop_head(&total, &passed);
+  test_vector_pop_back(&total, &passed);
+  test_vector_pop_at(&total, &passed);
 
-  test_vector_erase();
-  test_vector_clear();
+  test_vector_erase(&total, &passed);
+  test_vector_clear(&total, &passed);
 
-  test_vector_head_back_at();
-  test_vector_get_size();
-  test_vector_get_capacity();
-  test_vector_is_empty();
-  test_vector_mixed_push_pop();
-  test_vector_large_push();
-  test_vector_large_push_front();
+  test_vector_head_back_at(&total, &passed);
+  test_vector_get_size(&total, &passed);
+  test_vector_get_capacity(&total, &passed);
+  test_vector_is_empty(&total, &passed);
+  test_vector_mixed_push_pop(&total, &passed);
+  test_vector_large_push_head(&total, &passed);
+  test_vector_large_push_back(&total, &passed);
 
 
   if(passed == total) 
