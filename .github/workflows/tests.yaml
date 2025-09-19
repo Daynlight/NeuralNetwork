@@ -19,11 +19,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true   # fetch fmt and any other submodules
 
       - name: Initialize submodules
         run: git submodule update --init --recursive
 
       - name: Configure CMake
+        shell: bash
         run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=${{ matrix.config }}
@@ -32,6 +35,7 @@ jobs:
           fi
 
       - name: Build Tests
+        shell: bash
         run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             cmake --build build --config ${{ matrix.config }} --target Tests
@@ -40,6 +44,7 @@ jobs:
           fi
 
       - name: Run Tests
+        shell: bash
         working-directory: build
         run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
