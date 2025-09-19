@@ -2,7 +2,7 @@
 #include "Tests/conf.h"
 
 namespace IntegrationTests{
-void AllTests() {
+bool AllTests() {
   std::pair<unsigned int, unsigned int> result(0, 0);
 
 
@@ -10,5 +10,6 @@ void AllTests() {
     fmt::print(fg(fmt::color::sky_blue), "=== IntegrationTest Score: {:d}\\{:d} passed ===\n\n", result.first, result.second);
   else 
     fmt::print(fg(fmt::color::dark_orange), "=== IntegrationTest Score: {:d}\\{:d} passed ===\n\n", result.first, result.second);
+  return result.first == result.second;
 };
 };
