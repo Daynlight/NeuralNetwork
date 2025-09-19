@@ -11,7 +11,7 @@ jobs:
   build-and-test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos]
         config: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
@@ -24,6 +24,7 @@ jobs:
 
       - name: Set up MinGW
         uses: egor-tensin/setup-mingw@v2
+        run: bash
         with:
           platform: x64
 
