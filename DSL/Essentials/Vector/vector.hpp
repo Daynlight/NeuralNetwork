@@ -24,11 +24,26 @@
 #include "vector.h"
 
 template<typename T>
-Essentials::Vector<T>::Vector() noexcept {};
+Essentials::Vector<T>::Vector() noexcept 
+  :data(new T[capacity]) {};
 
 template <typename T>
 inline Essentials::Vector<T>::Vector(unsigned int capacity) noexcept {
   setCapacity(capacity);
+};
+
+template <typename T>
+inline Essentials::Vector<T>::Vector(const Vector &other) noexcept
+  :capacity(other.capacity), size(other.size), 
+  _head(other._head), _back(other._back), data(new T[other.capacity]) {
+  if(size) {
+    unsigned int first_chunk = std::min(size, capacity - _back);
+    unsigned int second_chunk = size - first_chunk;
+
+    std::copy(other.data + _back, other.data + _back + first_chunk, data);
+    if (second_chunk)
+        std::copy(other.data, other.data + second_chunk, data + first_chunk);
+  };
 };
 
 template<typename T>

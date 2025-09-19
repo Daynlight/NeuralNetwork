@@ -76,13 +76,26 @@ bool ASSERT_TRUE(std::string name, bool cond) noexcept {
 
 // ===== INIT & DESTROY =====
 void test_vector_init(unsigned int* total, unsigned int* passed) {
-  *total += 4;
+  *total += 10;
   Essentials::Vector<int> v;
   Essentials::Vector<int> v2(20);
+  v2.pushHead(2);
+  v2.pushHead(3);
+  Essentials::Vector<int> v3(v2);
+  
   if(ASSERT_EQ_SIZE("init size", 0, v.getSize()))*passed += 1;
   if(ASSERT_TRUE("init capacity>=1", v.getCapacity() >= 1))*passed += 1;
-  if(ASSERT_EQ_SIZE("init with capacity=20 size", 0, v2.getSize()))*passed += 1;
+  
+  if(ASSERT_EQ_SIZE("init with capacity=20 size", 2, v2.getSize()))*passed += 1;
   if(ASSERT_TRUE("init with capacity=20 capacity>=20", v2.getCapacity() >= 20))*passed += 1;
+  
+  if(ASSERT_EQ_SIZE("init copy size", 2, v2.getSize()))*passed += 1;
+  if(ASSERT_TRUE("init copy capacity>=20", v2.getCapacity() >= 20))*passed += 1;
+  if(ASSERT_EQ_INT("init copy at 0", 2, v3.at(0)))*passed += 1;
+  if(ASSERT_EQ_INT("init copy at 1", 3, v3.at(1)))*passed += 1;
+  v3.pushHead(4);
+  if(ASSERT_EQ_SIZE("init copy edit v3, v2 size", 2, v2.getSize()))*passed += 1;
+  if(ASSERT_EQ_SIZE("init copy edit v3, v3 size", 3, v3.getSize()))*passed += 1;
 }
 
 // ===== RESIZE & CAPACITY =====

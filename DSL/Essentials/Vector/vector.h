@@ -32,6 +32,7 @@
 #include <stdexcept>
 #include <string.h>
 #include <vector>
+#include <ostream>
 #include "Math/ModuloZ/ModuloZ.h"
 
 //namespace Essential
@@ -40,7 +41,7 @@ namespace Essentials {
 template<typename T>
 class Vector {
 private:
-  T* data = new T[2];
+  T* data = nullptr;
   unsigned int capacity = 2;
   unsigned int size = 0;
 
