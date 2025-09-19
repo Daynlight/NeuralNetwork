@@ -57,7 +57,7 @@ public:
   // Constructor/Destructor
   Vector() noexcept;    // O(1)
   Vector(unsigned int capacity) noexcept;    // O(1)
-  Vector(const Vector& other) noexcept;
+  Vector(const Vector& other) noexcept;   // O(n)
   Vector(Vector&& other) noexcept;
   ~Vector() noexcept;    // O(1)
 
