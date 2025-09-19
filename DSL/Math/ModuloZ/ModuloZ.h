@@ -46,47 +46,47 @@ public:
   constexpr ModuloZ(unsigned int modulo, int number);
   
 // conversion
-  operator unsigned int() const;
+  operator int() const;
 
 // basic operations
   constexpr ModuloZ operator=(const ModuloZ &second) noexcept;
-  constexpr ModuloZ operator=(const unsigned int &second) noexcept;
+  constexpr ModuloZ operator=(const int &second) noexcept;
   constexpr ModuloZ operator+(const ModuloZ &second) noexcept;
-  constexpr ModuloZ operator+(const unsigned int &second) noexcept;
+  constexpr ModuloZ operator+(const int &second) noexcept;
   constexpr ModuloZ operator-(const ModuloZ &second) noexcept;
-  constexpr ModuloZ operator-(const unsigned int &second) noexcept;
+  constexpr ModuloZ operator-(const int &second) noexcept;
   constexpr ModuloZ operator*(const ModuloZ &second) noexcept;
-  constexpr ModuloZ operator*(const unsigned int &second) noexcept;
+  constexpr ModuloZ operator*(const int &second) noexcept;
   constexpr ModuloZ operator/(const ModuloZ &second);
-  constexpr ModuloZ operator/(const unsigned int &second);
+  constexpr ModuloZ operator/(const int &second);
   constexpr ModuloZ operator%(const ModuloZ &second);
-  constexpr ModuloZ operator%(const unsigned int &second);
+  constexpr ModuloZ operator%(const int &second);
 
 // basic operations with =
   constexpr void operator+=(const ModuloZ &second) noexcept;
-  constexpr void operator+=(const unsigned int &second) noexcept;
+  constexpr void operator+=(const int &second) noexcept;
   constexpr void operator-=(const ModuloZ &second) noexcept;
-  constexpr void operator-=(const unsigned int &second) noexcept;
+  constexpr void operator-=(const int &second) noexcept;
   constexpr void operator*=(const ModuloZ &second) noexcept;
-  constexpr void operator*=(const unsigned int &second) noexcept;
+  constexpr void operator*=(const int &second) noexcept;
   constexpr void operator/=(const ModuloZ &second);
-  constexpr void operator/=(const unsigned int &second);
+  constexpr void operator/=(const int &second);
   constexpr void operator%=(const ModuloZ &second);
-  constexpr void operator%=(const unsigned int &second);
+  constexpr void operator%=(const int &second);
   
 // logical operation
   constexpr bool operator==(const ModuloZ &second) const noexcept;
-  constexpr bool operator==(const unsigned int &second) const noexcept;
+  constexpr bool operator==(const int &second) const noexcept;
   constexpr bool operator!=(const ModuloZ &second) const noexcept;
-  constexpr bool operator!=(const unsigned int &second) const noexcept;
+  constexpr bool operator!=(const int &second) const noexcept;
   constexpr bool operator>(const ModuloZ &second) const noexcept;
-  constexpr bool operator>(const unsigned int &second) const noexcept;
+  constexpr bool operator>(const int &second) const noexcept;
   constexpr bool operator<(const ModuloZ &second) const noexcept;
-  constexpr bool operator<(const unsigned int &second) const noexcept;
+  constexpr bool operator<(const int &second) const noexcept;
   constexpr bool operator>=(const ModuloZ &second) const noexcept;
-  constexpr bool operator>=(const unsigned int &second) const noexcept;
+  constexpr bool operator>=(const int &second) const noexcept;
   constexpr bool operator<=(const ModuloZ &second) const noexcept;
-  constexpr bool operator<=(const unsigned int &second) const noexcept;
+  constexpr bool operator<=(const int &second) const noexcept;
 };
 };
 
