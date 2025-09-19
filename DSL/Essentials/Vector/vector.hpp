@@ -46,6 +46,17 @@ inline Essentials::Vector<T>::Vector(const Vector &other) noexcept
   };
 };
 
+template <typename T>
+inline Essentials::Vector<T>::Vector(Vector &&other) noexcept 
+  :capacity(other.capacity), size(other.size), 
+  _head(other._head), _back(other._back), data(other.data){
+  other.data = new T[2];
+  other._head = Math::ModuloZ(2, 1);
+  other._back = Math::ModuloZ(2, 0);
+  other.size = 0;
+  other.capacity = 2;
+};
+
 template<typename T>
 Essentials::Vector<T>::~Vector() noexcept {
   delete[] data;

@@ -76,7 +76,7 @@ bool ASSERT_TRUE(std::string name, bool cond) noexcept {
 
 // ===== INIT & DESTROY =====
 void test_vector_init(unsigned int* total, unsigned int* passed) {
-  *total += 10;
+  *total += 12;
   Essentials::Vector<int> v;
   Essentials::Vector<int> v2(20);
   v2.pushHead(2);
@@ -96,6 +96,10 @@ void test_vector_init(unsigned int* total, unsigned int* passed) {
   v3.pushHead(4);
   if(ASSERT_EQ_SIZE("copy constructor edit copy, original size", 2, v2.getSize()))*passed += 1;
   if(ASSERT_EQ_SIZE("copy constructor edit copy, copy size", 3, v3.getSize()))*passed += 1;
+
+  Essentials::Vector<int> v4(std::move(v2));
+  if(ASSERT_EQ_SIZE("move constructor, original size", 0, v2.getSize()))*passed += 1;
+  if(ASSERT_EQ_SIZE("move constructor, moved size", 2, v4.getSize()))*passed += 1;
 }
 
 // ===== RESIZE & CAPACITY =====
