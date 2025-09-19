@@ -28,6 +28,8 @@ constexpr void Math::ModuloZ::bound() noexcept {
   number %= modulo;
 };
 
+constexpr Math::ModuloZ::ModuloZ() :number(0), modulo(1) {};
+
 constexpr Math::ModuloZ::ModuloZ(unsigned int modulo) {
   if(!modulo)
     throw std::logic_error("Can't modulo by 0");

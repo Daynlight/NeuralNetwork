@@ -41,6 +41,7 @@ private:
   constexpr void bound() noexcept;
 
 public:
+  constexpr ModuloZ();
   constexpr ModuloZ(unsigned int modulo);
   constexpr ModuloZ(unsigned int modulo, int number);
   
