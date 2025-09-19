@@ -83,19 +83,19 @@ void test_vector_init(unsigned int* total, unsigned int* passed) {
   v2.pushHead(3);
   Essentials::Vector<int> v3(v2);
   
-  if(ASSERT_EQ_SIZE("init size", 0, v.getSize()))*passed += 1;
-  if(ASSERT_TRUE("init capacity>=1", v.getCapacity() >= 1))*passed += 1;
+  if(ASSERT_EQ_SIZE("default constructor, size", 0, v.getSize()))*passed += 1;
+  if(ASSERT_TRUE("default constructor, capacity>=1", v.getCapacity() >= 1))*passed += 1;
   
-  if(ASSERT_EQ_SIZE("init with capacity=20 size", 2, v2.getSize()))*passed += 1;
-  if(ASSERT_TRUE("init with capacity=20 capacity>=20", v2.getCapacity() >= 20))*passed += 1;
+  if(ASSERT_EQ_SIZE("constructor with capacity, size", 2, v2.getSize()))*passed += 1;
+  if(ASSERT_TRUE("constructor with capacity, capacity>=20", v2.getCapacity() >= 20))*passed += 1;
   
-  if(ASSERT_EQ_SIZE("init copy size", 2, v2.getSize()))*passed += 1;
-  if(ASSERT_TRUE("init copy capacity>=20", v2.getCapacity() >= 20))*passed += 1;
-  if(ASSERT_EQ_INT("init copy at 0", 2, v3.at(0)))*passed += 1;
-  if(ASSERT_EQ_INT("init copy at 1", 3, v3.at(1)))*passed += 1;
+  if(ASSERT_EQ_SIZE("copy constructor, copy size", 2, v2.getSize()))*passed += 1;
+  if(ASSERT_TRUE("copy constructor, capacity>=20", v2.getCapacity() >= 20))*passed += 1;
+  if(ASSERT_EQ_INT("copy constructor, at 0", 2, v3.at(0)))*passed += 1;
+  if(ASSERT_EQ_INT("copy constructor, at 1", 3, v3.at(1)))*passed += 1;
   v3.pushHead(4);
-  if(ASSERT_EQ_SIZE("init copy edit v3, v2 size", 2, v2.getSize()))*passed += 1;
-  if(ASSERT_EQ_SIZE("init copy edit v3, v3 size", 3, v3.getSize()))*passed += 1;
+  if(ASSERT_EQ_SIZE("copy constructor edit copy, original size", 2, v2.getSize()))*passed += 1;
+  if(ASSERT_EQ_SIZE("copy constructor edit copy, copy size", 3, v3.getSize()))*passed += 1;
 }
 
 // ===== RESIZE & CAPACITY =====
