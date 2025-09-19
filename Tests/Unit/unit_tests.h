@@ -3,7 +3,7 @@
 #include "Essentials/Vector/vector.h"
 
 namespace UnitTests {
-void AllTests() {
+bool AllTests() {
   std::pair<unsigned int, unsigned int> result(0, 0);
 
   RUN(&result, [](){ return Vector(); });
@@ -12,5 +12,6 @@ void AllTests() {
     fmt::print(fg(fmt::color::sky_blue), "=== UnitTest Score: {:d}\\{:d} passed ===\n\n", result.first, result.second);
   else 
     fmt::print(fg(fmt::color::dark_orange), "=== UnitTest Score: {:d}\\{:d} passed ===\n\n", result.first, result.second);
+  return result.first == result.second;
 };
 };
