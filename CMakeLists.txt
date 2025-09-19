@@ -50,7 +50,8 @@ target_include_directories(Tests PRIVATE ${headers})
 target_link_libraries(Tests PRIVATE DSL)
 target_link_libraries(Tests PRIVATE fmt)
 
-add_test(NAME MyTests COMMAND Tests)
+enable_testing()
+add_test(NAME Tests COMMAND Tests)
 
 ############################## Set for VS ##############################
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Main)

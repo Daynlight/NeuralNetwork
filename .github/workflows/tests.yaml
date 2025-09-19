@@ -1,0 +1,49 @@
+name: Build & Run Tests
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        config: [Debug, Release]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+
+      - name: Configure CMake
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          else
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          fi
+
+      - name: Build Tests
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            cmake --build build --config ${{ matrix.config }} --target Tests
+          else
+            cmake --build build --target Tests -j$(nproc)
+          fi
+
+      - name: Run Tests
+        working-directory: build
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            ctest -C ${{ matrix.config }} -R MyTests --output-on-failure
+          else
+            ctest -R MyTests --output-on-failure
+          fi
