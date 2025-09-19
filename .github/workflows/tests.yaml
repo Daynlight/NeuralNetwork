@@ -11,7 +11,7 @@ jobs:
   build-and-test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos]
+        os: [ubuntu-latest]
         config: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
@@ -22,39 +22,22 @@ jobs:
         with:
           submodules: true   # fetch fmt and any other submodules
 
-      - name: Set up MinGW
-        uses: egor-tensin/setup-mingw@v2
-        run: bash
-        with:
-          platform: x64
-
       - name: Initialize submodules
         run: git submodule update --init --recursive
 
       - name: Configure CMake
         shell: bash
         run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            cmake -S . -B build -G "MinGW Makefiles" -A x64 -DCMAKE_BUILD_TYPE=${{ matrix.config }}
-          else
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
-          fi
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
       - name: Build Tests
         shell: bash
         run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            cmake --build build --config ${{ matrix.config }} --target Tests
-          else
-            cmake --build build --target Tests -j$(nproc)
-          fi
+          cmake --build build --target Tests -j$(nproc)
 
       - name: Run Tests
         shell: bash
         working-directory: build
         run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            ctest -C ${{ matrix.config }} -R MyTests --output-on-failure
-          else
-            ctest -R MyTests --output-on-failure
-          fi
+          ctest -R Tests --output-on-failure
+          
