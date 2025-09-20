@@ -17,7 +17,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        c_compiler: [gcc]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -60,11 +60,17 @@ jobs:
         rm * -rf
         cp /res/* .
 
-    - name: Commit DSL files
+    - name: Commit DSL binaries with version
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
-        git checkout -b release
+
+        git checkout -B release-binaries
+
+        # Create version string (YYYYMMDDHHMM)
+        VERSION=$(date +'%Y%m%d%H%M')
+        echo "Current version: $VERSION"
+
         git add .
-        git commit -m "Add DSL binaries only"
-        git push origin release-only-dsl --force
+        git commit -m "Add DSL binaries version $VERSION"
+        git push origin release-binaries
