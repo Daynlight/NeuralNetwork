@@ -54,7 +54,7 @@ jobs:
         cp -r ./build/bin/*DSL* $GITHUB_WORKSPACE/res/
         cp -r ./docs/* $GITHUB_WORKSPACE/res/
         cp -r ./LICENSE $GITHUB_WORKSPACE/res/
-        cp -r ./README.MD $GITHUB_WORKSPACE/res/
+        cp -r ./README.md $GITHUB_WORKSPACE/res/
         find . -mindepth 1 -maxdepth 1 ! -name 'res' -exec rm -rf {} +
         cp -r $GITHUB_WORKSPACE/res/* .
 
