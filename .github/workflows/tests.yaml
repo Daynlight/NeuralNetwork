@@ -30,7 +30,7 @@ jobs:
       - name: Build Tests
         shell: bash
         run: |
-          cmake --build build --target Tests -j$(nproc)
+          cmake --build build --target Tests --parallel
 
       - name: Run Tests
         shell: bash
