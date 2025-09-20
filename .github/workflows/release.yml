@@ -58,7 +58,7 @@ jobs:
         cp ./docs/* $GITHUB_WORKSPACE/res/
         cp ./LICENSE $GITHUB_WORKSPACE/res/
         cp ./README.MD $GITHUB_WORKSPACE/res/
-        rm -rf *
+        find . -mindepth 1 -maxdepth 1 ! -name 'res' -exec rm -rf {} +
         cp $GITHUB_WORKSPACE/res/* .
 
     - name: Commit DSL binaries with version
