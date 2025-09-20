@@ -6,24 +6,22 @@
 #include "Tests/Stress/stress_tests.h"
 #include "Tests/Soak/soak_tests.h"
 
-#include "Examples/Essentials/Vector/vector.h"
-
 int main(){
+  int passed = 0;
   fmt::print(fg(fmt::color::dark_golden_rod) , "=======================\n");
   fmt::print(fg(fmt::color::dark_golden_rod) , "======== Tests ========\n");
   fmt::print(fg(fmt::color::dark_golden_rod) , "=======================\n");
-  UnitTests::AllTests();
-  IntegrationTests::AllTests();
-  RegressionTests::AllTests();
-  PerformanceTests::AllTests();
-  SecurityTests::AllTests();
-  StressTests::AllTests();
-  SoakTests::AllTests();
+  passed += UnitTests::AllTests();
+  passed += IntegrationTests::AllTests();
+  passed += RegressionTests::AllTests();
+  passed += PerformanceTests::AllTests();
+  passed += SecurityTests::AllTests();
+  passed += StressTests::AllTests();
+  passed += SoakTests::AllTests();
 
-  fmt::print(fg(fmt::color::dark_golden_rod) , "=======================\n");
-  fmt::print(fg(fmt::color::dark_golden_rod) , "====== Examples ======\n");
-  fmt::print(fg(fmt::color::dark_golden_rod) , "======================\n");
-  Examples::Vector();
-
+  if(passed != 7) {
+    printf("Not all Tests Passed");
+    return 1;
+  }
   return 0;
 }

@@ -32,6 +32,7 @@
 #include <stdexcept>
 #include <string.h>
 #include <vector>
+#include <ostream>
 #include "Math/ModuloZ/ModuloZ.h"
 
 //namespace Essential
@@ -40,7 +41,7 @@ namespace Essentials {
 template<typename T>
 class Vector {
 private:
-  T* data = new T[2];
+  T* data = nullptr;
   unsigned int capacity = 2;
   unsigned int size = 0;
 
@@ -56,8 +57,8 @@ public:
   // Constructor/Destructor
   Vector() noexcept;    // O(1)
   Vector(unsigned int capacity) noexcept;    // O(1)
-  Vector(const Vector& other) noexcept;
-  Vector(Vector&& other) noexcept;
+  Vector(const Vector& other) noexcept;   // O(n)
+  Vector(Vector&& other) noexcept;    // O(1)
   ~Vector() noexcept;    // O(1)
 
   // Vector management
@@ -71,7 +72,7 @@ public:
   constexpr unsigned int getSize() const noexcept;    // O(1)
   constexpr unsigned int getCapacity() const noexcept;    // O(1)
   constexpr bool isEmpty() const noexcept;    // O(1)
-  constexpr bool isFull() const noexcept;
+  // constexpr bool isFull() const noexcept;
 
   // Pushers
   void pushHead(T el);    // O(n)
@@ -89,30 +90,30 @@ public:
 
   // Get Without Removing       
   T& back();    // O(1)
-  const T& back() const;
+  // const T& back() const;
   T& head();    // O(1)
-  const T& head() const;
+  // const T& head() const;
   T& at(int index);    // O(1)
-  const T& at(int index) const;
+  // const T& at(int index) const;
 
   // operators
-  T& operator[](int index);
-  Vector& operator=(const Vector &second);
-  Vector& operator=(Vector &&second);
-  operator std::vector<T>(); 
-  friend std::ostream& operator<<(std::ostream& os, const Vector<T>& v);
+  // T& operator[](int index);
+  // Vector& operator=(const Vector &second);
+  // Vector& operator=(Vector &&second);
+  // operator std::vector<T>(); 
+  // friend std::ostream& operator<<(std::ostream& os, const Vector<T>& v);
   
   // compare
-  bool operator==(const Vector &second);
-  bool operator!=(const Vector &second);
-  bool operator>(const Vector &second);
-  bool operator>=(const Vector &second);
-  bool operator<(const Vector &second);
-  bool operator<=(const Vector &second);
+  // bool operator==(const Vector &second);
+  // bool operator!=(const Vector &second);
+  // bool operator>(const Vector &second);
+  // bool operator>=(const Vector &second);
+  // bool operator<(const Vector &second);
+  // bool operator<=(const Vector &second);
 
   // save/load
-  const std::string& serialize();
-  void deserialize();
+  // const std::string& serialize();
+  // void deserialize();
 };
 };
 
