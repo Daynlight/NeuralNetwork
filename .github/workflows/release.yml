@@ -51,12 +51,12 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest -R Tests --output-on-failure
 
-    - name: Remove
+    - name: Prepare release files
       run: |
-        mkdir -p /res/
-        cp ./build/bin/*DSL* /res/
-        rm * -rf
-        cp /res/* .
+        mkdir -p $GITHUB_WORKSPACE/res
+        cp ./build/bin/*DSL* $GITHUB_WORKSPACE/res/
+        rm -rf *
+        cp $GITHUB_WORKSPACE/res/* .
 
     - name: Commit DSL binaries with version
       run: |
