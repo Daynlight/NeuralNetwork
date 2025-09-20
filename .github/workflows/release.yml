@@ -55,6 +55,9 @@ jobs:
       run: |
         mkdir -p $GITHUB_WORKSPACE/res
         cp ./build/bin/*DSL* $GITHUB_WORKSPACE/res/
+        cp ./docs/* $GITHUB_WORKSPACE/res/
+        cp ./LICENSE $GITHUB_WORKSPACE/res/
+        cp ./README.MD $GITHUB_WORKSPACE/res/
         rm -rf *
         cp $GITHUB_WORKSPACE/res/* .
 
