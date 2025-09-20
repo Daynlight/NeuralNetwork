@@ -72,5 +72,5 @@ jobs:
         echo "Current version: $VERSION"
 
         git add .
-        git commit -m "Add DSL binaries version $VERSION"
-        git push origin release-binaries
+        git commit -m "version $VERSION"
+        git push -f origin release
