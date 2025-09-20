@@ -59,7 +59,7 @@ jobs:
         cp ./README.md $GITHUB_WORKSPACE/res/
         find . -mindepth 1 -maxdepth 1 ! -name 'res' ! -name '.git' -exec rm -rf {} +
         cp -r $GITHUB_WORKSPACE/res/* .
-        rm -rf $GITHUB_WORKSPACE/res/.
+        rm -rf $GITHUB_WORKSPACE/res/
 
     - name: Commit DSL release with version
       run: |
