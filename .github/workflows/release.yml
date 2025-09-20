@@ -55,8 +55,8 @@ jobs:
         mkdir -p $GITHUB_WORKSPACE/res
         cp -r ./build/bin/*DSL* $GITHUB_WORKSPACE/res/
         cp -r ./docs/ $GITHUB_WORKSPACE/res/
-        cp -r ./LICENSE $GITHUB_WORKSPACE/res/
-        cp -r ./README.md $GITHUB_WORKSPACE/res/
+        cp ./LICENSE $GITHUB_WORKSPACE/res/
+        cp ./README.md $GITHUB_WORKSPACE/res/
         find . -mindepth 1 -maxdepth 1 ! -name 'res' ! -name '.git' -exec rm -rf {} +
         cp -r $GITHUB_WORKSPACE/res/* .
 
