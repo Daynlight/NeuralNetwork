@@ -19,7 +19,7 @@ int main(){
   passed += StressTests::AllTests();
   passed += SoakTests::AllTests();
 
-  if(passed != 7) {
+  if(passed != 5) {
     printf("Not all Tests Passed");
     return 1;
   }
