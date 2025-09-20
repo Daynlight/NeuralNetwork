@@ -18,8 +18,8 @@ jobs:
         c_compiler: [gcc]
         include:
           - os: windows-latest
-            c_compiler: gcc
-            cpp_compiler: g++
+            c_compiler: cl
+            cpp_compiler: 
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -54,12 +54,12 @@ jobs:
     - name: Prepare release files
       run: |
         mkdir -p $GITHUB_WORKSPACE/res
-        cp ./build/bin/*DSL* $GITHUB_WORKSPACE/res/
-        cp ./docs/* $GITHUB_WORKSPACE/res/
-        cp ./LICENSE $GITHUB_WORKSPACE/res/
-        cp ./README.MD $GITHUB_WORKSPACE/res/
+        cp -r ./build/bin/*DSL* $GITHUB_WORKSPACE/res/
+        cp -r ./docs/* $GITHUB_WORKSPACE/res/
+        cp -r ./LICENSE $GITHUB_WORKSPACE/res/
+        cp -r ./README.MD $GITHUB_WORKSPACE/res/
         find . -mindepth 1 -maxdepth 1 ! -name 'res' -exec rm -rf {} +
-        cp $GITHUB_WORKSPACE/res/* .
+        cp -r $GITHUB_WORKSPACE/res/* .
 
     - name: Commit DSL binaries with version
       run: |
