@@ -12,7 +12,7 @@ private:
   double weights[(S + 1) * D];
   iActivation *activation = nullptr;
   iLoss *loss = nullptr;
-  double learning_rate = 0.05;
+  double learning_rate = 0.0005;
 
 public:
   Layer() noexcept;   // O(n)
@@ -38,7 +38,7 @@ public:
   void backprop_initial(Layer<N, S> &layer, std::initializer_list<double> target) noexcept;
   template<unsigned int N>
   void backprop(Layer<D, N> &layer) noexcept;
-  const double *getSigma() const noexcept;
+  const double *getSigma() const noexcept;    // O(1)
 
   std::string print() const;    // O(n)
   std::string serialize() const;    // O(n)

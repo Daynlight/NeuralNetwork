@@ -15,7 +15,7 @@ public:
 
 class Sigmoid : public iActivation{
   ActivationType getType() { return ActivationType::SIGMOIDTYPE; };
-  double fun(double x) { return 1/(1 + powf64(2.1736, (-1 * x))); };
+  double fun(double x)  { return 1 / (1 + exp(-x)); }
   double fun_prime(double x) { return fun(x) * (1 - fun(x)); };
 };
 

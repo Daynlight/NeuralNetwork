@@ -57,45 +57,43 @@ void NeuralNetwork() {
   c.forward(h);
   h.forward(d);
   d.backprop_initial(h, {3, 3, 1});
-  // h.backprop(d);
-  // c.backprop(h);
+  h.backprop(d);
+  c.backprop(h);
   fmt::print(fg(fmt::color::violet), "{}\n", c.print());
   fmt::print(fg(fmt::color::violet), "{}\n", h.print());
   fmt::print(fg(fmt::color::violet), "{}\n", d.print());
 
-  // xor learn
-  fmt::print(fg(fmt::color::crimson), "xor\n");
+  // minus learn
+  fmt::print(fg(fmt::color::crimson), "minus learn\n");
   std::srand(std::time(nullptr));
   NN::Layer<2, 2> e;
-  NN::Layer<2, 1> f;
+  NN::Layer<2, 1> p;
   NN::Layer<1, 0> g;
-  for(unsigned int i = 0; i < 10000; i++) {
-    double x = rand()%2;
-    double y = rand()%2;
+
+  for(unsigned int i = 0; i < 500000; i++) {
+    double x = (rand()%2);
+    double y = (rand()%2);
     e.setNodes({x, y});
-    e.forward(f);
-    f.forward(g);
-    double res = x != y;
-    g.backprop_initial(f, {res});
-    // f.backprop(g);
-    // e.backprop(f);
+    e.forward(p);
+    p.forward(g);
+    double res = x - y;
+    g.backprop_initial(p, {res});
+    p.backprop(g);
+    e.backprop(p);
   }
 
   double avg = 0;
   for(unsigned int i = 0; i < 100; i++) {
-    double x = rand()%2;
-    double y = rand()%2;
+    double x = (rand()%2);
+    double y = (rand()%2);
     e.setNodes({x, y});
-    e.forward(f);
-    f.forward(g);
-    double res = x != y;
-    if(g[1] == res) avg += 1;
+    e.forward(p);
+    p.forward(g);
+    double res = x - y;
+    if((g[0] > 0.5 ? 1 : 0) == res) avg += 1;
   }
 
-  avg /= 100;
-  fmt::print(fg(fmt::color::red), "avg: {}\n", avg);
-  fmt::print(fg(fmt::color::violet), "{}\n", e.print());
-  fmt::print(fg(fmt::color::violet), "{}\n", f.print());
   fmt::print(fg(fmt::color::violet), "{}\n", g.print());
+  fmt::print(fg(fmt::color::red), "avg: {}%\n", avg);
 };
 };

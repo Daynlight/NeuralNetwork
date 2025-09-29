@@ -2,10 +2,8 @@
 
 template <unsigned int S, unsigned int D>
 inline NN::Layer<S, D>::Layer() noexcept {
-  for(double &el : nodes)
-    el = double(1);
-  for(double &el : weights)
-    el = double(1);
+  for(double &el : weights) 
+    el = ((rand() % 2000) / 1000.0 - 1) * 0.1;
   loss = new MSE();
 }
 
@@ -71,15 +69,13 @@ inline void NN::Layer<S, D>::setLoss(LossType type) noexcept {
 template <unsigned int S, unsigned int D>
 template <unsigned int N>
 inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
+  nodes[S] = 1.0; // bias
   for(unsigned int i = 0; i < D; i++){
-    double sum = 0;
-    for(unsigned int j = 0; j < S + 1; j++)
-      sum += this->nodes[j] * this->weights[i * (S + 1) + j];
-    if(activation)
-      layer[i] = activation->fun(sum);
-    else
-      layer[i] = sum;
-  };
+      double sum = 0;
+      for(unsigned int j = 0; j < S + 1; j++)
+          sum += nodes[j] * weights[i * (S + 1) + j];
+      layer[i] = activation ? activation->fun(sum) : sum;
+  }
 }
 
 template <unsigned int S, unsigned int D>
@@ -98,30 +94,34 @@ std::initializer_list<double> target) noexcept {
   double *weights_back = layer.getWeights();
   for(unsigned int j = 0; j < S; j++)
     for(unsigned int i = 0; i < N + 1; i++)
-      weights_back[j * (S + 1) + i] -=  layer[i] * sigma[j];
+      weights_back[j * (S + 1) + i] -= learning_rate * layer[i] * sigma[j];
   
   layer.setWeights(weights_back);
 };
 
 template <unsigned int S, unsigned int D>
 template <unsigned int N>
-inline void NN::Layer<S, D>::backprop(Layer<D, N> &layer) noexcept {
-  const double *sigma_next = layer.getSigma();
-  for(unsigned int i = 0; i < S; i++){
-    double sum = 0;
-    for(unsigned int j = 0; j < D; j++)
-      sum += weights[j * S + i] * sigma_next[j];
-    sigma[i] = sum;
-    if(activation) activation->fun_prime(nodes[i]);
-  }
+inline void NN::Layer<S, D>::backprop(Layer<D, N> &next_layer) noexcept {
+    const double* sigma_next = next_layer.getSigma();
 
-  double *weights_back = layer.getWeights();
-  for(unsigned int j = 0; j < S; j++)
-    for(unsigned int i = 0; i < N + 1; i++)
-      weights_back[j * (S + 1) + i] -=  layer[i] * sigma[j];
+    for(unsigned int i = 0; i < S; ++i){
+      double sum = 0;
+      for(unsigned int j = 0; j < D; ++j){
+          sum += weights[j * (S + 1) + i] * sigma_next[j];
+      }
+      sigma[i] = activation ? sum * activation->fun_prime(nodes[i]) : sum;
+    }
 
-  layer.setWeights(weights_back);
+    double* weights_back = getWeights();
+    for(unsigned int j = 0; j < D; ++j){
+        for(unsigned int i = 0; i < S; ++i){
+            weights_back[j * (S + 1) + i] -= learning_rate * nodes[i] * sigma_next[j];
+        }
+        weights_back[j * (S + 1) + S] -= learning_rate * 1.0 * sigma_next[j];
+    }
+    setWeights(weights_back);
 };
+
 
 template <unsigned int S, unsigned int D>
 inline const double *NN::Layer<S, D>::getSigma() const noexcept {
