@@ -38,6 +38,7 @@ void NeuralNetwork() {
   NN::Layer<3, 0> b;
   a.setNodes({5, 2, 1, 3});
   a.setWeights({1, 2 ,1, -1, 5,   2, 1, 3, 1, 0,   1, -4, 2, 5, 6});
+  // a.setActivation(NN::ActivationType::SIGMOIDTYPE);
   a.forward(b);
   // 5 * 1 + 2 * 2 + 1 * 1 + 3 * (-1) + 5 = 12
   // 5 * 2 + 2 * 1 + 1 * 3 + 3 * 1 + 0 = 18

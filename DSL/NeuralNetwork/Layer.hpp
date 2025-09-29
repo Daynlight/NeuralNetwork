@@ -68,12 +68,37 @@ inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
     double sum = 0;
     for(unsigned int j = 0; j < S + 1; j++)
       sum += this->nodes[j] * this->weights[i * (S + 1) + j];
-    layer[i] = sum;
+    if(activation)
+      layer[i] = activation->fun(sum);
+    else
+      layer[i] = sum;
   };
-};
+}
+
+// template <unsigned int S, unsigned int D>
+// template <unsigned int N>
+// inline void NN::Layer<S, D>::backprop_initial(Layer<N, S> layer, 
+// std::initializer_list<double> target) noexcept {
+//   unsigned int i = 0;
+//   for (auto it = weights.begin(); it != weights.end() && i < (S + 1) * D; ++it, ++i){
+//     if(activation)
+//       sigma[i] = loss->fun_prime(activation.fun(nodes[i]), *it) 
+//                 * activation->fun_prime(nodes[i]);
+//     else
+//       sigma[i] = loss->fun_prime(nodes[i], *it);
+//   }
+
+    
+// };
 
 template <unsigned int S, unsigned int D>
-inline std::string NN::Layer<S, D>::print() const {
+inline const double *NN::Layer<S, D>::getSigma() const noexcept {
+  return sigma;
+}
+
+template <unsigned int S, unsigned int D>
+inline std::string NN::Layer<S, D>::print() const
+{
   std::string s = "size: \n";
 
   s += std::to_string(S) + ", ";
