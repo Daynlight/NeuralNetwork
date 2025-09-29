@@ -12,6 +12,7 @@ private:
   double weights[(S + 1) * D];
   iActivation *activation = nullptr;
   iLoss *loss = nullptr;
+  double learning_rate = 0.0005;
 
 public:
   Layer() noexcept;   // O(n)

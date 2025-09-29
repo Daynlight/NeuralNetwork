@@ -96,9 +96,10 @@ std::initializer_list<double> target) noexcept {
   }
   
   double *weights_back = layer.getWeights();
-  for(unsigned int j = 0; j < (N + 1) * S; j++){
-    weights_back[j] -= layer[j % (N + 1)] * sigma[j / S];
-  }
+  for(unsigned int j = 0; j < S; j++)
+    for(unsigned int i = 0; i < N + 1; i++)
+      weights_back[j * S + i] -= learning_rate * layer[i] * sigma[j];
+  
   layer.setWeights(weights_back);
 };
 

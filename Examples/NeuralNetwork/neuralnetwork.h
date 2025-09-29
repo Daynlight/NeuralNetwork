@@ -1,5 +1,7 @@
 #pragma once
 #include "dsl.h"
+#include <cstdlib>
+#include <ctime>
 
 namespace Examples{
 void NeuralNetwork() {
@@ -58,6 +60,34 @@ void NeuralNetwork() {
   d.backprop_initial(c, {3, 3, 1});
   fmt::print(fg(fmt::color::violet), "{}\n", c.print());
   fmt::print(fg(fmt::color::violet), "{}\n", d.print());
-  
+
+  // sum learn
+  fmt::print(fg(fmt::color::crimson), "sum\n");
+  std::srand(std::time(nullptr));
+  NN::Layer<2, 1> e;
+  NN::Layer<1, 0> f;
+  for(unsigned int i = 0; i < 1000000; i++) {
+    double x = rand()%10;
+    double y = rand()%10;
+    e.setNodes({x, y});
+    e.forward(f);
+    double res = x + y;
+    f.backprop_initial(e, {res});
+  }
+
+  double avg = 0;
+  for(unsigned int i = 0; i < 100; i++) {
+    double x = rand()%2;
+    double y = rand()%2;
+    e.setNodes({x, y});
+    e.forward(f);
+    double res = x && y;
+    if(f[1] == res) avg += 1;
+  }
+
+  avg /= 100;
+  fmt::print(fg(fmt::color::red), "avg: {}\n", avg);
+  fmt::print(fg(fmt::color::violet), "{}\n", e.print());
+  fmt::print(fg(fmt::color::violet), "{}\n", f.print());
 };
 };
