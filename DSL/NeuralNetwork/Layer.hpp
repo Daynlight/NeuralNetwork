@@ -45,8 +45,20 @@ inline const NN::iActivation *NN::Layer<S, D>::getActivation() const noexcept {
 }
 
 template <unsigned int S, unsigned int D>
+inline void NN::Layer<S, D>::setActivation(ActivationType type) noexcept {
+  delete activation;
+  activation = getActivationFromType(type);
+}
+
+template <unsigned int S, unsigned int D>
 inline const NN::iLoss *NN::Layer<S, D>::getLoss() const noexcept {
   return loss;
+}
+
+template <unsigned int S, unsigned int D>
+inline void NN::Layer<S, D>::setLoss(LossType type) noexcept {
+  delete loss;
+  loss = getLossFromType(type);
 }
 
 template <unsigned int S, unsigned int D>

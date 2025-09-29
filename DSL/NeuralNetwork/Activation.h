@@ -3,6 +3,7 @@
 
 namespace NN{
 enum ActivationType {
+  NOTYPE = -1,
   SIGMOIDTYPE = 0
 };
 class iActivation{
