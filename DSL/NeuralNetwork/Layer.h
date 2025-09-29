@@ -16,8 +16,8 @@ public:
   Layer() noexcept;
   Layer(const double &nodes, 
         const double &weights, 
-        iLoss * loss = new MSE(), 
-        iActivation iActivation = nullptr);
+        LossType loss_type = LossType::MSETYPE,
+        ActivationType activation_type = -1);
   ~Layer() noexcept;
   
   const double* &getNodes() const noexcept;
@@ -27,10 +27,10 @@ public:
   void setWeights(double weights[(S + 1) * D]) noexcept;
 
   const iActivation *getActivation() const noexcept;
-  void setActivation(const iActivation *activation) noexcept;
+  void setActivation(ActivationType type) noexcept;
 
   const iLoss *getLoss() const noexcept;
-  void setLoss(const iLoss *loss) noexcept;
+  void setLoss(LossType type) noexcept;
 
   template<unsigned int N>
   void forward(Layer<D, N> layer);
