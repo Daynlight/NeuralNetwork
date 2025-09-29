@@ -34,11 +34,16 @@ void NeuralNetwork() {
   
   // forward
   fmt::print(fg(fmt::color::crimson), "forward\n");
-  layer.setNodes({5, 2});
-  layer.setWeights({1, 2, 6});
-  NN::Layer<1, 0> layer2;
-  layer.forward(layer2); // 5 * 1 + 2 * 2 + 6 = 15
-  fmt::print(fg(fmt::color::violet), "{}\n", layer2.print());
+  NN::Layer<4, 3> a;
+  NN::Layer<3, 0> b;
+  a.setNodes({5, 2, 1, 3});
+  a.setWeights({1, 2 ,1, -1, 5,   2, 1, 3, 1, 0,   1, -4, 2, 5, 6});
+  a.forward(b);
+  // 5 * 1 + 2 * 2 + 1 * 1 + 3 * (-1) + 5 = 12
+  // 5 * 2 + 2 * 1 + 1 * 3 + 3 * 1 + 0 = 18
+  // 5 * 1 + 2 * (-4) + 1 * 2 + 3 * 5 + 6 = 20 
+  fmt::print(fg(fmt::color::violet), "{}\n", a.print());
+  fmt::print(fg(fmt::color::violet), "{}\n", b.print());
 
 };
 };

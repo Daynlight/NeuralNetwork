@@ -74,11 +74,12 @@ inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
 
 template <unsigned int S, unsigned int D>
 inline std::string NN::Layer<S, D>::print() const {
-  std::string s = "";
+  std::string s = "size: \n";
 
   s += std::to_string(S) + ", ";
   s += std::to_string(D) + "; ";
 
+  s += "\nloss, activation \n";
   s += std::to_string(loss->getType()) + "; ";
   if(activation)
     s += std::to_string(activation->getType()) + "; ";
@@ -87,7 +88,7 @@ inline std::string NN::Layer<S, D>::print() const {
 
 
   bool first = true;
-  s += "[";
+  s += "\nnodes: \n[";
   for(double el : nodes){
     if(!first) 
       s += ", ";
@@ -98,19 +99,19 @@ inline std::string NN::Layer<S, D>::print() const {
   
   first = true;
   unsigned int i = 0;
-  s += "[[";
+  s += "\nweights: \n[[";
   for(double el : weights){
     if(!first && i % (S + 1) != 0)
       s += ", ";
 
     if(i % (S + 1) == 0 && i <= (S + 1) * D && i != 0) 
-      s += "], [";
+      s += "], \n[";
 
     s += std::to_string(el);
     first = false;
     i++;
   };
-  s += "]]; ";
+  s += "]];\n ";
   return s;
 }
 
