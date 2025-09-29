@@ -18,4 +18,8 @@ class Sigmoid : public iActivation{
   double fun_prime(double x) { return fun(x) * (1 - fun(x)); };
 };
 
+iActivation* getActivationFromType(ActivationType type){
+  if(type == ActivationType::SIGMOIDTYPE) return new Sigmoid();
+  return nullptr;
+}
 };
