@@ -29,7 +29,7 @@ public:
   void setLoss(LossType type) noexcept;   // O(1)
 
   template<unsigned int N>
-  void forward(Layer<D, N> &layer);
+  void forward(Layer<D, N> &layer);   // O(n^2)
 
   template<unsigned int N>
   void backprop(Layer<N, S> layer) noexcept;
@@ -38,7 +38,7 @@ public:
   std::string serialize() const;    // O(n)
   void deserialize(const std::string &data);
 
-  double &operator[](unsigned int i);
+  double &operator[](unsigned int i);   // O(1)
 };
 };
 
