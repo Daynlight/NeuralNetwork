@@ -2,16 +2,22 @@
 
 
 namespace NN{
+enum LossType{
+  MSETYPE = 0
+};
+
 class iLoss{
 public:
-  virtual double double fun(double double x, double double t) = 0;
-  virtual double double fun_prime(double double x, double double t) = 0;
+  virtual LossType getType() = 0;
+  virtual double fun(double x, double t) = 0;
+  virtual double fun_prime(double x, double t) = 0;
 };
 
 class MSE : public iLoss{
 public:
-  double double fun(double double x, double double t) { return (x - t)*(x - t)/2; };
-  double double fun_prime(double double x, double double t) { return x - t; };
+  LossType getType() { return LossType::MSETYPE; };
+  double fun(double x, double t) { return (x - t)*(x - t)/2; };
+  double fun_prime(double x, double t) { return x - t; };
 };
 
 };

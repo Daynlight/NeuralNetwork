@@ -12,6 +12,7 @@ set(src
   dsl.cpp
   Essentials/Vector/vector.hpp
   Math/ModuloZ/ModuloZ.hpp
+  NeuralNetwork/Layer.hpp
 )
 
 add_library(DSL STATIC ${headers} ${src})

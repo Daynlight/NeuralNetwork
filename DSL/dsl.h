@@ -25,3 +25,4 @@
 
 #include "Essentials/Vector/vector.h"
 #include "Math/ModuloZ/ModuloZ.h"
+#include "NeuralNetwork/NeuralNetwork.h"
