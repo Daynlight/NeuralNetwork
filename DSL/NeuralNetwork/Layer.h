@@ -3,7 +3,7 @@
 #include "Loss.h"
 #include <string>
 
-namespace NN{
+namespace NN {
 template<unsigned int S, unsigned int D>
 class Layer{
 private:
@@ -29,7 +29,7 @@ public:
   void setLoss(LossType type) noexcept;   // O(1)
 
   template<unsigned int N>
-  void forward(Layer<D, N> layer) noexcept;
+  void forward(Layer<D, N> &layer) noexcept;
 
   template<unsigned int N>
   void backprop(Layer<N, S> layer) noexcept;
@@ -37,6 +37,8 @@ public:
   std::string print() const;    // O(n)
   std::string serialize() const;    // O(n)
   void deserialize(const std::string &data);
+
+  double &operator[](unsigned int i);
 };
 };
 

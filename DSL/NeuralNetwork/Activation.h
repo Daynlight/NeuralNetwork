@@ -22,5 +22,5 @@ class Sigmoid : public iActivation{
 iActivation* getActivationFromType(ActivationType type){
   if(type == ActivationType::SIGMOIDTYPE) return new Sigmoid();
   return nullptr;
-}
+};
 };

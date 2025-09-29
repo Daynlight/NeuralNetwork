@@ -62,6 +62,17 @@ inline void NN::Layer<S, D>::setLoss(LossType type) noexcept {
 }
 
 template <unsigned int S, unsigned int D>
+template <unsigned int N>
+inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) noexcept {
+  for(unsigned int i = 0; i < D; i++){
+    double sum = 0;
+    for(unsigned int j = 0; j < S + 1; j++)
+      sum += this->nodes[j] * this->weights[i * (S + 1) + j];
+    layer[i] = sum;
+  };
+};
+
+template <unsigned int S, unsigned int D>
 inline std::string NN::Layer<S, D>::print() const {
   std::string s = "";
 
@@ -134,4 +145,9 @@ inline std::string NN::Layer<S, D>::serialize() const {
   };
   s += "; ";
   return s;
+}
+
+template <unsigned int S, unsigned int D>
+inline double &NN::Layer<S, D>::operator[](unsigned int i){
+  return nodes[i];
 }

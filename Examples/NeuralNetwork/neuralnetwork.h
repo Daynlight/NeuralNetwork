@@ -7,7 +7,7 @@ void NeuralNetwork() {
 
   // create Layer
   fmt::print(fg(fmt::color::crimson), "create Layer\n");
-  NN::Layer<1, 1> layer;
+  NN::Layer<2, 1> layer;
   fmt::print(fg(fmt::color::violet), "{}\n", layer.print());
   
   // set Nodes
@@ -31,5 +31,14 @@ void NeuralNetwork() {
   fmt::print(fg(fmt::color::violet), "{}\n", layer.print());
   layer.setActivation(NN::ActivationType::NOTYPE);
   fmt::print(fg(fmt::color::violet), "{}\n", layer.print());
+  
+  // forward
+  fmt::print(fg(fmt::color::crimson), "forward\n");
+  layer.setNodes({5, 2});
+  layer.setWeights({1, 2, 6});
+  NN::Layer<1, 0> layer2;
+  layer.forward(layer2); // 5 * 1 + 2 * 2 + 6 = 15
+  fmt::print(fg(fmt::color::violet), "{}\n", layer2.print());
+
 };
 };
