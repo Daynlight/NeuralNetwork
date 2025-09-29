@@ -13,20 +13,20 @@ private:
   iLoss *loss = nullptr;
 
 public:
-  Layer() noexcept;
-  ~Layer() noexcept;
+  Layer() noexcept;   // O(n)
+  ~Layer() noexcept;  // O(1)
   
-  const double* &getNodes() const noexcept;
-  void setNodes(std::initializer_list<double> nodes) noexcept;
+  const double* &getNodes() const noexcept;   // O(1)
+  void setNodes(std::initializer_list<double> nodes) noexcept;    // O(n)
   
-  const double* &getWeights() const noexcept;
-  void setWeights(std::initializer_list<double> weights) noexcept;
+  const double* &getWeights() const noexcept;   // O(1)
+  void setWeights(std::initializer_list<double> weights) noexcept;    // O(n)
 
-  const iActivation *getActivation() const noexcept;
-  void setActivation(ActivationType type) noexcept;
+  const iActivation *getActivation() const noexcept;    // O(1)
+  void setActivation(ActivationType type) noexcept;   // O(1)
 
-  const iLoss *getLoss() const noexcept;
-  void setLoss(LossType type) noexcept;
+  const iLoss *getLoss() const noexcept;    // O(1)
+  void setLoss(LossType type) noexcept;   // O(1)
 
   template<unsigned int N>
   void forward(Layer<D, N> layer) noexcept;
@@ -34,8 +34,9 @@ public:
   template<unsigned int N>
   void backprop(Layer<N, S> layer) noexcept;
 
-  std::string print() const;
-  std::string serialize() const;
+  std::string print() const;    // O(n)
+  std::string serialize() const;    // O(n)
+  void deserialize(const std::string &data);
 };
 };
 
