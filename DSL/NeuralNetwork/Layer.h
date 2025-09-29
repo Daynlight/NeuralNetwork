@@ -33,12 +33,13 @@ public:
   void setLoss(LossType type) noexcept;
 
   template<unsigned int N>
-  void forward(Layer<D, N> layer);
+  void forward(Layer<D, N> layer) noexcept;
 
   template<unsigned int N>
-  void backprop(Layer<N, S> layer);
+  void backprop(Layer<N, S> layer) noexcept;
 
-  constexpr std::string serialize() const;
+  std::string print() const;
+  std::string serialize() const;
 };
 };
 

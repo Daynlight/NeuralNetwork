@@ -36,7 +36,49 @@ inline const NN::iLoss *NN::Layer<S, D>::getLoss() const noexcept {
 }
 
 template <unsigned int S, unsigned int D>
-inline constexpr std::string NN::Layer<S, D>::serialize() const {
+inline std::string NN::Layer<S, D>::print() const {
+  std::string s = "";
+
+  s += std::to_string(S) + ", ";
+  s += std::to_string(D) + "; ";
+
+  s += std::to_string(loss->getType()) + "; ";
+  if(activation)
+    s += std::to_string(activation->getType()) + "; ";
+  else
+    s += "-1; ";
+
+
+  bool first = true;
+  s += "[";
+  for(double el : nodes){
+    if(!first) 
+      s += ", ";
+      s += std::to_string(el);
+      first = false;
+  }
+  s += "]; ";
+  
+  first = true;
+  unsigned int i = 0;
+  s += "[[";
+  for(double el : weights){
+    if(!first && i % (S + 1) != 0)
+      s += ", ";
+
+    if(i % (S + 1) == 0 && i <= (S + 1) * D && i != 0) 
+      s += "], [";
+      
+    s += std::to_string(el);
+    first = false;
+    i++;
+  };
+  s += "]]; ";
+  return s;
+}
+
+template <unsigned int S, unsigned int D>
+inline std::string NN::Layer<S, D>::serialize() const {
   std::string s = "";
 
   s += std::to_string(S) + ", ";
