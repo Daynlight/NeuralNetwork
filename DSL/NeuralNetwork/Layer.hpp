@@ -16,7 +16,7 @@ inline NN::Layer<S, D>::~Layer() noexcept {
 }
 
 template <unsigned int S, unsigned int D>
-inline const double *&NN::Layer<S, D>::getNodes() const noexcept {
+inline double *NN::Layer<S, D>::getNodes() noexcept {
   return nodes;
 }
 
@@ -28,7 +28,7 @@ inline void NN::Layer<S, D>::setNodes(std::initializer_list<double> nodes) noexc
 }
 
 template <unsigned int S, unsigned int D>
-inline const double *&NN::Layer<S, D>::getWeights() const noexcept {
+inline double *NN::Layer<S, D>::getWeights() noexcept {
   return weights;
 }
 
@@ -37,6 +37,13 @@ inline void NN::Layer<S, D>::setWeights(std::initializer_list<double> weights) n
   unsigned int i = 0;
   for (auto it = weights.begin(); it != weights.end() && i < (S + 1) * D; ++it, ++i)
     this->weights[i] = *it;
+}
+
+template <unsigned int S, unsigned int D>
+inline void NN::Layer<S, D>::setWeights(const double *weights) {
+  for (unsigned int i = 0; i < (S + 1) * D; ++i) {
+    this->weights[i] = weights[i];
+  }
 }
 
 template <unsigned int S, unsigned int D>
@@ -75,21 +82,25 @@ inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
   };
 }
 
-// template <unsigned int S, unsigned int D>
-// template <unsigned int N>
-// inline void NN::Layer<S, D>::backprop_initial(Layer<N, S> layer, 
-// std::initializer_list<double> target) noexcept {
-//   unsigned int i = 0;
-//   for (auto it = weights.begin(); it != weights.end() && i < (S + 1) * D; ++it, ++i){
-//     if(activation)
-//       sigma[i] = loss->fun_prime(activation.fun(nodes[i]), *it) 
-//                 * activation->fun_prime(nodes[i]);
-//     else
-//       sigma[i] = loss->fun_prime(nodes[i], *it);
-//   }
-
-    
-// };
+template <unsigned int S, unsigned int D>
+template <unsigned int N>
+inline void NN::Layer<S, D>::backprop_initial(Layer<N, S> &layer, 
+std::initializer_list<double> target) noexcept {
+  unsigned int i = 0;
+  for (auto it = target.begin(); it != target.end() && i < S + 1; ++it, ++i){
+    if(activation)
+      sigma[i] = loss->fun_prime(activation->fun(nodes[i]), *it) 
+                * activation->fun_prime(nodes[i]);
+    else
+      sigma[i] = loss->fun_prime(nodes[i], *it);
+  }
+  
+  double *weights_back = layer.getWeights();
+  for(unsigned int j = 0; j < (N + 1) * S; j++){
+    weights_back[j] -= layer[j % (N + 1)] * sigma[j / S];
+  }
+  layer.setWeights(weights_back);
+};
 
 template <unsigned int S, unsigned int D>
 inline const double *NN::Layer<S, D>::getSigma() const noexcept {

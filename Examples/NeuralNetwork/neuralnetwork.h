@@ -46,5 +46,18 @@ void NeuralNetwork() {
   fmt::print(fg(fmt::color::violet), "{}\n", a.print());
   fmt::print(fg(fmt::color::violet), "{}\n", b.print());
 
+  // backprop
+  fmt::print(fg(fmt::color::crimson), "backprop\n");
+  NN::Layer<2, 2> c;
+  NN::Layer<2, 0> d;
+  c.setNodes({2, 1});
+  c.setWeights({1, 1, 1,   1, 1, 1});
+  c.forward(d);
+  fmt::print(fg(fmt::color::violet), "{}\n", c.print());
+  fmt::print(fg(fmt::color::violet), "{}\n", d.print());
+  d.backprop_initial(c, {3, 3, 1});
+  fmt::print(fg(fmt::color::violet), "{}\n", c.print());
+  fmt::print(fg(fmt::color::violet), "{}\n", d.print());
+  
 };
 };

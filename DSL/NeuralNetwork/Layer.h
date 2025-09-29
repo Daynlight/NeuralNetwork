@@ -17,11 +17,12 @@ public:
   Layer() noexcept;   // O(n)
   ~Layer() noexcept;  // O(1)
   
-  const double* &getNodes() const noexcept;   // O(1)
+  double* getNodes() noexcept;   // O(1)
   void setNodes(std::initializer_list<double> nodes) noexcept;    // O(n)
   
-  const double* &getWeights() const noexcept;   // O(1)
+  double* getWeights() noexcept;   // O(1)
   void setWeights(std::initializer_list<double> weights) noexcept;    // O(n)
+  void setWeights(const double *weights);
 
   const iActivation *getActivation() const noexcept;    // O(1)
   void setActivation(ActivationType type) noexcept;   // O(1)
@@ -33,7 +34,7 @@ public:
   void forward(Layer<D, N> &layer);   // O(n^2)
 
   template<unsigned int N>
-  void backprop_initial(Layer<N, S> layer, std::initializer_list<double> target) noexcept;
+  void backprop_initial(Layer<N, S> &layer, std::initializer_list<double> target) noexcept;
   template<unsigned int N>
   void backprop(Layer<N, S> layer) noexcept;
   const double *getSigma() const noexcept;
