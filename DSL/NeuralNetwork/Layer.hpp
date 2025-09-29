@@ -63,7 +63,7 @@ inline void NN::Layer<S, D>::setLoss(LossType type) noexcept {
 
 template <unsigned int S, unsigned int D>
 template <unsigned int N>
-inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) noexcept {
+inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
   for(unsigned int i = 0; i < D; i++){
     double sum = 0;
     for(unsigned int j = 0; j < S + 1; j++)
@@ -148,6 +148,8 @@ inline std::string NN::Layer<S, D>::serialize() const {
 }
 
 template <unsigned int S, unsigned int D>
-inline double &NN::Layer<S, D>::operator[](unsigned int i){
+inline double &NN::Layer<S, D>::operator[](unsigned int i) {
+  if(i > S) 
+    throw std::range_error("index out of range");
   return nodes[i];
 }

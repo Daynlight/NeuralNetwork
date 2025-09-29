@@ -29,7 +29,7 @@ public:
   void setLoss(LossType type) noexcept;   // O(1)
 
   template<unsigned int N>
-  void forward(Layer<D, N> &layer) noexcept;
+  void forward(Layer<D, N> &layer);
 
   template<unsigned int N>
   void backprop(Layer<N, S> layer) noexcept;
