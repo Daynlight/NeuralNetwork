@@ -20,7 +20,7 @@ public:
   void setNodes(std::initializer_list<double> nodes) noexcept;
   
   const double* &getWeights() const noexcept;
-  void setWeights(double weights[(S + 1) * D]) noexcept;
+  void setWeights(std::initializer_list<double> weights) noexcept;
 
   const iActivation *getActivation() const noexcept;
   void setActivation(ActivationType type) noexcept;

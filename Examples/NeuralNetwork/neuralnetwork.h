@@ -10,5 +10,8 @@ void NeuralNetwork() {
   fmt::print(fg(fmt::color::violet), "{}\n\n", layer.print());
   layer.setNodes({6});
   fmt::print(fg(fmt::color::violet), "{}\n\n", layer.print());
+  layer.setWeights({2, 4});
+  fmt::print(fg(fmt::color::violet), "{}\n\n", layer.print());
+
 };
 };

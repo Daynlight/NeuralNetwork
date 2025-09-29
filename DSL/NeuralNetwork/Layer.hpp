@@ -33,6 +33,13 @@ inline const double *&NN::Layer<S, D>::getWeights() const noexcept {
 }
 
 template <unsigned int S, unsigned int D>
+inline void NN::Layer<S, D>::setWeights(std::initializer_list<double> weights) noexcept {
+  unsigned int i = 0;
+  for (auto it = weights.begin(); it != weights.end() && i < (S + 1) * D; ++it, ++i)
+    this->weights[i] = *it;
+}
+
+template <unsigned int S, unsigned int D>
 inline const NN::iActivation *NN::Layer<S, D>::getActivation() const noexcept {
   return activation;
 }
