@@ -87,7 +87,7 @@ template <unsigned int N>
 inline void NN::Layer<S, D>::backprop_initial(Layer<N, S> &layer, 
 std::initializer_list<double> target) noexcept {
   unsigned int i = 0;
-  for (auto it = target.begin(); it != target.end() && i < S + 1; ++it, ++i){
+  for (auto it = target.begin(); it != target.end() && i < S; ++it, ++i){
     if(activation)
       sigma[i] = loss->fun_prime(activation->fun(nodes[i]), *it) 
                 * activation->fun_prime(nodes[i]);
@@ -98,8 +98,28 @@ std::initializer_list<double> target) noexcept {
   double *weights_back = layer.getWeights();
   for(unsigned int j = 0; j < S; j++)
     for(unsigned int i = 0; i < N + 1; i++)
-      weights_back[j * S + i] -= learning_rate * layer[i] * sigma[j];
+      weights_back[j * (S + 1) + i] -=  layer[i] * sigma[j];
   
+  layer.setWeights(weights_back);
+};
+
+template <unsigned int S, unsigned int D>
+template <unsigned int N>
+inline void NN::Layer<S, D>::backprop(Layer<D, N> &layer) noexcept {
+  const double *sigma_next = layer.getSigma();
+  for(unsigned int i = 0; i < S; i++){
+    double sum = 0;
+    for(unsigned int j = 0; j < D; j++)
+      sum += weights[j * S + i] * sigma_next[j];
+    sigma[i] = sum;
+    if(activation) activation->fun_prime(nodes[i]);
+  }
+
+  double *weights_back = layer.getWeights();
+  for(unsigned int j = 0; j < S; j++)
+    for(unsigned int i = 0; i < N + 1; i++)
+      weights_back[j * (S + 1) + i] -=  layer[i] * sigma[j];
+
   layer.setWeights(weights_back);
 };
 

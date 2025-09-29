@@ -51,28 +51,34 @@ void NeuralNetwork() {
   // backprop
   fmt::print(fg(fmt::color::crimson), "backprop\n");
   NN::Layer<2, 2> c;
+  NN::Layer<2, 2> h;
   NN::Layer<2, 0> d;
   c.setNodes({2, 1});
-  c.setWeights({1, 1, 1,   1, 1, 1});
-  c.forward(d);
+  c.forward(h);
+  h.forward(d);
+  d.backprop_initial(h, {3, 3, 1});
+  // h.backprop(d);
+  // c.backprop(h);
   fmt::print(fg(fmt::color::violet), "{}\n", c.print());
-  fmt::print(fg(fmt::color::violet), "{}\n", d.print());
-  d.backprop_initial(c, {3, 3, 1});
-  fmt::print(fg(fmt::color::violet), "{}\n", c.print());
+  fmt::print(fg(fmt::color::violet), "{}\n", h.print());
   fmt::print(fg(fmt::color::violet), "{}\n", d.print());
 
-  // sum learn
-  fmt::print(fg(fmt::color::crimson), "sum\n");
+  // xor learn
+  fmt::print(fg(fmt::color::crimson), "xor\n");
   std::srand(std::time(nullptr));
-  NN::Layer<2, 1> e;
-  NN::Layer<1, 0> f;
-  for(unsigned int i = 0; i < 1000000; i++) {
-    double x = rand()%10;
-    double y = rand()%10;
+  NN::Layer<2, 2> e;
+  NN::Layer<2, 1> f;
+  NN::Layer<1, 0> g;
+  for(unsigned int i = 0; i < 10000; i++) {
+    double x = rand()%2;
+    double y = rand()%2;
     e.setNodes({x, y});
     e.forward(f);
-    double res = x + y;
-    f.backprop_initial(e, {res});
+    f.forward(g);
+    double res = x != y;
+    g.backprop_initial(f, {res});
+    // f.backprop(g);
+    // e.backprop(f);
   }
 
   double avg = 0;
@@ -81,13 +87,15 @@ void NeuralNetwork() {
     double y = rand()%2;
     e.setNodes({x, y});
     e.forward(f);
-    double res = x && y;
-    if(f[1] == res) avg += 1;
+    f.forward(g);
+    double res = x != y;
+    if(g[1] == res) avg += 1;
   }
 
   avg /= 100;
   fmt::print(fg(fmt::color::red), "avg: {}\n", avg);
   fmt::print(fg(fmt::color::violet), "{}\n", e.print());
   fmt::print(fg(fmt::color::violet), "{}\n", f.print());
+  fmt::print(fg(fmt::color::violet), "{}\n", g.print());
 };
 };

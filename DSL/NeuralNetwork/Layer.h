@@ -8,11 +8,11 @@ template<unsigned int S, unsigned int D>
 class Layer{
 private:
   double nodes[S + 1];
-  double sigma[S + 1];
+  double sigma[S];
   double weights[(S + 1) * D];
   iActivation *activation = nullptr;
   iLoss *loss = nullptr;
-  double learning_rate = 0.0005;
+  double learning_rate = 0.05;
 
 public:
   Layer() noexcept;   // O(n)
@@ -37,7 +37,7 @@ public:
   template<unsigned int N>
   void backprop_initial(Layer<N, S> &layer, std::initializer_list<double> target) noexcept;
   template<unsigned int N>
-  void backprop(Layer<N, S> layer) noexcept;
+  void backprop(Layer<D, N> &layer) noexcept;
   const double *getSigma() const noexcept;
 
   std::string print() const;    // O(n)
