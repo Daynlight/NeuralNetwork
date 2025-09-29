@@ -5,6 +5,7 @@ project(DSL LANGUAGES CXX)
 set(headers
   Essentials/
   "Math/"
+  NeuralNetwork/
 )
 
 set(src
