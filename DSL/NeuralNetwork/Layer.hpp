@@ -21,6 +21,13 @@ inline const double *&NN::Layer<S, D>::getNodes() const noexcept {
 }
 
 template <unsigned int S, unsigned int D>
+inline void NN::Layer<S, D>::setNodes(std::initializer_list<double> nodes) noexcept {
+  unsigned int i = 0;
+  for (auto it = nodes.begin(); it != nodes.end() && i < S; ++it, ++i)
+    this->nodes[i] = *it;
+}
+
+template <unsigned int S, unsigned int D>
 inline const double *&NN::Layer<S, D>::getWeights() const noexcept {
   return weights;
 }
@@ -68,7 +75,7 @@ inline std::string NN::Layer<S, D>::print() const {
 
     if(i % (S + 1) == 0 && i <= (S + 1) * D && i != 0) 
       s += "], [";
-      
+
     s += std::to_string(el);
     first = false;
     i++;

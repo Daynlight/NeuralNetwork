@@ -14,14 +14,10 @@ private:
 
 public:
   Layer() noexcept;
-  Layer(const double &nodes, 
-        const double &weights, 
-        LossType loss_type = LossType::MSETYPE,
-        ActivationType activation_type = -1);
   ~Layer() noexcept;
   
   const double* &getNodes() const noexcept;
-  void setNodes(double nodes[S + 1]) noexcept;
+  void setNodes(std::initializer_list<double> nodes) noexcept;
   
   const double* &getWeights() const noexcept;
   void setWeights(double weights[(S + 1) * D]) noexcept;

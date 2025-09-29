@@ -8,5 +8,7 @@ void NeuralNetwork() {
   // create Layer
   NN::Layer<1, 1> layer;
   fmt::print(fg(fmt::color::violet), "{}\n\n", layer.print());
+  layer.setNodes({6});
+  fmt::print(fg(fmt::color::violet), "{}\n\n", layer.print());
 };
 };
