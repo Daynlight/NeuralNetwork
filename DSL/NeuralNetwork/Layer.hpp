@@ -4,7 +4,9 @@ template <unsigned int S, unsigned int D>
 inline NN::Layer<S, D>::Layer() noexcept {
   for(double &el : weights) 
     el = ((rand() % 2000) / 1000.0 - 1) * 0.1;
-  loss = new MSE();
+
+  loss = getLossFromType(LossType::MSETYPE);
+  activation = getActivationFromType(ActivationType::LINEARTYPE);
 }
 
 template <unsigned int S, unsigned int D>

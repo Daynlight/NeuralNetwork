@@ -31,7 +31,7 @@ void NeuralNetwork() {
   fmt::print(fg(fmt::color::crimson), "set Activation\n");
   layer.setActivation(NN::ActivationType::SIGMOIDTYPE);
   fmt::print(fg(fmt::color::violet), "{}\n", layer.print());
-  layer.setActivation(NN::ActivationType::NOTYPE);
+  layer.setActivation(NN::ActivationType::LINEARTYPE);
   fmt::print(fg(fmt::color::violet), "{}\n", layer.print());
   
   // forward

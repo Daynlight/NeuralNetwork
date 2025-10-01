@@ -4,6 +4,29 @@
 #include <string>
 
 namespace NN {
+//----------------------------------------------------------------//
+//------------------------ Representation ------------------------//
+//----------------------------------------------------------------//
+// Nodes are S + 1 double Array where last one is always 1 for bias
+// todo: will be changed to Math:Vec in feature
+//----------------------------------------------------------------//
+// Weights is matrix S + 1 Columns and D Rows, D is 1 less then 
+// second layer nodes because last node is always 1 and we don't
+// update it
+// todo: will be change to Math::Matrix in feature
+//----------------------------------------------------------------//
+// Loss is interfaced to be function and prime function look Loss.h
+// always setted default MSE f(x) = ((x - t)^2)/2, f'(x) = x - t
+// todo: change from pointer to function type
+//----------------------------------------------------------------//
+// Activation is interfaced to be function and prime function
+// look Activation.h always setted default Linear f(x) = x, f'(x) = 1
+// todo: change from pointer to function type
+//----------------------------------------------------------------//
+// Learning rate indicate learning speed
+// todo: will changed to modes default static and dynamic
+//----------------------------------------------------------------//
+
 template<unsigned int S, unsigned int D>
 class Layer{
 private:
@@ -15,7 +38,7 @@ private:
   double learning_rate = 0.0005;
 
 public:
-  Layer() noexcept;   // O(n)
+  Layer() noexcept;   // O((S+1) * D)
   ~Layer() noexcept;  // O(1)
   
   double* getNodes() noexcept;   // O(1)
