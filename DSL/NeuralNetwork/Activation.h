@@ -22,8 +22,19 @@ class Linear : public iActivation{
 
 class Sigmoid : public iActivation{
   ActivationType getType() { return ActivationType::SIGMOIDTYPE; };
-  double fun(double x) { return 1 / (1 + exp(-x)); }
-  double fun_prime(double x) { return fun(x) * (1 - fun(x)); };
+  double fun(double x) { 
+    if(x >= 0){
+      return 1.0 / (1.0 + std::exp(-x));
+    }
+    else {
+      double z = std::exp(x);
+      return z / (1.0 + z);
+    };
+  };
+  double fun_prime(double x) { 
+    double y = fun(x);
+    return y * (1 - y); 
+  };
 };
 
 iActivation* getActivationFromType(ActivationType type){

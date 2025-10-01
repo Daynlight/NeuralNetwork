@@ -47,6 +47,16 @@ inline void NN::Layer<S, D>::setWeights(const double *weights) {
 }
 
 template <unsigned int S, unsigned int D>
+inline double NN::Layer<S, D>::getLearningRate() const noexcept{
+  return learning_rate;
+}
+
+template <unsigned int S, unsigned int D>
+inline void NN::Layer<S, D>::setLearningRate(double learning_rate){
+  this->learning_rate = learning_rate;
+}
+
+template <unsigned int S, unsigned int D>
 inline const NN::iActivation *NN::Layer<S, D>::getActivation() const noexcept {
   return activation;
 }

@@ -35,7 +35,7 @@ private:
   double weights[(S + 1) * D];
   iActivation *activation = nullptr;
   iLoss *loss = nullptr;
-  double learning_rate = 0.0005;
+  double learning_rate = 0.005;
 
 public:
   Layer() noexcept;   // O((S+1) * D)
@@ -47,6 +47,9 @@ public:
   double* getWeights() noexcept;   // O(1)
   void setWeights(std::initializer_list<double> weights) noexcept;    // O(n)
   void setWeights(const double *weights);
+
+  double getLearningRate() const noexcept;    // O(1)
+  void setLearningRate(double learning_rate);    // O(1)
 
   const iActivation *getActivation() const noexcept;    // O(1)
   void setActivation(ActivationType type) noexcept;   // O(1)

@@ -66,34 +66,35 @@ void NeuralNetwork() {
   // minus learn
   fmt::print(fg(fmt::color::crimson), "minus learn\n");
   std::srand(std::time(nullptr));
-  NN::Layer<2, 2> e;
-  NN::Layer<2, 1> p;
+  NN::Layer<2, 1> e;
   NN::Layer<1, 0> g;
 
-  for(unsigned int i = 0; i < 500000; i++) {
-    double x = (rand()%2);
-    double y = (rand()%2);
+  const double learning_rate = 0.001;
+  const unsigned int modulo_number = 2;
+  e.setLearningRate(learning_rate);
+  g.setLearningRate(learning_rate);
+  
+  for(unsigned int i = 0; i < 10000; i++) {
+    double x = rand()%modulo_number;
+    double y = rand()%modulo_number;
     e.setNodes({x, y});
-    e.forward(p);
-    p.forward(g);
+    e.forward(g);
     double res = x - y;
-    g.backprop_initial(p, {res});
-    p.backprop(g);
-    e.backprop(p);
+    g.backprop_initial(e, {res});
   }
 
   double avg = 0;
-  for(unsigned int i = 0; i < 100; i++) {
-    double x = (rand()%2);
-    double y = (rand()%2);
+  const unsigned int tests = 1000;
+  for(unsigned int i = 0; i < tests; i++) {
+    double x = rand()%modulo_number;
+    double y = rand()%modulo_number;
     e.setNodes({x, y});
-    e.forward(p);
-    p.forward(g);
+    e.forward(g);
     double res = x - y;
     if((g[0] > 0.5 ? 1 : 0) == res) avg += 1;
   }
 
   fmt::print(fg(fmt::color::violet), "{}\n", g.print());
-  fmt::print(fg(fmt::color::red), "avg: {}%\n", avg);
+  fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg/tests) * 100);
 };
 };
