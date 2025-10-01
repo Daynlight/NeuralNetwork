@@ -69,31 +69,35 @@ void NeuralNetwork() {
   NN::Layer<2, 1> e;
   NN::Layer<1, 0> g;
 
-  const double learning_rate = 0.001;
-  const unsigned int modulo_number = 2;
+  const double learning_rate = 0.1;
+  const unsigned int modulo_number = 1000;
+  const unsigned int learn_samples = 1000;
+  const unsigned int tests = 100000;
+  const double tolerance = 0.0000001;
+
   e.setLearningRate(learning_rate);
   g.setLearningRate(learning_rate);
   
-  for(unsigned int i = 0; i < 10000; i++) {
-    double x = rand()%modulo_number;
-    double y = rand()%modulo_number;
+  for(unsigned int i = 0; i < learn_samples; i++) {
+    double x = (rand()%modulo_number) / modulo_number;
+    double y = (rand()%modulo_number) / modulo_number;
     e.setNodes({x, y});
     e.forward(g);
-    double res = x - y;
+    double res = (x - y + 1.0) / 2.0;
     g.backprop_initial(e, {res});
   }
 
   double avg = 0;
-  const unsigned int tests = 1000;
   for(unsigned int i = 0; i < tests; i++) {
-    double x = rand()%modulo_number;
-    double y = rand()%modulo_number;
+    double x = (rand()%modulo_number) / modulo_number;
+    double y = (rand()%modulo_number) / modulo_number;
     e.setNodes({x, y});
     e.forward(g);
-    double res = x - y;
-    if((g[0] > 0.5 ? 1 : 0) == res) avg += 1;
+    double res = (x - y + 1.0) / 2.0;
+    if(fabs(g[0] - res) < tolerance) avg += 1;
   }
 
+  fmt::print(fg(fmt::color::violet), "{}\n", e.print());
   fmt::print(fg(fmt::color::violet), "{}\n", g.print());
   fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg/tests) * 100);
 };
