@@ -63,42 +63,73 @@ void NeuralNetwork() {
   fmt::print(fg(fmt::color::violet), "{}\n", h.print());
   fmt::print(fg(fmt::color::violet), "{}\n", d.print());
 
-  // minus learn
-  fmt::print(fg(fmt::color::crimson), "minus learn\n");
+  // xor learn
+  fmt::print(fg(fmt::color::crimson), "xor learn\n");
   std::srand(std::time(nullptr));
-  NN::Layer<2, 1> e;
+  NN::Layer<2, 2> e;
+  NN::Layer<2, 1> f;
   NN::Layer<1, 0> g;
 
   const double learning_rate = 0.1;
-  const unsigned int modulo_number = 1000;
-  const unsigned int learn_samples = 1000;
-  const unsigned int tests = 100000;
-  const double tolerance = 0.0000001;
+  const unsigned int modulo_number = 2;
+  const unsigned int learn_samples = 1000000;
+  const unsigned int tests = 100;
+  const double tolerance = 0.000000001;
 
   e.setLearningRate(learning_rate);
+  f.setLearningRate(learning_rate);
   g.setLearningRate(learning_rate);
+
+  e.setActivation(NN::ActivationType::SIGMOIDTYPE);
+  f.setActivation(NN::ActivationType::SIGMOIDTYPE);
   
   for(unsigned int i = 0; i < learn_samples; i++) {
-    double x = (rand()%modulo_number) / modulo_number;
-    double y = (rand()%modulo_number) / modulo_number;
+    double x = (rand()%modulo_number);
+    double y = (rand()%modulo_number);
     e.setNodes({x, y});
-    e.forward(g);
-    double res = (x - y + 1.0) / 2.0;
-    g.backprop_initial(e, {res});
+    e.forward(f);
+    f.forward(g);
+    double res = x != y;
+    g.backprop_initial(f, {res});
+    f.backprop(g);
+    e.backprop(f);
   }
 
   double avg = 0;
   for(unsigned int i = 0; i < tests; i++) {
-    double x = (rand()%modulo_number) / modulo_number;
-    double y = (rand()%modulo_number) / modulo_number;
+    double x = (rand()%modulo_number);
+    double y = (rand()%modulo_number);
     e.setNodes({x, y});
-    e.forward(g);
-    double res = (x - y + 1.0) / 2.0;
+    e.forward(f);
+    f.forward(g);
+    double res = x != y;
     if(fabs(g[0] - res) < tolerance) avg += 1;
   }
 
+
   fmt::print(fg(fmt::color::violet), "{}\n", e.print());
+  fmt::print(fg(fmt::color::violet), "{}\n", f.print());
   fmt::print(fg(fmt::color::violet), "{}\n", g.print());
   fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg/tests) * 100);
+
+  e.setNodes({0, 0});
+  e.forward(f);
+  f.forward(g);
+  fmt::print(fg(fmt::color::red), "0, 0: -> {}\n", floor(g[0] + 0.5));
+
+  e.setNodes({0, 1});
+  e.forward(f);
+  f.forward(g);
+  fmt::print(fg(fmt::color::red), "0, 1: -> {}\n", floor(g[0] + 0.5));
+
+  e.setNodes({1, 0});
+  e.forward(f);
+  f.forward(g);
+  fmt::print(fg(fmt::color::red), "1, 0 -> {}\n", floor(g[0] + 0.5));
+
+  e.setNodes({1, 1});
+  e.forward(f);
+  f.forward(g);
+  fmt::print(fg(fmt::color::red), "1, 1 -> {}\n", floor(g[0] + 0.5));
 };
 };
