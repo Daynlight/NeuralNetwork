@@ -70,9 +70,9 @@ void NeuralNetwork() {
   NN::Layer<2, 1> f;
   NN::Layer<1, 0> g;
 
-  const double learning_rate = 0.1;
+  const double learning_rate = 0.001;
   const unsigned int modulo_number = 2;
-  const unsigned int learn_samples = 500000;
+  const unsigned int learn_samples = 50000;
   const unsigned int tests = 10000;
   const double tolerance = 0.1;
 
@@ -84,12 +84,12 @@ void NeuralNetwork() {
   f.setActivation(NN::ActivationType::SIGMOIDTYPE);
   
   for(unsigned int i = 0; i < learn_samples; i++) {
-    double x = (rand()%modulo_number);
-    double y = (rand()%modulo_number);
+    double x = (rand()%2);
+    double y = (rand()%2);
     e.setNodes({x, y});
     e.forward(f);
     f.forward(g);
-    double res = x != y;
+    double res = (x != y) ? 1.0 : 0.0;
     g.backprop_initial(f, {res});
     f.backprop(g);
     e.backprop(f);
@@ -97,12 +97,12 @@ void NeuralNetwork() {
 
   double avg = 0;
   for(unsigned int i = 0; i < tests; i++) {
-    double x = (rand()%modulo_number);
-    double y = (rand()%modulo_number);
+    double x = (rand()%2);
+    double y = (rand()%2);
     e.setNodes({x, y});
     e.forward(f);
     f.forward(g);
-    double res = x != y;
+    double res = (x != y) ? 1.0 : 0.0;
     if ((g[0] > 0.5 ? 1 : 0) == res) avg += 1;
   }
 
