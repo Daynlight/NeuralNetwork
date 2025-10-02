@@ -72,9 +72,9 @@ void NeuralNetwork() {
 
   const double learning_rate = 0.1;
   const unsigned int modulo_number = 2;
-  const unsigned int learn_samples = 1000000;
-  const unsigned int tests = 100;
-  const double tolerance = 0.000000001;
+  const unsigned int learn_samples = 500000;
+  const unsigned int tests = 10000;
+  const double tolerance = 0.1;
 
   e.setLearningRate(learning_rate);
   f.setLearningRate(learning_rate);
@@ -103,33 +103,33 @@ void NeuralNetwork() {
     e.forward(f);
     f.forward(g);
     double res = x != y;
-    if(fabs(g[0] - res) < tolerance) avg += 1;
+    if ((g[0] > 0.5 ? 1 : 0) == res) avg += 1;
   }
 
 
   fmt::print(fg(fmt::color::violet), "{}\n", e.print());
   fmt::print(fg(fmt::color::violet), "{}\n", f.print());
   fmt::print(fg(fmt::color::violet), "{}\n", g.print());
-  fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg/tests) * 100);
+  fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg / tests) * 100);
 
   e.setNodes({0, 0});
   e.forward(f);
   f.forward(g);
-  fmt::print(fg(fmt::color::red), "0, 0: -> {}\n", floor(g[0] + 0.5));
+  fmt::print(fg(fmt::color::red), "0, 0: -> {}\n", g[0] > 0.5 ? 1 : 0);
 
   e.setNodes({0, 1});
   e.forward(f);
   f.forward(g);
-  fmt::print(fg(fmt::color::red), "0, 1: -> {}\n", floor(g[0] + 0.5));
+  fmt::print(fg(fmt::color::red), "0, 1: -> {}\n", g[0] > 0.5 ? 1 : 0);
 
   e.setNodes({1, 0});
   e.forward(f);
   f.forward(g);
-  fmt::print(fg(fmt::color::red), "1, 0 -> {}\n", floor(g[0] + 0.5));
+  fmt::print(fg(fmt::color::red), "1, 0 -> {}\n", g[0] > 0.5 ? 1 : 0);
 
   e.setNodes({1, 1});
   e.forward(f);
   f.forward(g);
-  fmt::print(fg(fmt::color::red), "1, 1 -> {}\n", floor(g[0] + 0.5));
+  fmt::print(fg(fmt::color::red), "1, 1 -> {}\n", g[0] > 0.5 ? 1 : 0);
 };
 };
