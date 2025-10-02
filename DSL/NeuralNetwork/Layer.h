@@ -57,11 +57,9 @@ public:
   const iLoss *getLoss() const noexcept;    // O(1)
   void setLoss(LossType type) noexcept;   // O(1)
 
-  // fix: pre activation of nodes nodes will be save as not activated
   template<unsigned int N>
   void forward(Layer<D, N> &layer);   // O(n^2)
 
-  // fix: repair whole backprop
   template<unsigned int N>
   void backprop_initial(Layer<N, S> &layer, std::initializer_list<double> target) noexcept;
   template<unsigned int N>

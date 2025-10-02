@@ -119,13 +119,13 @@ inline void NN::Layer<S, D>::backprop(Layer<D, N> &next_layer) noexcept {
       for(unsigned int j = 0; j < D; ++j){
           sum += weights[j * (S + 1) + i] * sigma_next[j];
       }
-      sigma[i] = activation ? sum * activation->fun_prime(nodes[i]) : sum;
+      sigma[i] = sum * activation->fun_prime(nodes[i]);
     }
 
     double* weights_back = getWeights();
     for(unsigned int j = 0; j < D; ++j){
         for(unsigned int i = 0; i < S; ++i){
-            weights_back[j * (S + 1) + i] -= learning_rate * nodes[i] * sigma_next[j];
+            weights_back[j * (S + 1) + i] -= learning_rate * activation->fun(nodes[i]) * sigma_next[j];
         }
         weights_back[j * (S + 1) + S] -= learning_rate * 1.0 * sigma_next[j];
     }
