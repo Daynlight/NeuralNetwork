@@ -43,6 +43,7 @@ public:
   
   double* getNodes() noexcept;   // O(1)
   void setNodes(std::initializer_list<double> nodes) noexcept;    // O(n)
+  double getActivatedNode(unsigned int i);    // O(1)
   
   double* getWeights() noexcept;   // O(1)
   void setWeights(std::initializer_list<double> weights) noexcept;    // O(n)

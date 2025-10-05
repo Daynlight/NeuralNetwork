@@ -28,6 +28,11 @@ inline void NN::Layer<S, D>::setNodes(std::initializer_list<double> nodes) noexc
 }
 
 template <unsigned int S, unsigned int D>
+inline double NN::Layer<S, D>::getActivatedNode(unsigned int i){
+  return activation->fun(nodes[i]);
+}
+
+template <unsigned int S, unsigned int D>
 inline double *NN::Layer<S, D>::getWeights() noexcept {
   return weights;
 }
@@ -85,9 +90,10 @@ inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
   for(unsigned int i = 0; i < D; i++){
       double sum = 0;
       for(unsigned int j = 0; j < S + 1; j++)
-          sum += activation->fun(nodes[j]) * weights[i * (S + 1) + j];
+          sum += getActivatedNode(j) * weights[i * (S + 1) + j];
       layer[i] = sum;
   }
+  layer[D] = 1;
 }
 
 template <unsigned int S, unsigned int D>
@@ -96,13 +102,13 @@ inline void NN::Layer<S, D>::backprop_initial(Layer<N, S> &layer,
 std::initializer_list<double> target) noexcept {
   unsigned int i = 0;
   for (auto it = target.begin(); it != target.end() && i < S; ++it, ++i)
-    sigma[i] = loss->fun_prime(activation->fun(nodes[i]), *it) 
-      * activation->fun_prime(nodes[i]);
+    sigma[i] = loss->fun_prime(getActivatedNode(i), *it) 
+      * activation->fun_prime(layer[i]);
   
   double *weights_back = layer.getWeights();
   for(unsigned int i = 0; i < S; i++){
     for(unsigned int j = 0; j < N; j++)
-      weights_back[i * (N + 1) + j] -= learning_rate * sigma[i] * activation->fun(layer[j]);
+      weights_back[i * (N + 1) + j] -= learning_rate * sigma[i] * nodes[j];
     weights_back[i * (N + 1) + N] -= learning_rate * sigma[i] * 1.0;
   }
   
@@ -125,7 +131,7 @@ inline void NN::Layer<S, D>::backprop(Layer<D, N> &next_layer) noexcept {
     double* weights_back = getWeights();
     for(unsigned int j = 0; j < D; ++j){
         for(unsigned int i = 0; i < S; ++i){
-            weights_back[j * (S + 1) + i] -= learning_rate * activation->fun(nodes[i]) * sigma_next[j];
+            weights_back[j * (S + 1) + i] -= learning_rate * getActivatedNode(i) * sigma_next[j];
         }
         weights_back[j * (S + 1) + S] -= learning_rate * 1.0 * sigma_next[j];
     }

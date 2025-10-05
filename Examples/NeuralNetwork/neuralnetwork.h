@@ -3,10 +3,9 @@
 #include <cstdlib>
 #include <ctime>
 
-namespace Examples{
-void NeuralNetwork() {
-  fmt::print(fg(fmt::color::aquamarine) , "=== NeuralNetwork Example ===\n");
 
+namespace Examples{
+void BaseOperations(){
   // create Layer
   fmt::print(fg(fmt::color::crimson), "create Layer\n");
   NN::Layer<2, 1> layer;
@@ -33,7 +32,9 @@ void NeuralNetwork() {
   fmt::print(fg(fmt::color::violet), "{}\n", layer.print());
   layer.setActivation(NN::ActivationType::LINEARTYPE);
   fmt::print(fg(fmt::color::violet), "{}\n", layer.print());
-  
+}
+
+void Forward(){
   // forward
   fmt::print(fg(fmt::color::crimson), "forward\n");
   NN::Layer<4, 3> a;
@@ -47,12 +48,16 @@ void NeuralNetwork() {
   // 5 * 1 + 2 * (-4) + 1 * 2 + 3 * 5 + 6 = 20 
   fmt::print(fg(fmt::color::violet), "{}\n", a.print());
   fmt::print(fg(fmt::color::violet), "{}\n", b.print());
+}
 
+void Backprop(){
   // backprop
   fmt::print(fg(fmt::color::crimson), "backprop\n");
   NN::Layer<2, 2> c;
   NN::Layer<2, 2> h;
   NN::Layer<2, 0> d;
+  c.setWeights({1,1,1,  1,1,1});
+  h.setWeights({1,1,1,   1,1,1});
   c.setNodes({2, 1});
   c.forward(h);
   h.forward(d);
@@ -62,74 +67,63 @@ void NeuralNetwork() {
   fmt::print(fg(fmt::color::violet), "{}\n", c.print());
   fmt::print(fg(fmt::color::violet), "{}\n", h.print());
   fmt::print(fg(fmt::color::violet), "{}\n", d.print());
+}
 
-  // xor learn
-  fmt::print(fg(fmt::color::crimson), "xor learn\n");
+void LearnMinus(){
+  // minus learn
+  fmt::print(fg(fmt::color::crimson), "minus learn\n");
   std::srand(std::time(nullptr));
-  NN::Layer<2, 2> e;
-  NN::Layer<2, 1> f;
+  NN::Layer<2, 1> e;
   NN::Layer<1, 0> g;
 
-  const double learning_rate = 0.001;
-  const unsigned int modulo_number = 2;
-  const unsigned int learn_samples = 50000;
-  const unsigned int tests = 10000;
-  const double tolerance = 0.1;
+  const double learning_rate = 0.01;
+  const unsigned int modulo_number = 200;
+  const unsigned int learn_samples = 1000000;
+  const unsigned int tests = 100;
+  const double tolerance = 0.0000001;
 
   e.setLearningRate(learning_rate);
-  f.setLearningRate(learning_rate);
   g.setLearningRate(learning_rate);
 
-  e.setActivation(NN::ActivationType::SIGMOIDTYPE);
-  f.setActivation(NN::ActivationType::SIGMOIDTYPE);
-  
   for(unsigned int i = 0; i < learn_samples; i++) {
-    double x = (rand()%2);
-    double y = (rand()%2);
+    double x = (rand()%modulo_number) / modulo_number;
+    double y = (rand()%modulo_number) / modulo_number;
     e.setNodes({x, y});
-    e.forward(f);
-    f.forward(g);
-    double res = (x != y) ? 1.0 : 0.0;
-    g.backprop_initial(f, {res});
-    f.backprop(g);
-    e.backprop(f);
+    e.forward(g);
+    double res = (x - y);
+    g.backprop_initial(e, {res});
   }
 
   double avg = 0;
   for(unsigned int i = 0; i < tests; i++) {
-    double x = (rand()%2);
-    double y = (rand()%2);
+    double x = (rand()%modulo_number) / modulo_number;
+    double y = (rand()%modulo_number) / modulo_number;
     e.setNodes({x, y});
-    e.forward(f);
-    f.forward(g);
-    double res = (x != y) ? 1.0 : 0.0;
-    if ((g[0] > 0.5 ? 1 : 0) == res) avg += 1;
+    e.forward(g);
+    double res = (x - y);
+    if ((fabs(g[0] - res) < tolerance ? 1 : 0)) avg += 1;
   }
 
-
-  fmt::print(fg(fmt::color::violet), "{}\n", e.print());
-  fmt::print(fg(fmt::color::violet), "{}\n", f.print());
-  fmt::print(fg(fmt::color::violet), "{}\n", g.print());
   fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg / tests) * 100);
 
-  e.setNodes({0, 0});
-  e.forward(f);
-  f.forward(g);
-  fmt::print(fg(fmt::color::red), "0, 0: -> {}\n", g[0] > 0.5 ? 1 : 0);
+  e.setNodes({20.0 / modulo_number, 5.0 / modulo_number});
+  e.forward(g);
+  fmt::print(fg(fmt::color::violet), "20 - 5 = {}\n", g[0]);
+};
 
-  e.setNodes({0, 1});
-  e.forward(f);
-  f.forward(g);
-  fmt::print(fg(fmt::color::red), "0, 1: -> {}\n", g[0] > 0.5 ? 1 : 0);
 
-  e.setNodes({1, 0});
-  e.forward(f);
-  f.forward(g);
-  fmt::print(fg(fmt::color::red), "1, 0 -> {}\n", g[0] > 0.5 ? 1 : 0);
 
-  e.setNodes({1, 1});
-  e.forward(f);
-  f.forward(g);
-  fmt::print(fg(fmt::color::red), "1, 1 -> {}\n", g[0] > 0.5 ? 1 : 0);
+
+
+
+
+
+
+
+
+
+void NeuralNetwork() {
+  fmt::print(fg(fmt::color::aquamarine) , "=== NeuralNetwork Example ===\n");
+  LearnMinus();
 };
 };
