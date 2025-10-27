@@ -1,7 +1,8 @@
 #pragma once
-#include "Activation.h"
-#include "Loss.h"
+#include "Activation/Activation.h"
+#include "Loss/Loss.h"
 #include <string>
+#include <stdexcept>
 
 namespace NN {
 //----------------------------------------------------------------//

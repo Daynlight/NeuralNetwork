@@ -18,42 +18,25 @@ endif()
 ########################### add submodules ########################### 
 add_subdirectory(vendor/fmt)
 
-add_subdirectory(DSL)
+add_subdirectory(NeuralNetwork)
 
 ########################### Example Project ########################### 
 project(Example LANGUAGES CXX)
 set(headers
-  DSL/
-  vendor/
+  NeuralNetwork/
+  vendor/fmt/include/
   Examples/
   ${CMAKE_SOURCE_DIR}/
 )
 set(src 
-  example.cpp
+  main.cpp
 )
+
 add_executable(Example ${src} ${headers})
 target_include_directories(Example PRIVATE ${headers})
-target_link_libraries(Example PRIVATE DSL)
+target_link_libraries(Example PRIVATE NeuralNetwork)
 target_link_libraries(Example PRIVATE fmt)
 
-########################### Tests Project ########################### 
-project(Tests LANGUAGES CXX)
-set(headers
-  DSL/
-  vendor/
-  Tests/
-  ${CMAKE_SOURCE_DIR}/
-)
-set(src 
-  tests.cpp
-)
-add_executable(Tests ${src} ${headers})
-target_include_directories(Tests PRIVATE ${headers})
-target_link_libraries(Tests PRIVATE DSL)
-target_link_libraries(Tests PRIVATE fmt)
-
-enable_testing()
-add_test(NAME Tests COMMAND Tests)
 
 ############################## Set for VS ##############################
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Main)
