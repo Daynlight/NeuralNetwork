@@ -46,23 +46,29 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel
 
+
+
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest -R Tests --output-on-failure
 
+
+
     - name: Prepare release files
       run: |
         mkdir -p $GITHUB_WORKSPACE/res
-        cp -r ./build/bin/*NeuralNetwork* $GITHUB_WORKSPACE/res/
+        cp ./build/bin/*NeuralNetwork* $GITHUB_WORKSPACE/res/
         cp ./LICENSE $GITHUB_WORKSPACE/res/
         cp ./README.md $GITHUB_WORKSPACE/res/
-        cp -r ./NeuralNetwork/ $GITHUB_WORKSPACE/res/
-        rm -rf $GITHUB_WORKSPACE/res/**.cpp
+        cp -r ./NeuralNetwork/**.h $GITHUB_WORKSPACE/res/
+        
         find . -mindepth 1 -maxdepth 1 ! -name 'res' ! -name '.git' -exec rm -rf {} +
         cp -r $GITHUB_WORKSPACE/res/* .
         rm -rf $GITHUB_WORKSPACE/res/
 
-    - name: Commit DSL release with version
+
+
+    - name: Commit NeuralNetwork release with version
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
