@@ -17,3 +17,7 @@ add_subdirectory(NeuralNetwork)
 
 add_subdirectory(Examples)
 add_subdirectory(Tests)
+
+########################### tests ###########################
+enable_testing()
+add_test(NAME UnitTests COMMAND UnitTests)

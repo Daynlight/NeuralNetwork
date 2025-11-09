@@ -17,12 +17,17 @@ public:
   void eq(const std::string& message, const T& a, const T& b){
     total++;
     if(a != b){
-      fmt::print(fg(fmt::color::dark_golden_rod) , "%s\n", message.c_str());
+      fmt::print(fg(fmt::color::dark_golden_rod) , "{}\n", message.c_str());
       return;
     };
 
     passed++;
   };
 
+
+  bool result(){
+    fmt::print(fg(fmt::color::dark_golden_rod) , "{}/{} passed\n", passed, total);
+    return passed == total;
+  }
 };
 };
