@@ -53,10 +53,11 @@ jobs:
     - name: Prepare release files
       run: |
         mkdir -p $GITHUB_WORKSPACE/res
-        cp -r ./build/bin/*DSL* $GITHUB_WORKSPACE/res/
-        cp -r ./docs/ $GITHUB_WORKSPACE/res/
+        cp -r ./build/bin/*NeuralNetwork* $GITHUB_WORKSPACE/res/
         cp ./LICENSE $GITHUB_WORKSPACE/res/
         cp ./README.md $GITHUB_WORKSPACE/res/
+        cp -r ./NeuralNetwork/ $GITHUB_WORKSPACE/res/
+        rm -rf $GITHUB_WORKSPACE/res/**.cpp
         find . -mindepth 1 -maxdepth 1 ! -name 'res' ! -name '.git' -exec rm -rf {} +
         cp -r $GITHUB_WORKSPACE/res/* .
         rm -rf $GITHUB_WORKSPACE/res/
