@@ -1,13 +1,13 @@
 #include "fmt/base.h"
 #include "fmt/color.h"
-#include "Examples/example.h"
+#include "NeuralNetwork.h"
 
 int main(){
   fmt::print(fg(fmt::color::dark_golden_rod) , "=======================\n");
   fmt::print(fg(fmt::color::dark_golden_rod) , "====== Examples ======\n");
   fmt::print(fg(fmt::color::dark_golden_rod) , "======================\n");
 
-  Examples::NeuralNetwork();
+  Examples::Examples();
 
   return 0;
-}
+};

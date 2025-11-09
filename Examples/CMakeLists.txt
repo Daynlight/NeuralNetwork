@@ -9,11 +9,20 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/output)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-########################### add submodules ########################### 
-add_subdirectory(vendor/fmt)
 
-########################### add subdirectories ########################### 
-add_subdirectory(NeuralNetwork)
+########################### Example Project ########################### 
+project(Example LANGUAGES CXX)
+set(headers
+  ${CMAKE_CURRENT_SOURCE_DIR}/
+  ${CMAKE_SOURCE_DIR}/
+  ${CMAKE_SOURCE_DIR}/vendor/fmt/include/
+)
 
-add_subdirectory(Examples)
-add_subdirectory(Tests)
+set(src 
+  main.cpp
+)
+
+add_executable(Example ${src} ${headers})
+target_include_directories(Example PRIVATE ${headers})
+target_link_libraries(Example PRIVATE NeuralNetwork)
+target_link_libraries(Example PRIVATE fmt)

@@ -9,6 +9,8 @@
 
 namespace Examples{
 void BaseOperations(){
+  fmt::print(fg(fmt::color::aquamarine) , "### BaseOperations\n");
+  
   // create Layer
   fmt::print(fg(fmt::color::crimson), "create Layer\n");
   NN::Layer<2, 1> layer;
@@ -128,5 +130,13 @@ void LearnMinus(){
 void NeuralNetwork() {
   fmt::print(fg(fmt::color::aquamarine) , "=== NeuralNetwork Example ===\n");
   LearnMinus();
+};
+
+
+
+
+
+void Examples(){
+  BaseOperations();
 };
 };
