@@ -3,6 +3,8 @@ name: Build & Run Tests
 on:
   pull_request:
     branches: [ "main", "dev" ]
+  push:
+    branches: [ "main", "dev" ]
   workflow_dispatch:
 
 jobs:
@@ -30,7 +32,7 @@ jobs:
       - name: Build Tests
         shell: bash
         run: |
-          cmake --build build --target Tests --parallel
+          cmake --build build --target UnitTests --parallel
 
       - name: Run Tests
         shell: bash
