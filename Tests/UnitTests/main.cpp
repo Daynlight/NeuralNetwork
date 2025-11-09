@@ -9,8 +9,9 @@ int main(){
 
   UnitTests::Assert assert;
 
-  assert.eq<int>("Hello", 1, 1);
 
+
+  
   if(!assert.result())
     return -1;
   
