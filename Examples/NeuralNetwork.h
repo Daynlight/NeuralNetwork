@@ -81,39 +81,43 @@ void LearnMinus(){
   NN::Layer<2, 1> e;
   NN::Layer<1, 0> g;
 
-  const double learning_rate = 0.01;
-  const unsigned int modulo_number = 200;
-  const unsigned int learn_samples = 1000000;
+  const double learning_rate = 0.001;
+  const unsigned int modulo_number = 100;
+  const unsigned int learn_samples = 100000;
   const unsigned int tests = 100;
-  const double tolerance = 0.0000001;
+  const double tolerance = 1.0;
 
   e.setLearningRate(learning_rate);
   g.setLearningRate(learning_rate);
 
   for(unsigned int i = 0; i < learn_samples; i++) {
-    double x = (rand()%modulo_number) / modulo_number;
-    double y = (rand()%modulo_number) / modulo_number;
-    e.setNodes({x, y});
+    double x = (rand()%modulo_number);
+    double y = (rand()%modulo_number);
+    e.setNodes({x / modulo_number, y / modulo_number});
     e.forward(g);
-    double res = (x - y);
+    double res = ((x - y) / modulo_number);
     g.backprop_initial(e, {res});
+    e.backprop(g);
   }
 
   double avg = 0;
   for(unsigned int i = 0; i < tests; i++) {
-    double x = (rand()%modulo_number) / modulo_number;
-    double y = (rand()%modulo_number) / modulo_number;
-    e.setNodes({x, y});
+    double x = (rand()%modulo_number);
+    double y = (rand()%modulo_number);
+    e.setNodes({x / modulo_number, y / modulo_number});
     e.forward(g);
-    double res = (x - y);
-    if ((fabs(g[0] - res) < tolerance ? 1 : 0)) avg += 1;
+    double res = (x - y) / modulo_number;
+    if ((fabs(g[0] - res) * modulo_number < tolerance ? 1 : 0)) {
+      fmt::print(fg(fmt::color::red), "{} - {}: {}%\n", x, y, g[0] * modulo_number);
+      avg += 1;
+    }
   }
 
   fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg / tests) * 100);
 
   e.setNodes({20.0 / modulo_number, 5.0 / modulo_number});
   e.forward(g);
-  fmt::print(fg(fmt::color::violet), "20 - 5 = {}\n", g[0]);
+  fmt::print(fg(fmt::color::violet), "20 - 5 = {}\n", g[0] * modulo_number);
 };
 
 
@@ -137,6 +141,7 @@ void NeuralNetwork() {
 
 
 void Examples(){
-  BaseOperations();
+  // BaseOperations();
+  LearnMinus();
 };
 };
