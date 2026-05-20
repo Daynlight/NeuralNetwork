@@ -176,7 +176,7 @@ void learnFunction(){
   const unsigned int tests = 10000;
   const double tolerance = 1.0;
 
-  NN::NeuralNetwork network = NN::NeuralNetwork<3, 16, 1>();
+  NN::NeuralNetwork network = NN::NeuralNetwork<3, 16, 4, 1>();
   network.setLearningRate(learning_rate);
 
   for(unsigned int i = 0; i < learn_samples; i++) {

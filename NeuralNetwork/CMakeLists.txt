@@ -8,7 +8,6 @@ set(headers
 
 set(src
   Layer/Layer.hpp
-  NeuralNetwork.hpp
   NeuralNetwork.cpp
 )
 
