@@ -1,8 +1,11 @@
 #pragma once
 #include "fmt/base.h"
 #include "fmt/color.h"
+#include <iomanip>
+#include <iostream>
 
 #include "Layer/Layer.h"
+#include "../NeuralNetwork/NeuralNetwork.h"
 #include <cstdlib>
 #include <ctime>
 
@@ -119,8 +122,115 @@ void LearnMinus(){
   fmt::print(fg(fmt::color::violet), "{} - {} = {}\n", x, y, g[0] * modulo_number);
 };
 
+void NeuralNetworkList(){
+  std::srand(std::time(nullptr));
+
+  const double learning_rate = 0.001;
+  const unsigned int modulo_number = 100;
+  const unsigned int learn_samples = 1000000;
+  const unsigned int tests = 1000000;
+  const double tolerance = 1.0;
+
+  NN::NeuralNetwork network = NN::NeuralNetwork<2, 1, 1>();
+  network.setLearningRate(learning_rate);
+
+  for(unsigned int i = 0; i < learn_samples; i++) {
+    double x = (rand()%modulo_number);
+    double y = (rand()%modulo_number);
+    network.setNodes({x / modulo_number, y / modulo_number});
+    network.forward();
+    double res = (x - y) / modulo_number;
+    network.backprop({res});
+  }
+
+  double avg = 0;
+  for(unsigned int i = 0; i < tests; i++) {
+    double x = (rand()%modulo_number);
+    double y = (rand()%modulo_number);
+    network.setNodes({x / modulo_number, y / modulo_number});
+    network.forward();
+    double res = (x - y) / modulo_number;
+    if ((fabs(network.getResult()[0] - res) * modulo_number < tolerance ? 1 : 0)) avg += 1;
+  }
+
+  fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg / tests) * 100);
+  double x = 100.0;
+  double y = 20.0;
+
+  network.setNodes({x / modulo_number, y / modulo_number});
+  network.forward();
+  fmt::print(fg(fmt::color::violet), "{} - {} = {}\n", x, y, network.getResult()[0] * modulo_number);
+};
 
 
+double fun(double x, double y, double z){
+  return 7 * x + 4 * y + z * 2 - 5;
+}
+
+void learnFunction(){
+  std::srand(std::time(nullptr));
+
+  const double learning_rate = 0.0001;
+  const unsigned int modulo_number = 50;
+  const unsigned int learn_samples = 1000000;
+  const unsigned int tests = 10000;
+  const double tolerance = 1.0;
+
+  NN::NeuralNetwork network = NN::NeuralNetwork<3, 16, 1>();
+  network.setLearningRate(learning_rate);
+
+  for(unsigned int i = 0; i < learn_samples; i++) {
+    double x = (rand()%modulo_number);
+    double y = (rand()%modulo_number);
+    double z = (rand()%modulo_number);
+
+    if (i % 100 == 0 || i == learn_samples - 1) {
+      float progress = (float)i / learn_samples;
+      int barWidth = 50;
+
+      std::cout << "\r[";
+      int pos = barWidth * progress;
+
+      for (int j = 0; j < barWidth; j++) {
+        if (j < pos) std::cout << "=";
+        else if (j == pos) std::cout << ">";
+        else std::cout << " ";
+      }
+
+      std::cout << "] "
+                << std::fixed << std::setprecision(2)
+                << progress * 100.0 << "%";
+
+      std::cout.flush();
+    }
+    
+    network.setNodes({x / modulo_number, y / modulo_number, z / modulo_number});
+    network.forward();
+    double res = fun(x, y, z) / modulo_number;
+    network.backprop({res});
+  }
+
+  printf("\n");
+  double avg = 0;
+  for(unsigned int i = 0; i < tests; i++) {
+    double x = (rand()%modulo_number);
+    double y = (rand()%modulo_number);
+    double z = (rand()%modulo_number);
+    network.setNodes({x / modulo_number, y / modulo_number, z / modulo_number});
+    network.forward();
+    double res = fun(x, y, z) / modulo_number;
+    if ((fabs(network.getResult()[0] - res) < tolerance ? 1 : 0)) avg += 1;
+  }
+
+  fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg / tests) * 100);
+  double x = 1.0;
+  double y = 2.0;
+  double z = 4.0;
+
+  network.setNodes({x / modulo_number, y / modulo_number, z / modulo_number});
+  network.forward();
+  fmt::print(fg(fmt::color::violet), "7 * {} + 4 * {} + 2 * {} - 5 = {}\n", x, y, z, network.getResult()[0] * modulo_number);
+};
 
 
 
@@ -141,6 +251,8 @@ void NeuralNetwork() {
 
 void Examples(){
   // BaseOperations();
-  LearnMinus();
+  // LearnMinus();
+  // NeuralNetworkList();
+  learnFunction();
 };
 };
