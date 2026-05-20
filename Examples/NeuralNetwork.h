@@ -111,10 +111,12 @@ void LearnMinus(){
   }
 
   fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg / tests) * 100);
+  double x = 100.0;
+  double y = 20.0;
 
-  e.setNodes({20.0 / modulo_number, 5.0 / modulo_number});
+  e.setNodes({x / modulo_number, y / modulo_number});
   e.forward(g);
-  fmt::print(fg(fmt::color::violet), "20 - 5 = {}\n", g[0] * modulo_number);
+  fmt::print(fg(fmt::color::violet), "{} - {} = {}\n", x, y, g[0] * modulo_number);
 };
 
 
