@@ -83,8 +83,8 @@ void LearnMinus(){
 
   const double learning_rate = 0.001;
   const unsigned int modulo_number = 100;
-  const unsigned int learn_samples = 100000;
-  const unsigned int tests = 100;
+  const unsigned int learn_samples = 1000000;
+  const unsigned int tests = 1000000;
   const double tolerance = 1.0;
 
   e.setLearningRate(learning_rate);
@@ -107,10 +107,7 @@ void LearnMinus(){
     e.setNodes({x / modulo_number, y / modulo_number});
     e.forward(g);
     double res = (x - y) / modulo_number;
-    if ((fabs(g[0] - res) * modulo_number < tolerance ? 1 : 0)) {
-      fmt::print(fg(fmt::color::red), "{} - {}: {}%\n", x, y, g[0] * modulo_number);
-      avg += 1;
-    }
+    if ((fabs(g[0] - res) * modulo_number < tolerance ? 1 : 0)) avg += 1;
   }
 
   fmt::print(fg(fmt::color::red), "avg: {}%\n", (avg / tests) * 100);
