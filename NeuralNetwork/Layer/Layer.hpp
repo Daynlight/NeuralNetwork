@@ -87,6 +87,7 @@ template <unsigned int S, unsigned int D>
 template <unsigned int N>
 inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
   nodes[S] = 1.0; // bias
+  #pragma omp parallel for
   for(unsigned int i = 0; i < D; i++){
       double sum = 0;
       for(unsigned int j = 0; j < S + 1; j++)
@@ -120,6 +121,7 @@ template <unsigned int N>
 inline void NN::Layer<S, D>::backprop(Layer<D, N> &next_layer) noexcept {
     const double* sigma_next = next_layer.getSigma();
 
+    #pragma omp parallel for
     for(unsigned int i = 0; i < S; ++i){
       double sum = 0;
       for(unsigned int j = 0; j < D; ++j){
@@ -129,6 +131,7 @@ inline void NN::Layer<S, D>::backprop(Layer<D, N> &next_layer) noexcept {
     }
 
     double* weights_back = getWeights();
+    #pragma omp parallel for
     for(unsigned int j = 0; j < D; ++j){
         for(unsigned int i = 0; i < S; ++i){
             weights_back[j * (S + 1) + i] -= learning_rate * getActivatedNode(i) * sigma_next[j];
