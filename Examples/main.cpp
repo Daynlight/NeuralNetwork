@@ -1,5 +1,5 @@
-#include "fmt/base.h"
-#include "fmt/color.h"
+#include <fmt/base.h>
+#include <fmt/color.h>
 #include "NeuralNetwork.h"
 
 int main(){

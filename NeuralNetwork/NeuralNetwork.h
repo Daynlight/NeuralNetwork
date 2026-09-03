@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Layer/Layer.h"
+#include "NeuralNetwork/Layer/Layer.h"
 #include <tuple>
 #include <utility>
 

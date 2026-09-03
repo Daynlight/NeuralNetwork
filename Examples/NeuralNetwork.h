@@ -7,8 +7,8 @@
 #include <ctime>
 #include <cstdlib>
 
-#include "Layer/Layer.h"
-#include "../NeuralNetwork/NeuralNetwork.h"
+#include "NeuralNetwork/Layer/Layer.h"
+#include "NeuralNetwork/NeuralNetwork.h"
 
 
 

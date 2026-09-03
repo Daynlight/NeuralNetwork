@@ -22,7 +22,8 @@ set(src
   main.cpp
 )
 
-add_executable(Example ${src} ${headers})
+add_executable(Example ${src})
 target_include_directories(Example PRIVATE ${headers})
 target_link_libraries(Example PRIVATE NeuralNetwork)
-target_link_libraries(Example PRIVATE fmt)
+
+target_link_libraries(Example PRIVATE fmt::fmt)

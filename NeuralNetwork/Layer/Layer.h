@@ -1,6 +1,6 @@
 #pragma once
-#include "Activation/Activation.h"
-#include "Loss/Loss.h"
+#include "NeuralNetwork/Activation/Activation.h"
+#include "NeuralNetwork/Loss/Loss.h"
 #include <string>
 #include <stdexcept>
 

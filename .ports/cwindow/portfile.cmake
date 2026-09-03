@@ -1,0 +1,17 @@
+vcpkg_from_github(
+  OUT_SOURCE_PATH SOURCE_PATH
+  REPO Daynlight/CWindow
+
+  REF 085f69ea44c60b5b9b9d35055a33799ea9f6b340
+  SHA512 "f2224851b603cbbf58c671db5491330e99cedf41c59d325f0132fd91d1efa24fac731e3ab3a735f4181e4cee5f4f10aa8e58e00020e27ab9365e49a61e69b949"
+  HEAD_REF engine
+)
+
+vcpkg_cmake_configure(
+  SOURCE_PATH "${SOURCE_PATH}"
+  OPTIONS
+    -DCWINDOW_BUILD_EXAMPLE=OFF
+    -DCWINDOW_BUILD_TESTS=OFF
+)
+
+vcpkg_cmake_install()
