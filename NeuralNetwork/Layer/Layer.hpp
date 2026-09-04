@@ -2,8 +2,12 @@
 
 template <unsigned int S, unsigned int D>
 inline NN::Layer<S, D>::Layer() noexcept {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<double> dist(-1.0, 1.0);
+  
   for(double &el : weights) 
-    el = 1.0;
+    el = dist(gen);
 
   loss = getLossFromType(LossType::MSETYPE);
   activation = getActivationFromType(ActivationType::LINEARTYPE);
@@ -91,7 +95,8 @@ inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
   for(unsigned int i = 0; i < D; i++){
       double sum = 0;
       for(unsigned int j = 0; j < S + 1; j++)
-          sum += getActivatedNode(j) * weights[i * (S + 1) + j];
+        if(j != S) sum += getActivatedNode(j) * weights[i * (S + 1) + j];
+        else sum += weights[i * (S + 1) + j];
       layer[i] = sum;
   }
   layer[D] = 1;
@@ -99,19 +104,10 @@ inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
 
 template <unsigned int S, unsigned int D>
 template <unsigned int N>
-inline void NN::Layer<S, D>::backprop_initial(Layer<N, S> &layer, 
-std::initializer_list<double> target) noexcept {
+inline void NN::Layer<S, D>::backprop_initial(Layer<N, S> &layer, std::initializer_list<double> target) noexcept {
   unsigned int i = 0;
-  for(auto it = target.begin(); it != target.end() && i < S; ++it, ++i) sigma[i] = loss->fun_prime(getActivatedNode(i), *it) * activation->fun_prime(nodes[i]);
-
-  double* weights_back = layer.getWeights();
-
-  for(unsigned int i = 0; i < S; i++){
-    for(unsigned int j = 0; j < N; j++) weights_back[i * (N + 1) + j] -= learning_rate * sigma[i] * layer.getActivatedNode(j);
-    weights_back[i * (N + 1) + N] -= learning_rate * sigma[i];
-  };
-  
-  layer.setWeights(weights_back);
+  for(auto it = target.begin(); it != target.end() && i < S; ++it, ++i)
+    sigma[i] = loss->fun_prime(getActivatedNode(i), *it) * activation->fun_prime(nodes[i]);
 };
 
 template <unsigned int S, unsigned int D>

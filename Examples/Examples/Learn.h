@@ -104,7 +104,7 @@ void XOR(){
   fmt::println("");
 
   std::srand(std::time(nullptr));
-  NN::NeuralNetwork network = NN::NeuralNetwork<2, 2, 1>();
+  NN::NeuralNetwork network = NN::NeuralNetwork<2, 2, 2, 1, 1>();
 
   const double learning_rate = 0.01;
   const unsigned int modulo_number = 2;
@@ -170,20 +170,22 @@ void Func(){
   fmt::println("");
 
   std::srand(std::time(nullptr));
-  NN::NeuralNetwork network = NN::NeuralNetwork<3, 8, 8, 1>();
+  NN::NeuralNetwork network = NN::NeuralNetwork<3, 8, 8, 1, 1>();
 
   std::function<double(double, double, double)> fun =
   [](double x, double y, double z){
     return x * y + z;
   };
 
-  const double learning_rate = 0.0001;
+  const double learning_rate = 0.01;
   const unsigned int modulo_number = 5;
-  const unsigned int learn_samples = 200;
+  const unsigned int learn_samples = 1000;
   const unsigned int epoch = 1000;
   const unsigned int tests = 10000;
   const double tolerance = 1.0f;
   network.setLearningRate(learning_rate);
+  network.setActivation<1>(NN::ActivationType::SIGMOIDTYPE);
+  network.setActivation<2>(NN::ActivationType::SIGMOIDTYPE);
   fmt::println(fg(fmt::color::yellow), "-- Parameters:");
   fmt::println(fg(fmt::color::white), "learning_rate = {}", learning_rate);
   fmt::println(fg(fmt::color::white), "modulo_number = {}", modulo_number);
@@ -191,6 +193,8 @@ void Func(){
   fmt::println(fg(fmt::color::white), "tests = {}", tests);
   fmt::println(fg(fmt::color::white), "epoch = {}", epoch);
   fmt::println(fg(fmt::color::white), "tolerance = {}", tolerance);
+
+  const double max_result = fun(modulo_number - 1, modulo_number - 1, modulo_number - 1);
 
   fmt::println(fg(fmt::color::yellow), "-- Learning from random set");
   for(unsigned int j = 0; j < epoch; j++){
@@ -203,7 +207,7 @@ void Func(){
 
       network.setInput({x / modulo_number, y / modulo_number, z / modulo_number});
       network.forward();
-      double res = fun(x, y, z) / modulo_number;
+      double res = fun(x, y, z) / max_result;
       network.backprop({res});
     };
   };
@@ -219,8 +223,8 @@ void Func(){
 
     network.setInput({x / modulo_number, y / modulo_number, z / modulo_number});
     network.forward();
-    double res = fun(x, y, z) / modulo_number;
-    if ((fabs(network.getResult()[0] - res) < tolerance ? 1 : 0)) sum += 1;
+    double res = fun(x, y, z) / max_result;
+    if ((fabs(network.getResult()[0] - res) * max_result < tolerance ? 1 : 0)) sum += 1;
   };
   if((sum / tests) * 100 >= 90) fmt::println(fg(fmt::color::green), "avg: {}%", (sum / tests) * 100);
   else                          fmt::println(fg(fmt::color::red), "avg: {}%", (sum / tests) * 100);
@@ -232,6 +236,6 @@ void Func(){
   double z = 4.0;
   network.setInput({x / modulo_number, y / modulo_number, z / modulo_number});
   network.forward();
-  fmt::println(fg(fmt::color::violet), "{} * {} + {} = {}", x, y, z, network.getResult()[0] * modulo_number);
+  fmt::println(fg(fmt::color::violet), "{} * {} + {} = {}", x, y, z, network.getResult()[0] * max_result);
 };
 };

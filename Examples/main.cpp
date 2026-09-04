@@ -24,10 +24,10 @@ int main(){
   ExamplesTemplatedCPU::Operations::Forward();
   ExamplesTemplatedCPU::Operations::Backprop();
   ExamplesTemplatedCPU::Learn::Minus();
-  // ExamplesTemplatedCPU::Learn::XOR(); // Broken
+  ExamplesTemplatedCPU::Learn::XOR();
   ExamplesTemplatedCPU::Learn::Func();
   
-  ExamplesTemplatedCPU::App::Minus();
+  // ExamplesTemplatedCPU::App::Minus();
 
   return 0;
 };

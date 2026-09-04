@@ -3,6 +3,7 @@
 #include "NeuralNetwork/Loss/Loss.h"
 #include <string>
 #include <stdexcept>
+#include <random>
 
 namespace NN {
 //----------------------------------------------------------------//
