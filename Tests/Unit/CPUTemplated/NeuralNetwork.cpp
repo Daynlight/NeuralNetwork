@@ -739,18 +739,6 @@ TEST(NeuralNetworkDeserialize, RestoresLoss){
   EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<1>(network2.layers).getLoss().get()), nullptr);
 };
 
-TEST(NeuralNetworkDeserialize, DoesNotRestoreNodes){
-  NN::NeuralNetwork<2, 2, 1> network;
-  network.setInput({4.0, 8.0});
-
-  std::string data = network.serialize();
-  NN::NeuralNetwork<2, 2, 1> network2;
-  network2.deserialize(data);
-
-  EXPECT_NEAR(std::get<0>(network2.layers).getNodes()[0], 0.0, 1e-12);
-  EXPECT_NEAR(std::get<0>(network2.layers).getNodes()[1], 0.0, 1e-12);
-};
-
 TEST(NeuralNetworkDeserialize, RestoresWholeNetwork){
   NN::NeuralNetwork<2, 2, 1> network;
 

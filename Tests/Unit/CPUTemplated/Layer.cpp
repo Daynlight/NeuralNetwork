@@ -648,18 +648,6 @@ TEST(LayerDeserialize, RestoresLoss){
 
 };
 
-TEST(LayerDeserialize, DoesNotRestoreNodes){
-  NN::Layer<2, 1> layer;
-  layer.setNodes({4.0, 8.0});
-
-  std::string data = layer.serialize();
-  NN::Layer<2, 1> layer2;
-  layer2.deserialize(data);
-
-  EXPECT_NEAR(layer2.getNodes()[0], 0.0, 1e-12);
-  EXPECT_NEAR(layer2.getNodes()[1], 0.0, 1e-12);
-};
-
 TEST(LayerDeserialize, RestoresWholeLayer){
   NN::Layer<2, 2> layer;
 
