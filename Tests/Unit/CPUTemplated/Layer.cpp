@@ -559,3 +559,152 @@ TEST(LayerPrint, ReturnsExpectedRepresentation){
 
   EXPECT_EQ(layer.print(), expected);
 };
+
+
+
+// =============================
+// ======== serialize ==========
+// =============================
+TEST(LayerSerialize, ReturnsBinaryData){
+  NN::Layer<2, 1> layer;
+
+  layer.setWeights({0.1, 0.2, 0.3});
+  layer.setLearningRate(0.01);
+  layer.setActivation<NN::Sigmoid>();
+  layer.setLoss<NN::MSE>();
+  std::string data = layer.serialize();
+
+  EXPECT_FALSE(data.empty());
+};
+
+TEST(LayerSerialize, ProducesSameDataForSameLayer){
+  NN::Layer<2, 1> layer1;
+  NN::Layer<2, 1> layer2;
+
+  layer1.setWeights({0.1, 0.2, 0.3});
+  layer2.setWeights({0.1, 0.2, 0.3});
+  layer1.setLearningRate(0.01);
+  layer2.setLearningRate(0.01);
+  layer1.setActivation<NN::Sigmoid>();
+  layer2.setActivation<NN::Sigmoid>();
+  layer1.setLoss<NN::MSE>();
+  layer2.setLoss<NN::MSE>();
+
+  EXPECT_EQ(layer1.serialize(), layer2.serialize());
+};
+
+
+
+// =============================
+// ======= deserialize =========
+// =============================
+TEST(LayerDeserialize, RestoresWeights){
+  NN::Layer<2, 1> layer;
+  layer.setWeights({0.1, 0.2, 0.3});
+
+  std::string data = layer.serialize();
+  NN::Layer<2, 1> layer2;
+  layer2.deserialize(data);
+
+  EXPECT_NEAR(layer2.getWeights()[0], 0.1, 1e-12);
+  EXPECT_NEAR(layer2.getWeights()[1], 0.2, 1e-12);
+  EXPECT_NEAR(layer2.getWeights()[2], 0.3, 1e-12);
+};
+
+TEST(LayerDeserialize, RestoresLearningRate){
+  NN::Layer<2, 1> layer;
+  layer.setLearningRate(0.123);
+
+  std::string data = layer.serialize();
+  NN::Layer<2, 1> layer2;
+  layer2.deserialize(data);
+
+  EXPECT_NEAR(layer2.getLearningRate(), 0.123, 1e-12);
+};
+
+TEST(LayerDeserialize, RestoresActivation){
+  NN::Layer<2, 1> layer;
+
+  layer.setActivation<NN::Sigmoid>();
+  std::string data = layer.serialize();
+  NN::Layer<2, 1> layer2;
+  layer2.deserialize(data);
+
+  ASSERT_NE(layer2.getActivation(), nullptr);
+  EXPECT_NE(dynamic_cast<NN::Sigmoid*>(layer2.getActivation().get()), nullptr);
+};
+
+TEST(LayerDeserialize, RestoresLoss){
+  NN::Layer<2, 1> layer;
+
+  layer.setLoss<NN::MSE>();
+  std::string data = layer.serialize();
+  NN::Layer<2, 1> layer2;
+
+  layer2.deserialize(data);
+
+  ASSERT_NE(layer2.getLoss(), nullptr);
+  EXPECT_NE(dynamic_cast<NN::MSE*>(layer2.getLoss().get()), nullptr);
+
+};
+
+TEST(LayerDeserialize, DoesNotRestoreNodes){
+  NN::Layer<2, 1> layer;
+  layer.setNodes({4.0, 8.0});
+
+  std::string data = layer.serialize();
+  NN::Layer<2, 1> layer2;
+  layer2.deserialize(data);
+
+  EXPECT_NEAR(layer2.getNodes()[0], 0.0, 1e-12);
+  EXPECT_NEAR(layer2.getNodes()[1], 0.0, 1e-12);
+};
+
+TEST(LayerDeserialize, RestoresWholeLayer){
+  NN::Layer<2, 2> layer;
+
+  layer.setWeights({
+    0.1, 0.2, 0.3,
+    0.4, 0.5, 0.6
+  });
+
+  layer.setLearningRate(0.02);
+  layer.setActivation<NN::Sigmoid>();
+  layer.setLoss<NN::MSE>();
+
+  std::string data = layer.serialize();
+
+  NN::Layer<2, 2> layer2;
+  layer2.deserialize(data);
+
+  EXPECT_NEAR(layer2.getWeights()[0], 0.1, 1e-12);
+  EXPECT_NEAR(layer2.getWeights()[1], 0.2, 1e-12);
+  EXPECT_NEAR(layer2.getWeights()[2], 0.3, 1e-12);
+  EXPECT_NEAR(layer2.getWeights()[3], 0.4, 1e-12);
+  EXPECT_NEAR(layer2.getWeights()[4], 0.5, 1e-12);
+  EXPECT_NEAR(layer2.getWeights()[5], 0.6, 1e-12);
+  EXPECT_NEAR(layer2.getLearningRate(), 0.02, 1e-12);
+  EXPECT_NE(dynamic_cast<NN::Sigmoid*>(layer2.getActivation().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::MSE*>(layer2.getLoss().get()), nullptr);
+};
+
+TEST(LayerDeserialize, ThrowsOnDifferentSourceSize){
+  NN::Layer<2, 1> layer;
+
+  layer.setWeights({0.1, 0.2, 0.3});
+  std::string data = layer.serialize();
+
+  NN::Layer<3, 1> layer2;
+  EXPECT_THROW(layer2.deserialize(data), std::runtime_error);
+};
+
+TEST(LayerDeserialize, ThrowsOnTruncatedData){
+  NN::Layer<2, 1> layer;
+  
+  layer.setWeights({0.1, 0.2, 0.3});
+  std::string data = layer.serialize();
+  data.resize(data.size() / 2);
+
+  NN::Layer<2, 1> layer2;
+  EXPECT_THROW(layer2.deserialize(data), std::runtime_error);
+};

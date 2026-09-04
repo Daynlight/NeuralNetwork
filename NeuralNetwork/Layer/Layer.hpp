@@ -246,3 +246,146 @@ inline std::string NN::Layer<S, D>::print() const {
   s += "]];\n ";
   return s;
 };
+
+
+
+template <unsigned int S, unsigned int D>
+inline std::string NN::Layer<S, D>::serialize() const noexcept {
+  std::string data;
+
+  auto write = [&](Field id, const void* source, uint64_t size){
+    uint32_t field = static_cast<uint32_t>(id);
+
+    data.append(reinterpret_cast<const char*>(&field), sizeof(field));
+    data.append(reinterpret_cast<const char*>(&size), sizeof(size));
+
+    if(size > 0) data.append(reinterpret_cast<const char*>(source), size);
+  };
+
+  uint32_t s = S;
+  uint32_t d = D;
+
+  write(Field::S_val, &s, sizeof(s));
+  write(Field::D_val, &d, sizeof(d));
+  write(Field::LEARNING_RATE, &learning_rate, sizeof(learning_rate));
+
+  uint32_t activation_id = 0;
+
+  if(dynamic_cast<NN::Linear*>(activation.get()))
+    activation_id = static_cast<uint32_t>(Activation::LINEAR);
+
+  else if(dynamic_cast<NN::Sigmoid*>(activation.get()))
+    activation_id = static_cast<uint32_t>(Activation::SIGMOID);
+
+  write(Field::ACTIVATION, &activation_id, sizeof(activation_id));
+
+  uint32_t loss_id = 0;
+
+  if(dynamic_cast<NN::MSE*>(loss.get()))
+    loss_id = static_cast<uint32_t>(Loss::MSE);
+
+  write(Field::LOSS, &loss_id, sizeof(loss_id));
+
+  write(Field::WEIGHTS, weights, sizeof(weights));
+
+  uint32_t end = static_cast<uint32_t>(Field::END);
+  data.append(reinterpret_cast<const char*>(&end), sizeof(end));
+
+  return data;
+};
+
+
+
+template <unsigned int S, unsigned int D>
+inline void NN::Layer<S, D>::deserialize(const std::string &data){
+  size_t offset = 0;
+
+  auto read = [&](void* destination, size_t size){
+    if(offset + size > data.size()) throw std::runtime_error("Invalid serialized layer data");
+
+    std::memcpy(destination, data.data() + offset, size);
+    offset += size;
+  };
+
+  while(offset < data.size()){
+    uint32_t field_id = 0;
+    read(&field_id, sizeof(field_id));
+
+    Field field = static_cast<Field>(field_id);
+
+    if(field == Field::END) break;
+
+    uint64_t size = 0;
+    read(&size, sizeof(size));
+
+    if(offset + size > data.size()) throw std::runtime_error("Invalid serialized layer field size");
+
+    switch(field){
+      case Field::S_val:{
+        uint32_t value = 0;
+        read(&value, sizeof(value));
+        if(value != S)
+          throw std::runtime_error("Layer S size mismatch");
+        break;
+      };
+
+      case Field::D_val:{
+        uint32_t value = 0;
+        read(&value, sizeof(value));
+        if(value != D)
+          throw std::runtime_error("Layer D size mismatch");
+        break;
+      };
+
+      case Field::LEARNING_RATE:{
+        if(size != sizeof(learning_rate))
+          throw std::runtime_error("Invalid learning rate size");
+        read(&learning_rate, sizeof(learning_rate));
+        break;
+      };
+
+      case Field::ACTIVATION:{
+        uint32_t activation_id = 0;
+        read(&activation_id, sizeof(activation_id));
+
+        switch(static_cast<Activation>(activation_id)){
+          case Activation::LINEAR:
+            setActivation<NN::Linear>();
+            break;
+          case Activation::SIGMOID:
+            setActivation<NN::Sigmoid>();
+            break;
+          default:
+            throw std::runtime_error("Unknown activation type");
+        };
+        break;
+      };
+
+      case Field::LOSS:{
+        uint32_t loss_id = 0;
+        read(&loss_id, sizeof(loss_id));
+
+        switch(static_cast<Loss>(loss_id)){
+          case Loss::MSE:
+            setLoss<NN::MSE>();
+            break;
+          default:
+            throw std::runtime_error("Unknown loss type");
+        };
+        break;
+      };
+
+      case Field::WEIGHTS:{
+        if(size != sizeof(weights))
+          throw std::runtime_error("Invalid weights size");
+        read(weights, sizeof(weights));
+        break;
+      };
+
+      default:{
+        offset += size;
+        break;
+      };
+    };
+  };
+};

@@ -149,3 +149,78 @@ inline void NN::NeuralNetwork<First, Second, Rest...>::backpropInitial(std::init
   constexpr std::size_t last = std::tuple_size_v<LayerTuple> - 1;
   std::get<last>(layers).backprop_initial(loss);
 };
+
+
+
+// =========================== //
+// ======= Presentation ====== //
+// =========================== //
+template <unsigned int First, unsigned int Second, unsigned int... Rest>
+inline std::string NN::NeuralNetwork<First, Second, Rest...>::print() const{
+  std::string s = "NeuralNetwork:\n";
+
+  unsigned int i = 0;
+
+  std::apply([&](const auto&... layer){
+    ((s += "\nLayer " + std::to_string(i++) + ":\n" + layer.print()), ...);
+  }, layers);
+
+  return s;
+};
+
+
+
+template <unsigned int First, unsigned int Second, unsigned int... Rest>
+inline std::string NN::NeuralNetwork<First, Second, Rest...>::serialize() const noexcept{
+  std::string data;
+  uint32_t layer_count = std::tuple_size_v<LayerTuple>;
+
+  data.append(reinterpret_cast<const char*>(&layer_count), sizeof(layer_count));
+
+  std::apply([&](const auto&... layer){
+    auto write_layer = [&](const auto& current_layer){
+      std::string layer_data = current_layer.serialize();
+      uint64_t layer_size = layer_data.size();
+
+      data.append(reinterpret_cast<const char*>(&layer_size), sizeof(layer_size));
+
+      if(layer_size > 0) data.append(layer_data.data(), layer_size);
+    };
+    (write_layer(layer), ...);
+  }, layers);
+  return data;
+};
+
+
+
+template <unsigned int First, unsigned int Second, unsigned int... Rest>
+inline void NN::NeuralNetwork<First, Second, Rest...>::deserialize(const std::string& data){
+  size_t offset = 0;
+
+  auto read = [&](void* destination, size_t size){
+    if(offset + size > data.size()) throw std::runtime_error("Invalid serialized NeuralNetwork data");
+
+    std::memcpy(destination, data.data() + offset, size);
+    offset += size;
+  };
+
+  uint32_t layer_count = 0;
+  read(&layer_count, sizeof(layer_count));
+
+  if(layer_count != std::tuple_size_v<LayerTuple>) throw std::runtime_error("NeuralNetwork layer count mismatch");
+
+  std::apply([&](auto&... layer){
+    auto read_layer = [&](auto& current_layer){
+      uint64_t layer_size = 0;
+      read(&layer_size, sizeof(layer_size));
+
+      if(offset + layer_size > data.size()) throw std::runtime_error("Invalid serialized NeuralNetwork layer size");
+
+      std::string layer_data(data.data() + offset, layer_size);
+
+      offset += layer_size;
+      current_layer.deserialize(layer_data);
+    };
+    (read_layer(layer), ...);
+  }, layers);
+};

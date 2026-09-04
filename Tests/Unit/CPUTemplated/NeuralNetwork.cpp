@@ -614,3 +614,231 @@ TEST(NeuralNetworkIntegration, RepeatedTrainingKeepsResultFinite){
   for(unsigned int i = 0; i < 4; ++i)
     EXPECT_TRUE(std::isfinite(result[i]));
 };
+
+
+
+// =============================
+// ======== serialize ==========
+// =============================
+TEST(NeuralNetworkSerialize, ReturnsBinaryData){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  std::get<0>(network.layers).setWeights({
+    0.1, 0.2, 0.3,
+    0.4, 0.5, 0.6
+  });
+  std::get<1>(network.layers).setWeights({
+    0.7, 0.8, 0.9
+  });
+  network.setLearningRate(0.01);
+  network.setActivation<0, NN::Sigmoid>();
+  network.setLoss<1, NN::MSE>();
+
+  std::string data = network.serialize();
+
+  EXPECT_FALSE(data.empty());
+};
+
+TEST(NeuralNetworkSerialize, ProducesSameDataForSameNetwork){
+  NN::NeuralNetwork<2, 2, 1> network1;
+  NN::NeuralNetwork<2, 2, 1> network2;
+
+  std::get<0>(network1.layers).setWeights({
+    0.1, 0.2, 0.3,
+    0.4, 0.5, 0.6
+  });
+  std::get<1>(network1.layers).setWeights({
+    0.7, 0.8, 0.9
+  });
+
+  std::get<0>(network2.layers).setWeights({
+    0.1, 0.2, 0.3,
+    0.4, 0.5, 0.6
+  });
+  std::get<1>(network2.layers).setWeights({
+    0.7, 0.8, 0.9
+  });
+
+  network1.setLearningRate(0.01);
+  network2.setLearningRate(0.01);
+  network1.setActivation<0, NN::Sigmoid>();
+  network2.setActivation<0, NN::Sigmoid>();
+
+  EXPECT_EQ(network1.serialize(), network2.serialize());
+};
+
+
+
+// =============================
+// ======= deserialize =========
+// =============================
+TEST(NeuralNetworkDeserialize, RestoresWeights){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  std::get<0>(network.layers).setWeights({
+    0.1, 0.2, 0.3,
+    0.4, 0.5, 0.6
+  });
+  std::get<1>(network.layers).setWeights({
+    0.7, 0.8, 0.9
+  });
+
+  std::string data = network.serialize();
+  NN::NeuralNetwork<2, 2, 1> network2;
+  network2.deserialize(data);
+
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[0], 0.1, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[1], 0.2, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[2], 0.3, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[3], 0.4, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[4], 0.5, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[5], 0.6, 1e-12);
+
+  EXPECT_NEAR(std::get<1>(network2.layers).getWeights()[0], 0.7, 1e-12);
+  EXPECT_NEAR(std::get<1>(network2.layers).getWeights()[1], 0.8, 1e-12);
+  EXPECT_NEAR(std::get<1>(network2.layers).getWeights()[2], 0.9, 1e-12);
+};
+
+TEST(NeuralNetworkDeserialize, RestoresLearningRate){
+  NN::NeuralNetwork<2, 2, 1> network;
+  network.setLearningRate(0.123);
+
+  std::string data = network.serialize();
+  NN::NeuralNetwork<2, 2, 1> network2;
+  network2.deserialize(data);
+
+  EXPECT_NEAR(std::get<0>(network2.layers).getLearningRate(), 0.123, 1e-12);
+  EXPECT_NEAR(std::get<1>(network2.layers).getLearningRate(), 0.123, 1e-12);
+};
+
+TEST(NeuralNetworkDeserialize, RestoresActivation){
+  NN::NeuralNetwork<2, 2, 1> network;
+  network.setActivation<0, NN::Sigmoid>();
+
+  std::string data = network.serialize();
+  NN::NeuralNetwork<2, 2, 1> network2;
+  network2.deserialize(data);
+
+  ASSERT_NE(std::get<0>(network2.layers).getActivation(), nullptr);
+  EXPECT_NE(dynamic_cast<NN::Sigmoid*>(std::get<0>(network2.layers).getActivation().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::Linear*>(std::get<1>(network2.layers).getActivation().get()), nullptr);
+};
+
+TEST(NeuralNetworkDeserialize, RestoresLoss){
+  NN::NeuralNetwork<2, 2, 1> network;
+  network.setLoss<0, NN::MSE>();
+  network.setLoss<1, NN::MSE>();
+
+  std::string data = network.serialize();
+  NN::NeuralNetwork<2, 2, 1> network2;
+  network2.deserialize(data);
+
+  ASSERT_NE(std::get<0>(network2.layers).getLoss(), nullptr);
+  ASSERT_NE(std::get<1>(network2.layers).getLoss(), nullptr);
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<0>(network2.layers).getLoss().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<1>(network2.layers).getLoss().get()), nullptr);
+};
+
+TEST(NeuralNetworkDeserialize, DoesNotRestoreNodes){
+  NN::NeuralNetwork<2, 2, 1> network;
+  network.setInput({4.0, 8.0});
+
+  std::string data = network.serialize();
+  NN::NeuralNetwork<2, 2, 1> network2;
+  network2.deserialize(data);
+
+  EXPECT_NEAR(std::get<0>(network2.layers).getNodes()[0], 0.0, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getNodes()[1], 0.0, 1e-12);
+};
+
+TEST(NeuralNetworkDeserialize, RestoresWholeNetwork){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  std::get<0>(network.layers).setWeights({
+    0.1, 0.2, 0.3,
+    0.4, 0.5, 0.6
+  });
+  std::get<1>(network.layers).setWeights({
+    0.7, 0.8, 0.9
+  });
+
+  network.setLearningRate(0.02);
+  network.setActivation<0, NN::Sigmoid>();
+  network.setLoss<0, NN::MSE>();
+  network.setLoss<1, NN::MSE>();
+
+  std::string data = network.serialize();
+
+  NN::NeuralNetwork<2, 2, 1> network2;
+  network2.deserialize(data);
+
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[0], 0.1, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[1], 0.2, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[2], 0.3, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[3], 0.4, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[4], 0.5, 1e-12);
+  EXPECT_NEAR(std::get<0>(network2.layers).getWeights()[5], 0.6, 1e-12);
+
+  EXPECT_NEAR(std::get<1>(network2.layers).getWeights()[0], 0.7, 1e-12);
+  EXPECT_NEAR(std::get<1>(network2.layers).getWeights()[1], 0.8, 1e-12);
+  EXPECT_NEAR(std::get<1>(network2.layers).getWeights()[2], 0.9, 1e-12);
+
+  EXPECT_NEAR(std::get<0>(network2.layers).getLearningRate(), 0.02, 1e-12);
+  EXPECT_NEAR(std::get<1>(network2.layers).getLearningRate(), 0.02, 1e-12);
+
+  EXPECT_NE(dynamic_cast<NN::Sigmoid*>(std::get<0>(network2.layers).getActivation().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::Linear*>(std::get<1>(network2.layers).getActivation().get()), nullptr);
+
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<0>(network2.layers).getLoss().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<1>(network2.layers).getLoss().get()), nullptr);
+};
+
+TEST(NeuralNetworkDeserialize, ProducesSameSerializationAfterRoundTrip){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  std::get<0>(network.layers).setWeights({
+    0.1, 0.2, 0.3,
+    0.4, 0.5, 0.6
+  });
+  std::get<1>(network.layers).setWeights({
+    0.7, 0.8, 0.9
+  });
+
+  network.setLearningRate(0.02);
+  network.setActivation<0, NN::Sigmoid>();
+
+  std::string data = network.serialize();
+
+  NN::NeuralNetwork<2, 2, 1> network2;
+  network2.deserialize(data);
+
+  EXPECT_EQ(network2.serialize(), data);
+};
+
+TEST(NeuralNetworkDeserialize, ThrowsOnDifferentLayerCount){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  std::string data = network.serialize();
+
+  NN::NeuralNetwork<2, 2, 2, 1> network2;
+  EXPECT_THROW(network2.deserialize(data), std::runtime_error);
+};
+
+TEST(NeuralNetworkDeserialize, ThrowsOnDifferentLayerSize){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  std::string data = network.serialize();
+
+  NN::NeuralNetwork<3, 2, 1> network2;
+  EXPECT_THROW(network2.deserialize(data), std::runtime_error);
+};
+
+TEST(NeuralNetworkDeserialize, ThrowsOnTruncatedData){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  std::string data = network.serialize();
+  data.resize(data.size() / 2);
+
+  NN::NeuralNetwork<2, 2, 1> network2;
+  EXPECT_THROW(network2.deserialize(data), std::runtime_error);
+};

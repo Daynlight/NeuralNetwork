@@ -91,6 +91,15 @@ public:
   template <std::size_t... I>
   void backpropImpl(std::index_sequence<I...>);
   void backpropInitial(std::initializer_list<double> loss);
+
+
+// =========================== //
+// ======= Presentation ====== //
+// =========================== //
+public:
+  std::string print() const;    // O(n)
+  std::string serialize() const noexcept;    // O(n)
+  void deserialize(const std::string& data);   // O(n)
 };
 };
 

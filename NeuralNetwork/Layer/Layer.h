@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <random>
 #include <memory>
+#include <cstring>
 
 #include "../Activation/Activation.h"
 #include "../Loss/Loss.h"
@@ -17,6 +18,27 @@
 
 
 namespace NN {
+enum class Field : uint32_t{
+  S_val = 1,
+  D_val = 2,
+  LEARNING_RATE = 3,
+  ACTIVATION = 4,
+  LOSS = 5,
+  WEIGHTS = 6,
+  END = 0
+};
+
+enum class Activation : uint32_t{
+  LINEAR = 1,
+  SIGMOID = 2
+};
+
+enum class Loss : uint32_t{
+  MSE = 1
+};
+
+
+
 template<unsigned int S, unsigned int D>
 class Layer{
 //----------------------------------------------------------------//
@@ -104,8 +126,8 @@ public:
 // =========================== //
 public:
   std::string print() const;    // O(n)
-  // std::string serialize() const;    // O(n)
-  // void deserialize(const std::string &data);
+  std::string serialize() const noexcept;    // O(n)
+  void deserialize(const std::string& data);   // O(n)
 };
 };
 
