@@ -1,11 +1,24 @@
+// Neural Network
+// Copyright 2026 Daynlight
+// Licensed under the GNU General.
+// See LICENSE file for details.
+
+
+
 #pragma once
-#include "NeuralNetwork/Activation/Activation.h"
-#include "NeuralNetwork/Loss/Loss.h"
 #include <string>
 #include <stdexcept>
 #include <random>
+#include <memory>
+
+#include "../Activation/Activation.h"
+#include "../Loss/Loss.h"
+
+
 
 namespace NN {
+template<unsigned int S, unsigned int D>
+class Layer{
 //----------------------------------------------------------------//
 //------------------------ Representation ------------------------//
 //----------------------------------------------------------------//
@@ -26,56 +39,76 @@ namespace NN {
 // todo: change from pointer to function type
 //----------------------------------------------------------------//
 // Learning rate indicate learning speed
-// todo: will changed to modes default static and dynamic
 //----------------------------------------------------------------//
 
-template<unsigned int S, unsigned int D>
-class Layer{
+// ======================================== //
+// ================= Data ================= //
+// ======================================== //
 private:
   double nodes[S + 1];
   double sigma[S];
   double weights[(S + 1) * D];
-  iActivation *activation = nullptr;
-  iLoss *loss = nullptr;
+  std::unique_ptr<NN::iActivation> activation = nullptr;
+  std::unique_ptr<NN::iLoss> loss = nullptr;
   double learning_rate = 0.005;
 
+// ======================================== //
+// ============== Functions =============== //
+// ======================================== //
+// =========================== //
+// ======= Constructors ====== //
+// =========================== //
 public:
   Layer() noexcept;   // O((S+1) * D)
   ~Layer() noexcept;  // O(1)
   
+// ============================== //
+// ======= Setters/Getters ====== //
+// ============================== //
+public:
   double* getNodes() noexcept;   // O(1)
   void setNodes(std::initializer_list<double> nodes) noexcept;    // O(n)
-  double getActivatedNode(unsigned int i);    // O(1)
+  double getActivatedNode(unsigned int i) const noexcept;    // O(1)
   
   double* getWeights() noexcept;   // O(1)
   void setWeights(std::initializer_list<double> weights) noexcept;    // O(n)
-  void setWeights(const double *weights);
+  void setWeights(const double* weights);
 
   double getLearningRate() const noexcept;    // O(1)
-  void setLearningRate(double learning_rate);    // O(1)
+  void setLearningRate(double learning_rate) noexcept;    // O(1)
 
-  const iActivation *getActivation() const noexcept;    // O(1)
-  void setActivation(ActivationType type) noexcept;   // O(1)
+  const std::unique_ptr<iActivation>& getActivation() const noexcept;    // O(1)
+  template<typename T>
+  void setActivation() noexcept;   // O(1)
 
-  const iLoss *getLoss() const noexcept;    // O(1)
-  void setLoss(LossType type) noexcept;   // O(1)
+  const std::unique_ptr<iLoss>& getLoss() const noexcept;    // O(1)
+  template<typename T>
+  void setLoss() noexcept;   // O(1)
 
+  double& operator[](unsigned int i);   // O(1)
+  const double *getSigma() const noexcept;    // O(1)
+
+// =============================== //
+// ======= Forward/Backprop ====== //
+// =============================== //
+public:
   template<unsigned int N>
   void forward(Layer<D, N> &layer);   // O(n^2)
 
-  template<unsigned int N>
-  void backprop_initial(Layer<N, S> &layer, std::initializer_list<double> target) noexcept;
+  void backprop_initial(std::initializer_list<double> target) noexcept;
   template<unsigned int N>
   void backprop(Layer<D, N> &layer) noexcept;
-  const double *getSigma() const noexcept;    // O(1)
 
+// =========================== //
+// ======= Presentation ====== //
+// =========================== //
+public:
   std::string print() const;    // O(n)
-  std::string serialize() const;    // O(n)
-  // todo: write deserialize method
-  void deserialize(const std::string &data);
+  // std::string serialize() const;    // O(n)
+  // void deserialize(const std::string &data);
+};
+};
 
-  double &operator[](unsigned int i);   // O(1)
-};
-};
+
 
 #include "Layer.hpp"

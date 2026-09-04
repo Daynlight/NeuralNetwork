@@ -11,7 +11,9 @@ project(NeuralNetwork LANGUAGES CXX)
 
 set(src
   Activation/Activation.h
+  Activation/Activation.hpp
   Loss/Loss.h
+  Loss/Loss.hpp
   Layer/Layer.h
   Layer/Layer.hpp
   NeuralNetwork.h

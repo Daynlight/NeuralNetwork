@@ -7,8 +7,13 @@
 
 #include <gtest/gtest.h>
 #include <tuple>
+#include <utility>
 #include <type_traits>
 #include <cmath>
+#include <memory>
+#include <string>
+#include <stdexcept>
+#include <random>
 
 #define private public
 #define protected public
@@ -20,17 +25,34 @@
 
 
 
+namespace {
+class TestLoss : public NN::iLoss{
+public:
+  double fun(double x, double t) const noexcept override{
+    return std::abs(x - t);
+  };
+
+  double fun_prime(double x, double t) const noexcept override{
+    if(x > t) return 1.0;
+    if(x < t) return -1.0;
+    return 0.0;
+  };
+};
+};
+
+
+
 // =============================
-// ======== LayerBuilder ========
+// ======== LayerBuilder =======
 // =============================
-TEST(LayerBuilder, BuildsSingleLayer) {
+TEST(LayerBuilder, BuildsSingleLayer){
   using Tuple = NN::LayerBuilder<2, 1>::type;
 
   EXPECT_EQ(std::tuple_size_v<Tuple>, 1u);
   EXPECT_TRUE((std::is_same_v<std::tuple_element_t<0, Tuple>, NN::Layer<2, 1>>));
 };
 
-TEST(LayerBuilder, BuildsTwoLayers) {
+TEST(LayerBuilder, BuildsTwoLayers){
   using Tuple = NN::LayerBuilder<2, 3, 1>::type;
 
   EXPECT_EQ(std::tuple_size_v<Tuple>, 2u);
@@ -38,7 +60,7 @@ TEST(LayerBuilder, BuildsTwoLayers) {
   EXPECT_TRUE((std::is_same_v<std::tuple_element_t<1, Tuple>, NN::Layer<3, 1>>));
 };
 
-TEST(LayerBuilder, BuildsMultipleLayers) {
+TEST(LayerBuilder, BuildsMultipleLayers){
   using Tuple = NN::LayerBuilder<3, 8, 4, 2, 1>::type;
 
   EXPECT_EQ(std::tuple_size_v<Tuple>, 4u);
@@ -53,21 +75,28 @@ TEST(LayerBuilder, BuildsMultipleLayers) {
 // =============================
 // ===== Reverse Sequence ======
 // =============================
-TEST(ReverseSequence, ReversesSingleElement) {
+TEST(ReverseSequence, HandlesEmptySequence){
+  using Result = decltype(NN::reverse_sequence(std::make_index_sequence<0>{}));
+  using Expected = std::index_sequence<>;
+
+  EXPECT_TRUE((std::is_same_v<Result, Expected>));
+};
+
+TEST(ReverseSequence, ReversesSingleElement){
   using Result = decltype(NN::reverse_sequence(std::make_index_sequence<1>{}));
   using Expected = std::index_sequence<0>;
 
   EXPECT_TRUE((std::is_same_v<Result, Expected>));
 };
 
-TEST(ReverseSequence, ReversesTwoElements) {
+TEST(ReverseSequence, ReversesTwoElements){
   using Result = decltype(NN::reverse_sequence(std::make_index_sequence<2>{}));
   using Expected = std::index_sequence<1, 0>;
 
   EXPECT_TRUE((std::is_same_v<Result, Expected>));
 };
 
-TEST(ReverseSequence, ReversesMultipleElements) {
+TEST(ReverseSequence, ReversesMultipleElements){
   using Result = decltype(NN::reverse_sequence(std::make_index_sequence<5>{}));
   using Expected = std::index_sequence<4, 3, 2, 1, 0>;
 
@@ -79,43 +108,37 @@ TEST(ReverseSequence, ReversesMultipleElements) {
 // =============================
 // ======= Constructors ========
 // =============================
-TEST(NeuralNetworkDefaultConstructor, InitializesLayers) {
+TEST(NeuralNetworkDefaultConstructor, InitializesLayers){
   NN::NeuralNetwork<2, 3, 1> network;
 
   EXPECT_EQ(std::tuple_size_v<decltype(network.layers)>, 2u);
 };
 
-TEST(NeuralNetworkDefaultConstructor, InitializesDefaultLearningRate) {
+TEST(NeuralNetworkDefaultConstructor, InitializesDefaultLearningRate){
   NN::NeuralNetwork<2, 3, 1> network;
 
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers).getLearningRate(), 0.005);
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers).getLearningRate(), 0.005);
+  EXPECT_NEAR(std::get<0>(network.layers).getLearningRate(), 0.005, 1e-12);
+  EXPECT_NEAR(std::get<1>(network.layers).getLearningRate(), 0.005, 1e-12);
 };
 
-TEST(NeuralNetworkDefaultConstructor, InitializesDefaultActivation) {
+TEST(NeuralNetworkDefaultConstructor, InitializesDefaultActivation){
   NN::NeuralNetwork<2, 3, 1> network;
 
-  NN::iActivation* first = const_cast<NN::iActivation*>(std::get<0>(network.layers).getActivation());
-  NN::iActivation* second = const_cast<NN::iActivation*>(std::get<1>(network.layers).getActivation());
+  ASSERT_NE(std::get<0>(network.layers).getActivation(), nullptr);
+  ASSERT_NE(std::get<1>(network.layers).getActivation(), nullptr);
 
-  ASSERT_NE(first, nullptr);
-  ASSERT_NE(second, nullptr);
-
-  EXPECT_EQ(first->getType(), NN::ActivationType::LINEARTYPE);
-  EXPECT_EQ(second->getType(), NN::ActivationType::LINEARTYPE);
+  EXPECT_NE(dynamic_cast<NN::Linear*>(std::get<0>(network.layers).getActivation().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::Linear*>(std::get<1>(network.layers).getActivation().get()), nullptr);
 };
 
-TEST(NeuralNetworkDefaultConstructor, InitializesDefaultLoss) {
+TEST(NeuralNetworkDefaultConstructor, InitializesDefaultLoss){
   NN::NeuralNetwork<2, 3, 1> network;
 
-  NN::iLoss* first = const_cast<NN::iLoss*>(std::get<0>(network.layers).getLoss());
-  NN::iLoss* second = const_cast<NN::iLoss*>(std::get<1>(network.layers).getLoss());
+  ASSERT_NE(std::get<0>(network.layers).getLoss(), nullptr);
+  ASSERT_NE(std::get<1>(network.layers).getLoss(), nullptr);
 
-  ASSERT_NE(first, nullptr);
-  ASSERT_NE(second, nullptr);
-
-  EXPECT_EQ(first->getType(), NN::LossType::MSETYPE);
-  EXPECT_EQ(second->getType(), NN::LossType::MSETYPE);
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<0>(network.layers).getLoss().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<1>(network.layers).getLoss().get()), nullptr);
 };
 
 
@@ -123,32 +146,32 @@ TEST(NeuralNetworkDefaultConstructor, InitializesDefaultLoss) {
 // =============================
 // ===== Learning Rate =========
 // =============================
-TEST(NeuralNetworkSetLearningRate, SetsSingleLayer) {
+TEST(NeuralNetworkSetLearningRate, SetsSingleLayer){
   NN::NeuralNetwork<2, 1> network;
 
   network.setLearningRate(0.001);
 
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers).getLearningRate(), 0.001);
+  EXPECT_NEAR(std::get<0>(network.layers).getLearningRate(), 0.001, 1e-12);
 };
 
-TEST(NeuralNetworkSetLearningRate, SetsEveryLayer) {
+TEST(NeuralNetworkSetLearningRate, SetsEveryLayer){
   NN::NeuralNetwork<2, 3, 2, 1> network;
 
   network.setLearningRate(0.001);
 
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers).getLearningRate(), 0.001);
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers).getLearningRate(), 0.001);
-  EXPECT_DOUBLE_EQ(std::get<2>(network.layers).getLearningRate(), 0.001);
+  EXPECT_NEAR(std::get<0>(network.layers).getLearningRate(), 0.001, 1e-12);
+  EXPECT_NEAR(std::get<1>(network.layers).getLearningRate(), 0.001, 1e-12);
+  EXPECT_NEAR(std::get<2>(network.layers).getLearningRate(), 0.001, 1e-12);
 };
 
-TEST(NeuralNetworkSetLearningRate, ReplacesPreviousLearningRate) {
+TEST(NeuralNetworkSetLearningRate, ReplacesPreviousLearningRate){
   NN::NeuralNetwork<2, 3, 1> network;
 
   network.setLearningRate(0.1);
   network.setLearningRate(0.0001);
 
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers).getLearningRate(), 0.0001);
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers).getLearningRate(), 0.0001);
+  EXPECT_NEAR(std::get<0>(network.layers).getLearningRate(), 0.0001, 1e-12);
+  EXPECT_NEAR(std::get<1>(network.layers).getLearningRate(), 0.0001, 1e-12);
 };
 
 
@@ -156,79 +179,124 @@ TEST(NeuralNetworkSetLearningRate, ReplacesPreviousLearningRate) {
 // =============================
 // ======== Activation =========
 // =============================
-TEST(NeuralNetworkSetActivation, SetsFirstLayer) {
+TEST(NeuralNetworkSetActivation, SetsFirstLayer){
   NN::NeuralNetwork<2, 3, 1> network;
 
-  network.setActivation<0>(NN::ActivationType::SIGMOIDTYPE);
+  network.setActivation<0, NN::Sigmoid>();
 
-  NN::iActivation* activation = const_cast<NN::iActivation*>(std::get<0>(network.layers).getActivation());
-
-  ASSERT_NE(activation, nullptr);
-  EXPECT_EQ(activation->getType(), NN::ActivationType::SIGMOIDTYPE);
+  EXPECT_NE(dynamic_cast<NN::Sigmoid*>(std::get<0>(network.layers).getActivation().get()), nullptr);
 };
 
-TEST(NeuralNetworkSetActivation, SetsRequestedLayerOnly) {
+TEST(NeuralNetworkSetActivation, SetsRequestedLayerOnly){
   NN::NeuralNetwork<2, 3, 2, 1> network;
 
-  network.setActivation<1>(NN::ActivationType::SIGMOIDTYPE);
+  network.setActivation<1, NN::Sigmoid>();
 
-  NN::iActivation* first = const_cast<NN::iActivation*>(std::get<0>(network.layers).getActivation());
-  NN::iActivation* second = const_cast<NN::iActivation*>(std::get<1>(network.layers).getActivation());
-  NN::iActivation* third = const_cast<NN::iActivation*>(std::get<2>(network.layers).getActivation());
-
-  EXPECT_EQ(first->getType(), NN::ActivationType::LINEARTYPE);
-  EXPECT_EQ(second->getType(), NN::ActivationType::SIGMOIDTYPE);
-  EXPECT_EQ(third->getType(), NN::ActivationType::LINEARTYPE);
+  EXPECT_NE(dynamic_cast<NN::Linear*>(std::get<0>(network.layers).getActivation().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::Sigmoid*>(std::get<1>(network.layers).getActivation().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::Linear*>(std::get<2>(network.layers).getActivation().get()), nullptr);
 };
 
-TEST(NeuralNetworkSetActivation, ReplacesPreviousActivation) {
+TEST(NeuralNetworkSetActivation, ReplacesPreviousActivation){
   NN::NeuralNetwork<2, 3, 1> network;
 
-  network.setActivation<0>(NN::ActivationType::SIGMOIDTYPE);
-  network.setActivation<0>(NN::ActivationType::LINEARTYPE);
+  network.setActivation<0, NN::Sigmoid>();
+  network.setActivation<0, NN::Linear>();
 
-  NN::iActivation* activation = const_cast<NN::iActivation*>(std::get<0>(network.layers).getActivation());
-
-  ASSERT_NE(activation, nullptr);
-  EXPECT_EQ(activation->getType(), NN::ActivationType::LINEARTYPE);
+  EXPECT_NE(dynamic_cast<NN::Linear*>(std::get<0>(network.layers).getActivation().get()), nullptr);
 };
 
 
 
 // =============================
-// ======== Node Control ========
+// =========== Loss ============
 // =============================
-TEST(NeuralNetworksetInput, SetsInputLayerNodes) {
+TEST(NeuralNetworkSetLoss, SetsRequestedLayer){
+  NN::NeuralNetwork<2, 3, 1> network;
+
+  network.setLoss<0, TestLoss>();
+
+  EXPECT_NE(dynamic_cast<TestLoss*>(std::get<0>(network.layers).getLoss().get()), nullptr);
+};
+
+TEST(NeuralNetworkSetLoss, SetsRequestedLayerOnly){
+  NN::NeuralNetwork<2, 3, 2, 1> network;
+
+  network.setLoss<1, TestLoss>();
+
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<0>(network.layers).getLoss().get()), nullptr);
+  EXPECT_NE(dynamic_cast<TestLoss*>(std::get<1>(network.layers).getLoss().get()), nullptr);
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<2>(network.layers).getLoss().get()), nullptr);
+};
+
+TEST(NeuralNetworkSetLoss, ReplacesPreviousLoss){
+  NN::NeuralNetwork<2, 3, 1> network;
+
+  network.setLoss<0, TestLoss>();
+  network.setLoss<0, NN::MSE>();
+
+  EXPECT_NE(dynamic_cast<NN::MSE*>(std::get<0>(network.layers).getLoss().get()), nullptr);
+};
+
+
+
+// =============================
+// ========= setInput ==========
+// =============================
+TEST(NeuralNetworkSetInput, SetsInputLayerNodes){
   NN::NeuralNetwork<3, 2, 1> network;
 
   network.setInput({1.0, 2.0, 3.0});
 
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[0], 1.0);
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[1], 2.0);
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[2], 3.0);
+  EXPECT_NEAR(std::get<0>(network.layers)[0], 1.0, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers)[1], 2.0, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers)[2], 3.0, 1e-12);
 };
 
-TEST(NeuralNetworksetInput, DoesNotModifyOtherLayers) {
+TEST(NeuralNetworkSetInput, DoesNotModifyOtherLayers){
   NN::NeuralNetwork<2, 2, 1> network;
 
   std::get<1>(network.layers).setNodes({8.0, 9.0});
 
   network.setInput({1.0, 2.0});
 
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[0], 1.0);
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[1], 2.0);
+  EXPECT_NEAR(std::get<0>(network.layers)[0], 1.0, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers)[1], 2.0, 1e-12);
 
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers)[0], 8.0);
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers)[1], 9.0);
+  EXPECT_NEAR(std::get<1>(network.layers)[0], 8.0, 1e-12);
+  EXPECT_NEAR(std::get<1>(network.layers)[1], 9.0, 1e-12);
 };
 
-TEST(NeuralNetworksetInput, IgnoresAdditionalNodes) {
+TEST(NeuralNetworkSetInput, IgnoresAdditionalNodes){
   NN::NeuralNetwork<2, 2, 1> network;
 
   network.setInput({1.0, 2.0, 3.0, 4.0});
 
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[0], 1.0);
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[1], 2.0);
+  EXPECT_NEAR(std::get<0>(network.layers)[0], 1.0, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers)[1], 2.0, 1e-12);
+};
+
+
+
+// =============================
+// ========= getResult =========
+// =============================
+TEST(NeuralNetworkGetResult, ReturnsLastLayerNodes){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  EXPECT_EQ(network.getResult(), std::get<1>(network.layers).getNodes());
+};
+
+TEST(NeuralNetworkGetResult, ReflectsLastLayerValues){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  std::get<1>(network.layers).setNodes({4.0, 8.0});
+
+  double* result = network.getResult();
+
+  ASSERT_NE(result, nullptr);
+  EXPECT_NEAR(result[0], 4.0, 1e-12);
+  EXPECT_NEAR(result[1], 8.0, 1e-12);
 };
 
 
@@ -236,19 +304,7 @@ TEST(NeuralNetworksetInput, IgnoresAdditionalNodes) {
 // =============================
 // ========== Forward ==========
 // =============================
-TEST(NeuralNetworkForward, ForwardsSingleConnection) {
-  NN::NeuralNetwork<2, 1> network;
-
-  network.setInput({2.0, 3.0});
-  std::get<0>(network.layers).setWeights({4.0, 5.0, 6.0});
-
-  network.forward();
-
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[0], 2.0);
-  EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[1], 3.0);
-};
-
-TEST(NeuralNetworkForward, ForwardsThroughTwoLayers) {
+TEST(NeuralNetworkForward, ForwardsThroughTwoLayers){
   NN::NeuralNetwork<2, 2, 1> network;
 
   network.setInput({2.0, 3.0});
@@ -260,11 +316,11 @@ TEST(NeuralNetworkForward, ForwardsThroughTwoLayers) {
 
   network.forward();
 
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers)[0], 11.0);
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers)[1], 29.0);
+  EXPECT_NEAR(network.getResult()[0], 11.0, 1e-12);
+  EXPECT_NEAR(network.getResult()[1], 29.0, 1e-12);
 };
 
-TEST(NeuralNetworkForward, ForwardsThroughMultipleLayers) {
+TEST(NeuralNetworkForward, ForwardsThroughMultipleLayers){
   NN::NeuralNetwork<2, 2, 2, 1> network;
 
   network.setInput({1.0, 2.0});
@@ -281,31 +337,41 @@ TEST(NeuralNetworkForward, ForwardsThroughMultipleLayers) {
 
   network.forward();
 
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers)[0], 4.0);
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers)[1], 4.0);
+  EXPECT_NEAR(std::get<1>(network.layers)[0], 4.0, 1e-12);
+  EXPECT_NEAR(std::get<1>(network.layers)[1], 4.0, 1e-12);
 
-  EXPECT_DOUBLE_EQ(std::get<2>(network.layers)[0], 13.0);
-  EXPECT_DOUBLE_EQ(std::get<2>(network.layers)[1], 18.0);
+  EXPECT_NEAR(network.getResult()[0], 13.0, 1e-12);
+  EXPECT_NEAR(network.getResult()[1], 18.0, 1e-12);
 };
 
-TEST(NeuralNetworkForward, AppliesActivation) {
+TEST(NeuralNetworkForward, AppliesActivation){
   NN::NeuralNetwork<1, 1, 1> network;
 
   network.setInput({0.0});
+  network.setActivation<0, NN::Sigmoid>();
 
   std::get<0>(network.layers).setWeights({2.0, 0.0});
-  network.setActivation<0>(NN::ActivationType::SIGMOIDTYPE);
 
   network.forward();
 
-  EXPECT_DOUBLE_EQ(std::get<1>(network.layers)[0], 1.0);
+  EXPECT_NEAR(network.getResult()[0], 1.0, 1e-12);
 };
 
-TEST(NeuralNetworkForward, ProducesFiniteValues) {
+TEST(NeuralNetworkForward, IncludesBias){
+  NN::NeuralNetwork<2, 1, 1> network;
+
+  network.setInput({0.0, 0.0});
+  std::get<0>(network.layers).setWeights({0.0, 0.0, 7.0});
+
+  network.forward();
+
+  EXPECT_NEAR(network.getResult()[0], 7.0, 1e-12);
+};
+
+TEST(NeuralNetworkForward, ProducesFiniteValues){
   NN::NeuralNetwork<3, 8, 8, 1> network;
 
   network.setInput({0.2, 0.4, 0.6});
-
   network.forward();
 
   double* result = network.getResult();
@@ -319,62 +385,143 @@ TEST(NeuralNetworkForward, ProducesFiniteValues) {
 
 
 // =============================
+// ======== forwardImpl ========
+// =============================
+TEST(NeuralNetworkForwardImpl, ForwardsRequestedConnections){
+  NN::NeuralNetwork<2, 2, 1> network;
+
+  network.setInput({2.0, 3.0});
+
+  std::get<0>(network.layers).setWeights({
+    1.0, 2.0, 3.0,
+    4.0, 5.0, 6.0
+  });
+
+  network.forwardImpl(std::index_sequence<0>{});
+
+  EXPECT_NEAR(network.getResult()[0], 11.0, 1e-12);
+  EXPECT_NEAR(network.getResult()[1], 29.0, 1e-12);
+};
+
+
+
+// =============================
+// ===== backpropInitial =======
+// =============================
+TEST(NeuralNetworkBackpropInitial, CalculatesLastLayerSigma){
+  NN::NeuralNetwork<1, 1, 1> network;
+
+  network.setInput({2.0});
+  std::get<0>(network.layers).setWeights({1.0, 0.0});
+
+  network.forward();
+  network.backpropInitial({1.0});
+
+  EXPECT_NEAR(std::get<1>(network.layers).getSigma()[0], 1.0, 1e-12);
+};
+
+TEST(NeuralNetworkBackpropInitial, CalculatesZeroSigmaForCorrectResult){
+  NN::NeuralNetwork<1, 1, 1> network;
+
+  network.setInput({2.0});
+  std::get<0>(network.layers).setWeights({1.0, 0.0});
+
+  network.forward();
+  network.backpropInitial({2.0});
+
+  EXPECT_NEAR(std::get<1>(network.layers).getSigma()[0], 0.0, 1e-12);
+};
+
+
+
+// =============================
+// ======== backpropImpl =======
+// =============================
+TEST(NeuralNetworkBackpropImpl, CalculatesSigmaAndUpdatesWeights){
+  NN::NeuralNetwork<1, 1, 1> network;
+
+  network.setLearningRate(0.1);
+
+  std::get<0>(network.layers).setNodes({2.0});
+  std::get<0>(network.layers).setWeights({1.0, 0.0});
+
+  std::get<1>(network.layers).sigma[0] = 1.0;
+
+  network.backpropImpl(std::index_sequence<0>{});
+
+  EXPECT_NEAR(std::get<0>(network.layers).getSigma()[0], 1.0, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers).getWeights()[0], 0.8, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers).getWeights()[1], -0.1, 1e-12);
+};
+
+
+
+// =============================
 // ========= Backprop ==========
 // =============================
-TEST(NeuralNetworkBackpropInitial, UpdatesLastConnectionWeights) {
+TEST(NeuralNetworkBackprop, CalculatesSigmaAndUpdatesWeights){
   NN::NeuralNetwork<1, 1, 1> network;
 
   network.setLearningRate(0.1);
   network.setInput({2.0});
 
   std::get<0>(network.layers).setWeights({1.0, 0.0});
-  std::get<1>(network.layers).setWeights({1.0, 0.0});
 
   network.forward();
-
-  const double before = std::get<0>(network.layers).getWeights()[0];
-
   network.backprop({1.0});
 
-  EXPECT_NE(std::get<0>(network.layers).getWeights()[0], before);
+  EXPECT_NEAR(std::get<1>(network.layers).getSigma()[0], 1.0, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers).getSigma()[0], 1.0, 1e-12);
+
+  EXPECT_NEAR(std::get<0>(network.layers).getWeights()[0], 0.8, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers).getWeights()[1], -0.1, 1e-12);
 };
 
-TEST(NeuralNetworkBackprop, UpdatesWeights) {
-  NN::NeuralNetwork<2, 2, 1> network;
+TEST(NeuralNetworkBackprop, DoesNotChangeWeightsForZeroLoss){
+  NN::NeuralNetwork<1, 1, 1> network;
 
-  network.setLearningRate(0.001);
-  network.setInput({0.5, 0.25});
+  network.setLearningRate(0.1);
+  network.setInput({2.0});
+
+  std::get<0>(network.layers).setWeights({1.0, 0.0});
+
   network.forward();
+  network.backprop({2.0});
 
-  const double first_before = std::get<0>(network.layers).getWeights()[0];
-
-  network.backprop({0.5});
-
-  EXPECT_NE(std::get<0>(network.layers).getWeights()[0], first_before);
+  EXPECT_NEAR(std::get<0>(network.layers).getWeights()[0], 1.0, 1e-12);
+  EXPECT_NEAR(std::get<0>(network.layers).getWeights()[1], 0.0, 1e-12);
 };
 
-TEST(NeuralNetworkBackprop, UpdatesMultipleLayers) {
-  NN::NeuralNetwork<2, 2, 2, 1> network;
+TEST(NeuralNetworkBackprop, UpdatesMultipleConnections){
+  NN::NeuralNetwork<1, 1, 1, 1> network;
 
-  network.setLearningRate(0.001);
-  network.setInput({0.25, 0.5});
+  network.setLearningRate(0.1);
+  network.setInput({1.0});
+
+  std::get<0>(network.layers).setWeights({1.0, 0.0});
+  std::get<1>(network.layers).setWeights({1.0, 0.0});
+
   network.forward();
 
   const double first_before = std::get<0>(network.layers).getWeights()[0];
   const double second_before = std::get<1>(network.layers).getWeights()[0];
 
-  network.backprop({0.5, 0.5});
+  network.backprop({0.0});
+
+  EXPECT_NEAR(std::get<0>(network.layers).getWeights()[0], 0.9, 1e-12);
+  EXPECT_NEAR(std::get<1>(network.layers).getWeights()[0], 0.9, 1e-12);
 
   EXPECT_NE(std::get<0>(network.layers).getWeights()[0], first_before);
   EXPECT_NE(std::get<1>(network.layers).getWeights()[0], second_before);
 };
 
-TEST(NeuralNetworkBackprop, KeepsWeightsFinite) {
+TEST(NeuralNetworkBackprop, KeepsWeightsAndSigmaFinite){
   NN::NeuralNetwork<2, 4, 4, 1> network;
 
   network.setLearningRate(0.0001);
+  network.setActivation<1, NN::Sigmoid>();
 
-  for(unsigned int i = 0; i < 100; ++i) {
+  for(unsigned int i = 0; i < 100; ++i){
     network.setInput({0.25, 0.5});
     network.forward();
     network.backprop({0.5, 0.5, 0.5, 0.5});
@@ -386,82 +533,11 @@ TEST(NeuralNetworkBackprop, KeepsWeightsFinite) {
   for(double weight : std::get<1>(network.layers).weights)
     EXPECT_TRUE(std::isfinite(weight));
 
-  for(double weight : std::get<2>(network.layers).weights)
-    EXPECT_TRUE(std::isfinite(weight));
-};
-
-TEST(NeuralNetworkBackprop, KeepsSigmaFinite) {
-  NN::NeuralNetwork<2, 3, 3, 1> network;
-
-  network.setLearningRate(0.0001);
-  network.setInput({0.2, 0.4});
-  network.forward();
-  network.backprop({0.5, 0.5, 0.5});
-
   for(double sigma : std::get<0>(network.layers).sigma)
     EXPECT_TRUE(std::isfinite(sigma));
 
   for(double sigma : std::get<1>(network.layers).sigma)
     EXPECT_TRUE(std::isfinite(sigma));
-
-  for(double sigma : std::get<2>(network.layers).sigma)
-    EXPECT_TRUE(std::isfinite(sigma));
-};
-
-
-
-// =============================
-// =========== Result ==========
-// =============================
-TEST(NeuralNetworkGetResult, ReturnsLastLayerNodes) {
-  NN::NeuralNetwork<2, 2, 1> network;
-
-  EXPECT_EQ(network.getResult(), std::get<1>(network.layers).getNodes());
-};
-
-TEST(NeuralNetworkGetResult, ReflectsLastLayerValues) {
-  NN::NeuralNetwork<2, 2, 1> network;
-
-  std::get<1>(network.layers).setNodes({4.0, 8.0});
-
-  double* result = network.getResult();
-
-  ASSERT_NE(result, nullptr);
-  EXPECT_DOUBLE_EQ(result[0], 4.0);
-  EXPECT_DOUBLE_EQ(result[1], 8.0);
-};
-
-TEST(NeuralNetworkGetResult, ReflectsForwardResult) {
-  NN::NeuralNetwork<2, 2, 1> network;
-
-  network.setInput({2.0, 3.0});
-
-  std::get<0>(network.layers).setWeights({
-    1.0, 2.0, 3.0,
-    4.0, 5.0, 6.0
-  });
-
-  network.forward();
-
-  double* result = network.getResult();
-
-  ASSERT_NE(result, nullptr);
-  EXPECT_DOUBLE_EQ(result[0], 11.0);
-  EXPECT_DOUBLE_EQ(result[1], 29.0);
-};
-
-TEST(NeuralNetworkGetResult, ReturnsFiniteValues) {
-  NN::NeuralNetwork<3, 8, 8, 1> network;
-
-  network.setInput({0.2, 0.4, 0.6});
-  network.forward();
-
-  double* result = network.getResult();
-
-  ASSERT_NE(result, nullptr);
-
-  for(unsigned int i = 0; i < 8; ++i)
-    EXPECT_TRUE(std::isfinite(result[i]));
 };
 
 
@@ -469,48 +545,30 @@ TEST(NeuralNetworkGetResult, ReturnsFiniteValues) {
 // =============================
 // ======= Integration =========
 // =============================
-TEST(NeuralNetworkIntegration, ForwardBackpropForwardChangesResult) {
-  NN::NeuralNetwork<2, 2, 1> network;
+TEST(NeuralNetworkIntegration, BackpropReducesLossForSimpleSample){
+  NN::NeuralNetwork<1, 1, 1> network;
 
-  network.setLearningRate(0.001);
-  network.setInput({0.5, 0.25});
+  network.setLearningRate(0.1);
+  network.setInput({1.0});
+
+  std::get<0>(network.layers).setWeights({0.0, 0.0});
+
   network.forward();
 
-  const double before = network.getResult()[0];
+  const double target = 1.0;
+  const double before = std::pow(network.getResult()[0] - target, 2.0) / 2.0;
 
-  network.backprop({0.5, 0.5});
+  network.backprop({target});
 
-  network.setInput({0.5, 0.25});
+  network.setInput({1.0});
   network.forward();
 
-  const double after = network.getResult()[0];
+  const double after = std::pow(network.getResult()[0] - target, 2.0) / 2.0;
 
-  EXPECT_NE(before, after);
+  EXPECT_LT(after, before);
 };
 
-TEST(NeuralNetworkIntegration, RepeatedTrainingKeepsResultFinite) {
-  NN::NeuralNetwork<2, 4, 4, 1> network;
-
-  network.setLearningRate(0.0001);
-
-  for(unsigned int i = 0; i < 1000; ++i) {
-    network.setInput({0.2, 0.4});
-    network.forward();
-    network.backprop({0.5, 0.5, 0.5, 0.5});
-  };
-
-  network.setInput({0.2, 0.4});
-  network.forward();
-
-  double* result = network.getResult();
-
-  ASSERT_NE(result, nullptr);
-
-  for(unsigned int i = 0; i < 4; ++i)
-    EXPECT_TRUE(std::isfinite(result[i]));
-};
-
-TEST(NeuralNetworkIntegration, DifferentInputsProduceDifferentResults) {
+TEST(NeuralNetworkIntegration, DifferentInputsProduceDifferentResults){
   NN::NeuralNetwork<2, 2, 1> network;
 
   std::get<0>(network.layers).setWeights({
@@ -532,4 +590,27 @@ TEST(NeuralNetworkIntegration, DifferentInputsProduceDifferentResults) {
 
   EXPECT_NE(first_a, second_a);
   EXPECT_NE(first_b, second_b);
+};
+
+TEST(NeuralNetworkIntegration, RepeatedTrainingKeepsResultFinite){
+  NN::NeuralNetwork<2, 4, 4, 1> network;
+
+  network.setLearningRate(0.0001);
+  network.setActivation<1, NN::Sigmoid>();
+
+  for(unsigned int i = 0; i < 1000; ++i){
+    network.setInput({0.2, 0.4});
+    network.forward();
+    network.backprop({0.5, 0.5, 0.5, 0.5});
+  };
+
+  network.setInput({0.2, 0.4});
+  network.forward();
+
+  double* result = network.getResult();
+
+  ASSERT_NE(result, nullptr);
+
+  for(unsigned int i = 0; i < 4; ++i)
+    EXPECT_TRUE(std::isfinite(result[i]));
 };

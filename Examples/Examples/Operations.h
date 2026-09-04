@@ -41,16 +41,16 @@ void BaseOperations(){
   fmt::println(fg(fmt::color::white), "{}", layer.print());
 
   fmt::println(fg(fmt::color::yellow), "-- Set Loss");
-  layer.setLoss(NN::LossType::MSETYPE);
+  layer.setLoss<NN::MSE>();
   fmt::println(fg(fmt::color::white), "{}", layer.print());
 
   fmt::println(fg(fmt::color::yellow), "-- Set Activation");
   fmt::println(fg(fmt::color::green), "---- SIGMOID");
-  layer.setActivation(NN::ActivationType::SIGMOIDTYPE);
+  layer.setActivation<NN::Sigmoid>();
   fmt::println(fg(fmt::color::white), "{}", layer.print());
 
   fmt::println(fg(fmt::color::green), "---- LINEAR");
-  layer.setActivation(NN::ActivationType::LINEARTYPE);
+  layer.setActivation<NN::Linear>();
   fmt::println(fg(fmt::color::white), "{}", layer.print());
 };
 
@@ -111,7 +111,7 @@ void Backprop(){
   fmt::println(fg(fmt::color::purple), "h => {}", h.print());
   fmt::println(fg(fmt::color::violet), "d => {}", d.print());
 
-  d.backprop_initial(h, {3, 3, 1});
+  d.backprop_initial({3, 3, 1});
   h.backprop(d);
   c.backprop(h);
   fmt::println(fg(fmt::color::yellow), "c <= backprop <= h <= backprop <= d");

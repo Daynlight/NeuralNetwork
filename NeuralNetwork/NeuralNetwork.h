@@ -10,6 +10,7 @@
 #include "NeuralNetwork/Layer/Layer.h"
 #include <tuple>
 #include <utility>
+#include <memory>
 
 
 
@@ -71,8 +72,10 @@ public:
 // =========================== //
 public:
   void setLearningRate(double learning_rate) noexcept;
-  template<std::size_t I>
-  void setActivation(ActivationType type) noexcept;
+  template<std::size_t I, typename T>
+  void setActivation() noexcept;
+  template<std::size_t I, typename T>
+  void setLoss() noexcept;
   void setInput(std::initializer_list<double> nodes) noexcept;
   double* getResult() noexcept;
 

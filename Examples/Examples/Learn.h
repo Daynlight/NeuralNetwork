@@ -62,7 +62,7 @@ void Minus(){
 
       double val = x - y;
       double res = (val / modulo_number);
-      g.backprop_initial(e, {res});
+      g.backprop_initial({res});
       e.backprop(g);
     };
   };
@@ -112,7 +112,7 @@ void XOR(){
   const unsigned int epoch = 1000;
   const unsigned int tests = 10000;
   network.setLearningRate(learning_rate);
-  network.setActivation<1>(NN::ActivationType::SIGMOIDTYPE);
+  network.setActivation<1, NN::Sigmoid>();
   fmt::println(fg(fmt::color::yellow), "-- Parameters:");
   fmt::println(fg(fmt::color::white), "learning_rate = {}", learning_rate);
   fmt::println(fg(fmt::color::white), "modulo_number = {}", modulo_number);
@@ -184,8 +184,8 @@ void Func(){
   const unsigned int tests = 10000;
   const double tolerance = 1.0f;
   network.setLearningRate(learning_rate);
-  network.setActivation<1>(NN::ActivationType::SIGMOIDTYPE);
-  network.setActivation<2>(NN::ActivationType::SIGMOIDTYPE);
+  network.setActivation<1, NN::Sigmoid>();
+  network.setActivation<2, NN::Sigmoid>();
   fmt::println(fg(fmt::color::yellow), "-- Parameters:");
   fmt::println(fg(fmt::color::white), "learning_rate = {}", learning_rate);
   fmt::println(fg(fmt::color::white), "modulo_number = {}", modulo_number);

@@ -1,27 +1,30 @@
+// Neural Network
+// Copyright 2026 Daynlight
+// Licensed under the GNU General.
+// See LICENSE file for details.
+
+
+
 #pragma once
 
 
-namespace NN{
-enum LossType{
-  MSETYPE = 0
-};
 
+namespace NN{
 class iLoss{
 public:
-  virtual LossType getType() = 0;
-  virtual double fun(double x, double t) = 0;
-  virtual double fun_prime(double x, double t) = 0;
+  virtual double fun(double x, double t) const noexcept = 0;
+  virtual double fun_prime(double x, double t) const noexcept = 0;
 };
+
+
 
 class MSE : public iLoss{
 public:
-  LossType getType() { return LossType::MSETYPE; };
-  double fun(double x, double t) { return (x - t)*(x - t)/2; };
-  double fun_prime(double x, double t) { return x - t; };
+  double fun(double x, double t) const noexcept;
+  double fun_prime(double x, double t) const noexcept;
+};
 };
 
-inline iLoss *getLossFromType(LossType type) {
-  if(type == MSETYPE) return new MSE();
-  return nullptr;
-};
-};
+
+
+#include "Loss.hpp"

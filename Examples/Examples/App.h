@@ -62,7 +62,7 @@ void Minus(){
 
       double val = x - y;
       double res = (val / modulo_number);
-      g.backprop_initial(e, {res});
+      g.backprop_initial({res});
       e.backprop(g);
     };
   };

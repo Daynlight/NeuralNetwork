@@ -72,11 +72,21 @@ inline void NN::NeuralNetwork<First, Second, Rest...>::setLearningRate(double le
 
 
 template<unsigned int First, unsigned int Second, unsigned int... Rest>
-template<std::size_t I>
-inline void NN::NeuralNetwork<First, Second, Rest...>::setActivation(ActivationType type) noexcept {
+template<std::size_t I, typename T>
+inline void NN::NeuralNetwork<First, Second, Rest...>::setActivation() noexcept {
   if constexpr(I < 0) return;
   if constexpr(I >= std::tuple_size_v<LayerTuple>) return;
-  std::get<I>(layers).setActivation(type);
+  std::get<I>(layers).template setActivation<T>();
+};
+
+
+
+template<unsigned int First, unsigned int Second, unsigned int... Rest>
+template<std::size_t I, typename T>
+inline void NN::NeuralNetwork<First, Second, Rest...>::setLoss() noexcept {
+  if constexpr(I < 0) return;
+  if constexpr(I >= std::tuple_size_v<LayerTuple>) return;
+  std::get<I>(layers).template setLoss<T>();
 };
 
 
@@ -137,5 +147,5 @@ template<unsigned int First, unsigned int Second, unsigned int... Rest>
 inline void NN::NeuralNetwork<First, Second, Rest...>::backpropInitial(std::initializer_list<double> loss){
   if constexpr(std::tuple_size_v<LayerTuple> <= 0) return;
   constexpr std::size_t last = std::tuple_size_v<LayerTuple> - 1;
-  std::get<last>(layers).backprop_initial(std::get<last - 1>(layers), loss);
+  std::get<last>(layers).backprop_initial(loss);
 };

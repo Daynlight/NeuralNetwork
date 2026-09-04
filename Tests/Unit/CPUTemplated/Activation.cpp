@@ -7,42 +7,47 @@
 
 #include <gtest/gtest.h>
 #include <cmath>
-
-#define private public
-#define protected public
+#include <memory>
 
 #include "NeuralNetwork/Activation/Activation.h"
-
-#undef private
-#undef protected
 
 
 
 // =============================
 // ========= Linear ============
 // =============================
-TEST(LinearGetType, ReturnsLinearType) {
-  NN::Linear linear;
-
-  EXPECT_EQ(linear.getType(), NN::ActivationType::LINEARTYPE);
-};
-
-TEST(LinearFun, ReturnsInput) {
+TEST(LinearFun, ReturnsInput){
   NN::Linear linear;
 
   EXPECT_DOUBLE_EQ(linear.fun(0.0), 0.0);
   EXPECT_DOUBLE_EQ(linear.fun(1.0), 1.0);
   EXPECT_DOUBLE_EQ(linear.fun(-1.0), -1.0);
   EXPECT_DOUBLE_EQ(linear.fun(123.456), 123.456);
+  EXPECT_DOUBLE_EQ(linear.fun(-123.456), -123.456);
 };
 
-TEST(LinearFunPrime, AlwaysReturnsOne) {
+TEST(LinearFun, HandlesExtremeValues){
+  NN::Linear linear;
+
+  EXPECT_DOUBLE_EQ(linear.fun(std::numeric_limits<double>::max()), std::numeric_limits<double>::max());
+  EXPECT_DOUBLE_EQ(linear.fun(std::numeric_limits<double>::lowest()), std::numeric_limits<double>::lowest());
+};
+
+TEST(LinearFunPrime, AlwaysReturnsOne){
   NN::Linear linear;
 
   EXPECT_DOUBLE_EQ(linear.fun_prime(0.0), 1.0);
   EXPECT_DOUBLE_EQ(linear.fun_prime(1.0), 1.0);
   EXPECT_DOUBLE_EQ(linear.fun_prime(-1.0), 1.0);
-  EXPECT_DOUBLE_EQ(linear.fun_prime(1000000.0), 1.0);
+  EXPECT_DOUBLE_EQ(linear.fun_prime(123.456), 1.0);
+  EXPECT_DOUBLE_EQ(linear.fun_prime(-123.456), 1.0);
+};
+
+TEST(LinearFunPrime, HandlesExtremeValues){
+  NN::Linear linear;
+
+  EXPECT_DOUBLE_EQ(linear.fun_prime(std::numeric_limits<double>::max()), 1.0);
+  EXPECT_DOUBLE_EQ(linear.fun_prime(std::numeric_limits<double>::lowest()), 1.0);
 };
 
 
@@ -50,13 +55,7 @@ TEST(LinearFunPrime, AlwaysReturnsOne) {
 // =============================
 // ========= Sigmoid ===========
 // =============================
-TEST(SigmoidGetType, ReturnsSigmoidType) {
-  NN::Sigmoid sigmoid;
-
-  EXPECT_EQ(sigmoid.getType(), NN::ActivationType::SIGMOIDTYPE);
-};
-
-TEST(SigmoidFun, ReturnsExpectedValues) {
+TEST(SigmoidFun, ReturnsExpectedValues){
   NN::Sigmoid sigmoid;
 
   EXPECT_DOUBLE_EQ(sigmoid.fun(0.0), 0.5);
@@ -64,7 +63,7 @@ TEST(SigmoidFun, ReturnsExpectedValues) {
   EXPECT_NEAR(sigmoid.fun(-1.0), 0.2689414213699951, 1e-12);
 };
 
-TEST(SigmoidFun, HandlesLargePositiveValue) {
+TEST(SigmoidFun, HandlesLargePositiveValue){
   NN::Sigmoid sigmoid;
 
   const double result = sigmoid.fun(1000.0);
@@ -73,7 +72,7 @@ TEST(SigmoidFun, HandlesLargePositiveValue) {
   EXPECT_DOUBLE_EQ(result, 1.0);
 };
 
-TEST(SigmoidFun, HandlesLargeNegativeValue) {
+TEST(SigmoidFun, HandlesLargeNegativeValue){
   NN::Sigmoid sigmoid;
 
   const double result = sigmoid.fun(-1000.0);
@@ -82,10 +81,10 @@ TEST(SigmoidFun, HandlesLargeNegativeValue) {
   EXPECT_DOUBLE_EQ(result, 0.0);
 };
 
-TEST(SigmoidFun, ResultRemainsInRange) {
+TEST(SigmoidFun, ResultRemainsInRange){
   NN::Sigmoid sigmoid;
 
-  for(double value = -100.0; value <= 100.0; value += 0.5) {
+  for(double value = -100.0; value <= 100.0; value += 0.5){
     const double result = sigmoid.fun(value);
 
     EXPECT_GE(result, 0.0);
@@ -93,12 +92,12 @@ TEST(SigmoidFun, ResultRemainsInRange) {
   };
 };
 
-TEST(SigmoidFun, IsMonotonicallyIncreasing) {
+TEST(SigmoidFun, IsMonotonicallyIncreasing){
   NN::Sigmoid sigmoid;
 
   double previous = sigmoid.fun(-10.0);
 
-  for(double value = -9.9; value <= 10.0; value += 0.1) {
+  for(double value = -9.9; value <= 10.0; value += 0.1){
     const double current = sigmoid.fun(value);
 
     EXPECT_GE(current, previous);
@@ -107,7 +106,22 @@ TEST(SigmoidFun, IsMonotonicallyIncreasing) {
   };
 };
 
-TEST(SigmoidFunPrime, ReturnsExpectedValues) {
+TEST(SigmoidFun, IsSymmetricAroundHalf){
+  NN::Sigmoid sigmoid;
+
+  EXPECT_NEAR(sigmoid.fun(1.0) + sigmoid.fun(-1.0), 1.0, 1e-12);
+  EXPECT_NEAR(sigmoid.fun(5.0) + sigmoid.fun(-5.0), 1.0, 1e-12);
+  EXPECT_NEAR(sigmoid.fun(10.0) + sigmoid.fun(-10.0), 1.0, 1e-12);
+};
+
+TEST(SigmoidFun, HandlesInfinity){
+  NN::Sigmoid sigmoid;
+
+  EXPECT_DOUBLE_EQ(sigmoid.fun(std::numeric_limits<double>::infinity()), 1.0);
+  EXPECT_DOUBLE_EQ(sigmoid.fun(-std::numeric_limits<double>::infinity()), 0.0);
+};
+
+TEST(SigmoidFunPrime, ReturnsExpectedValues){
   NN::Sigmoid sigmoid;
 
   EXPECT_DOUBLE_EQ(sigmoid.fun_prime(0.0), 0.25);
@@ -115,38 +129,63 @@ TEST(SigmoidFunPrime, ReturnsExpectedValues) {
   EXPECT_NEAR(sigmoid.fun_prime(-1.0), 0.19661193324148185, 1e-12);
 };
 
-TEST(SigmoidFunPrime, ApproachesZeroForExtremeValues) {
+TEST(SigmoidFunPrime, ApproachesZeroForExtremeValues){
   NN::Sigmoid sigmoid;
 
   EXPECT_NEAR(sigmoid.fun_prime(1000.0), 0.0, 1e-12);
   EXPECT_NEAR(sigmoid.fun_prime(-1000.0), 0.0, 1e-12);
 };
 
+TEST(SigmoidFunPrime, IsSymmetric){
+  NN::Sigmoid sigmoid;
+
+  EXPECT_NEAR(sigmoid.fun_prime(1.0), sigmoid.fun_prime(-1.0), 1e-12);
+  EXPECT_NEAR(sigmoid.fun_prime(5.0), sigmoid.fun_prime(-5.0), 1e-12);
+  EXPECT_NEAR(sigmoid.fun_prime(10.0), sigmoid.fun_prime(-10.0), 1e-12);
+};
+
+TEST(SigmoidFunPrime, MaximumAtZero){
+  NN::Sigmoid sigmoid;
+
+  const double zero = sigmoid.fun_prime(0.0);
+
+  for(double value = -10.0; value <= 10.0; value += 0.1)
+    EXPECT_LE(sigmoid.fun_prime(value), zero);
+};
+
+TEST(SigmoidFunPrime, ResultRemainsInRange){
+  NN::Sigmoid sigmoid;
+
+  for(double value = -100.0; value <= 100.0; value += 0.5){
+    const double result = sigmoid.fun_prime(value);
+
+    EXPECT_GE(result, 0.0);
+    EXPECT_LE(result, 0.25);
+  };
+};
+
+TEST(SigmoidFunPrime, HandlesInfinity){
+  NN::Sigmoid sigmoid;
+
+  EXPECT_DOUBLE_EQ(sigmoid.fun_prime(std::numeric_limits<double>::infinity()), 0.0);
+  EXPECT_DOUBLE_EQ(sigmoid.fun_prime(-std::numeric_limits<double>::infinity()), 0.0);
+};
+
 
 
 // =============================
-// ========= Factory ===========
+// ======= Interface ===========
 // =============================
-TEST(ActivationFactory, CreatesLinear) {
-  NN::iActivation* activation = NN::getActivationFromType(NN::ActivationType::LINEARTYPE);
+TEST(ActivationInterface, LinearWorksPolymorphically){
+  std::unique_ptr<NN::iActivation> activation = std::make_unique<NN::Linear>();
 
-  ASSERT_NE(activation, nullptr);
-  EXPECT_EQ(activation->getType(), NN::ActivationType::LINEARTYPE);
-
-  delete activation;
+  EXPECT_DOUBLE_EQ(activation->fun(2.5), 2.5);
+  EXPECT_DOUBLE_EQ(activation->fun_prime(2.5), 1.0);
 };
 
-TEST(ActivationFactory, CreatesSigmoid) {
-  NN::iActivation* activation = NN::getActivationFromType(NN::ActivationType::SIGMOIDTYPE);
+TEST(ActivationInterface, SigmoidWorksPolymorphically){
+  std::unique_ptr<NN::iActivation> activation = std::make_unique<NN::Sigmoid>();
 
-  ASSERT_NE(activation, nullptr);
-  EXPECT_EQ(activation->getType(), NN::ActivationType::SIGMOIDTYPE);
-
-  delete activation;
-};
-
-TEST(ActivationFactory, ReturnsNullptrForInvalidType) {
-  NN::iActivation* activation = NN::getActivationFromType(static_cast<NN::ActivationType>(100));
-
-  EXPECT_EQ(activation, nullptr);
+  EXPECT_NEAR(activation->fun(1.0), 0.7310585786300049, 1e-12);
+  EXPECT_NEAR(activation->fun_prime(1.0), 0.19661193324148185, 1e-12);
 };
