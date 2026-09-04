@@ -198,22 +198,22 @@ TEST(NeuralNetworkSetActivation, ReplacesPreviousActivation) {
 // =============================
 // ======== Node Control ========
 // =============================
-TEST(NeuralNetworkSetNodes, SetsInputLayerNodes) {
+TEST(NeuralNetworksetInput, SetsInputLayerNodes) {
   NN::NeuralNetwork<3, 2, 1> network;
 
-  network.setNodes({1.0, 2.0, 3.0});
+  network.setInput({1.0, 2.0, 3.0});
 
   EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[0], 1.0);
   EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[1], 2.0);
   EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[2], 3.0);
 };
 
-TEST(NeuralNetworkSetNodes, DoesNotModifyOtherLayers) {
+TEST(NeuralNetworksetInput, DoesNotModifyOtherLayers) {
   NN::NeuralNetwork<2, 2, 1> network;
 
   std::get<1>(network.layers).setNodes({8.0, 9.0});
 
-  network.setNodes({1.0, 2.0});
+  network.setInput({1.0, 2.0});
 
   EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[0], 1.0);
   EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[1], 2.0);
@@ -222,10 +222,10 @@ TEST(NeuralNetworkSetNodes, DoesNotModifyOtherLayers) {
   EXPECT_DOUBLE_EQ(std::get<1>(network.layers)[1], 9.0);
 };
 
-TEST(NeuralNetworkSetNodes, IgnoresAdditionalNodes) {
+TEST(NeuralNetworksetInput, IgnoresAdditionalNodes) {
   NN::NeuralNetwork<2, 2, 1> network;
 
-  network.setNodes({1.0, 2.0, 3.0, 4.0});
+  network.setInput({1.0, 2.0, 3.0, 4.0});
 
   EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[0], 1.0);
   EXPECT_DOUBLE_EQ(std::get<0>(network.layers)[1], 2.0);
@@ -239,7 +239,7 @@ TEST(NeuralNetworkSetNodes, IgnoresAdditionalNodes) {
 TEST(NeuralNetworkForward, ForwardsSingleConnection) {
   NN::NeuralNetwork<2, 1> network;
 
-  network.setNodes({2.0, 3.0});
+  network.setInput({2.0, 3.0});
   std::get<0>(network.layers).setWeights({4.0, 5.0, 6.0});
 
   network.forward();
@@ -251,7 +251,7 @@ TEST(NeuralNetworkForward, ForwardsSingleConnection) {
 TEST(NeuralNetworkForward, ForwardsThroughTwoLayers) {
   NN::NeuralNetwork<2, 2, 1> network;
 
-  network.setNodes({2.0, 3.0});
+  network.setInput({2.0, 3.0});
 
   std::get<0>(network.layers).setWeights({
     1.0, 2.0, 3.0,
@@ -267,7 +267,7 @@ TEST(NeuralNetworkForward, ForwardsThroughTwoLayers) {
 TEST(NeuralNetworkForward, ForwardsThroughMultipleLayers) {
   NN::NeuralNetwork<2, 2, 2, 1> network;
 
-  network.setNodes({1.0, 2.0});
+  network.setInput({1.0, 2.0});
 
   std::get<0>(network.layers).setWeights({
     1.0, 1.0, 1.0,
@@ -291,7 +291,7 @@ TEST(NeuralNetworkForward, ForwardsThroughMultipleLayers) {
 TEST(NeuralNetworkForward, AppliesActivation) {
   NN::NeuralNetwork<1, 1, 1> network;
 
-  network.setNodes({0.0});
+  network.setInput({0.0});
 
   std::get<0>(network.layers).setWeights({2.0, 0.0});
   network.setActivation<0>(NN::ActivationType::SIGMOIDTYPE);
@@ -304,7 +304,7 @@ TEST(NeuralNetworkForward, AppliesActivation) {
 TEST(NeuralNetworkForward, ProducesFiniteValues) {
   NN::NeuralNetwork<3, 8, 8, 1> network;
 
-  network.setNodes({0.2, 0.4, 0.6});
+  network.setInput({0.2, 0.4, 0.6});
 
   network.forward();
 
@@ -325,7 +325,7 @@ TEST(NeuralNetworkBackpropInitial, UpdatesLastConnectionWeights) {
   NN::NeuralNetwork<1, 1, 1> network;
 
   network.setLearningRate(0.1);
-  network.setNodes({2.0});
+  network.setInput({2.0});
 
   std::get<0>(network.layers).setWeights({1.0, 0.0});
   std::get<1>(network.layers).setWeights({1.0, 0.0});
@@ -343,7 +343,7 @@ TEST(NeuralNetworkBackprop, UpdatesWeights) {
   NN::NeuralNetwork<2, 2, 1> network;
 
   network.setLearningRate(0.001);
-  network.setNodes({0.5, 0.25});
+  network.setInput({0.5, 0.25});
   network.forward();
 
   const double first_before = std::get<0>(network.layers).getWeights()[0];
@@ -357,7 +357,7 @@ TEST(NeuralNetworkBackprop, UpdatesMultipleLayers) {
   NN::NeuralNetwork<2, 2, 2, 1> network;
 
   network.setLearningRate(0.001);
-  network.setNodes({0.25, 0.5});
+  network.setInput({0.25, 0.5});
   network.forward();
 
   const double first_before = std::get<0>(network.layers).getWeights()[0];
@@ -375,7 +375,7 @@ TEST(NeuralNetworkBackprop, KeepsWeightsFinite) {
   network.setLearningRate(0.0001);
 
   for(unsigned int i = 0; i < 100; ++i) {
-    network.setNodes({0.25, 0.5});
+    network.setInput({0.25, 0.5});
     network.forward();
     network.backprop({0.5, 0.5, 0.5, 0.5});
   };
@@ -394,7 +394,7 @@ TEST(NeuralNetworkBackprop, KeepsSigmaFinite) {
   NN::NeuralNetwork<2, 3, 3, 1> network;
 
   network.setLearningRate(0.0001);
-  network.setNodes({0.2, 0.4});
+  network.setInput({0.2, 0.4});
   network.forward();
   network.backprop({0.5, 0.5, 0.5});
 
@@ -434,7 +434,7 @@ TEST(NeuralNetworkGetResult, ReflectsLastLayerValues) {
 TEST(NeuralNetworkGetResult, ReflectsForwardResult) {
   NN::NeuralNetwork<2, 2, 1> network;
 
-  network.setNodes({2.0, 3.0});
+  network.setInput({2.0, 3.0});
 
   std::get<0>(network.layers).setWeights({
     1.0, 2.0, 3.0,
@@ -453,7 +453,7 @@ TEST(NeuralNetworkGetResult, ReflectsForwardResult) {
 TEST(NeuralNetworkGetResult, ReturnsFiniteValues) {
   NN::NeuralNetwork<3, 8, 8, 1> network;
 
-  network.setNodes({0.2, 0.4, 0.6});
+  network.setInput({0.2, 0.4, 0.6});
   network.forward();
 
   double* result = network.getResult();
@@ -473,14 +473,14 @@ TEST(NeuralNetworkIntegration, ForwardBackpropForwardChangesResult) {
   NN::NeuralNetwork<2, 2, 1> network;
 
   network.setLearningRate(0.001);
-  network.setNodes({0.5, 0.25});
+  network.setInput({0.5, 0.25});
   network.forward();
 
   const double before = network.getResult()[0];
 
   network.backprop({0.5, 0.5});
 
-  network.setNodes({0.5, 0.25});
+  network.setInput({0.5, 0.25});
   network.forward();
 
   const double after = network.getResult()[0];
@@ -494,12 +494,12 @@ TEST(NeuralNetworkIntegration, RepeatedTrainingKeepsResultFinite) {
   network.setLearningRate(0.0001);
 
   for(unsigned int i = 0; i < 1000; ++i) {
-    network.setNodes({0.2, 0.4});
+    network.setInput({0.2, 0.4});
     network.forward();
     network.backprop({0.5, 0.5, 0.5, 0.5});
   };
 
-  network.setNodes({0.2, 0.4});
+  network.setInput({0.2, 0.4});
   network.forward();
 
   double* result = network.getResult();
@@ -518,13 +518,13 @@ TEST(NeuralNetworkIntegration, DifferentInputsProduceDifferentResults) {
     3.0, 4.0, 0.0
   });
 
-  network.setNodes({1.0, 2.0});
+  network.setInput({1.0, 2.0});
   network.forward();
 
   const double first_a = network.getResult()[0];
   const double first_b = network.getResult()[1];
 
-  network.setNodes({3.0, 4.0});
+  network.setInput({3.0, 4.0});
   network.forward();
 
   const double second_a = network.getResult()[0];

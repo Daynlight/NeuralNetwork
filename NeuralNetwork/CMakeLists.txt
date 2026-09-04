@@ -1,10 +1,21 @@
+# Neural Network
+# Copyright 2026 Daynlight
+# Licensed under the GNU General.
+# See LICENSE file for details.
+
+
+
 cmake_minimum_required(VERSION 3.15)
 
 project(NeuralNetwork LANGUAGES CXX)
 
-
 set(src
+  Activation/Activation.h
+  Loss/Loss.h
+  Layer/Layer.h
   Layer/Layer.hpp
+  NeuralNetwork.h
+  NeuralNetwork.hpp
   NeuralNetwork.cpp
 )
 
@@ -14,6 +25,6 @@ add_library(NeuralNetwork::NeuralNetwork ALIAS NeuralNetwork)
 target_include_directories(
   NeuralNetwork
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+  $<INSTALL_INTERFACE:include>
 )

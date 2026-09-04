@@ -2,8 +2,6 @@
   "name": "neuralnetwork",
   "version": "1.0.0",
   "dependencies": [
-    "fmt",
-    "gtest",
     "cwindow",
     {
       "name": "vcpkg-cmake",

@@ -2,8 +2,8 @@
   "name": "neuralnetwork",
   "version": "1.0.0",
   "dependencies": [
+    "cwindow",
     "fmt",
-    "gtest",
-    "cwindow"
+    "gtest"
   ]
 }

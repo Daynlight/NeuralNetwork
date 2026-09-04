@@ -1,3 +1,10 @@
+# Neural Network
+# Copyright 2026 Daynlight
+# Licensed under the GNU General.
+# See LICENSE file for details.
+
+
+
 cmake_minimum_required(VERSION 3.15)
 
 ######################### Set Project #########################
@@ -7,9 +14,7 @@ option(NEURAL_NETWORK_BUILD_EXAMPLES "Build Examples" ON)
 option(NEURAL_NETWORK_BUILD_TESTS "Build Tests" ON)
 
 ########################### Add dependencies ########################### 
-find_package(fmt CONFIG REQUIRED)
-find_package(Threads REQUIRED)
-find_package(GTest CONFIG REQUIRED)
+
 
 ########################### add subdirectories ########################### 
 add_subdirectory(NeuralNetwork)

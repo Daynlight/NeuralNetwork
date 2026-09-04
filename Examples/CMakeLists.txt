@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.10)
 ########################### Example Project ########################### 
 project(Example LANGUAGES CXX)
 
-
+find_package(fmt CONFIG REQUIRED)
 
 set(headers
   ${CMAKE_CURRENT_SOURCE_DIR}/
@@ -21,8 +21,6 @@ set(headers
 set(src 
   main.cpp
 )
-
-
 
 add_executable(Example ${src})
 

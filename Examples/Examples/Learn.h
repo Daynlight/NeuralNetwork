@@ -128,7 +128,7 @@ void XOR(){
 
       NN::Utils::progressBar(i + j * learn_samples, learn_samples * epoch);
 
-      network.setNodes({x, y});
+      network.setInput({x, y});
       network.forward();
       double res = ((x != 0) != (y != 0));
       network.backprop({res});
@@ -143,7 +143,7 @@ void XOR(){
 
     NN::Utils::progressBar(i, tests);
 
-    network.setNodes({x, y});
+    network.setInput({x, y});
     network.forward();
     double res = ((x != 0) != (y != 0));
     if ((network.getResult()[0] >= 0.5) == res) sum += 1;
@@ -155,7 +155,7 @@ void XOR(){
   fmt::println(fg(fmt::color::yellow), "-- Test on defined values");
   double x = 1.0;
   double y = 0.0;
-  network.setNodes({x, y});
+  network.setInput({x, y});
   network.forward();
   fmt::println(fg(fmt::color::violet), "{} XOR {} = {}", x, y, network.getResult()[0]);
 };
@@ -201,7 +201,7 @@ void Func(){
 
       NN::Utils::progressBar(i + j * learn_samples, learn_samples * epoch);
 
-      network.setNodes({x / modulo_number, y / modulo_number, z / modulo_number});
+      network.setInput({x / modulo_number, y / modulo_number, z / modulo_number});
       network.forward();
       double res = fun(x, y, z) / modulo_number;
       network.backprop({res});
@@ -217,7 +217,7 @@ void Func(){
 
     NN::Utils::progressBar(i, tests);
 
-    network.setNodes({x / modulo_number, y / modulo_number, z / modulo_number});
+    network.setInput({x / modulo_number, y / modulo_number, z / modulo_number});
     network.forward();
     double res = fun(x, y, z) / modulo_number;
     if ((fabs(network.getResult()[0] - res) < tolerance ? 1 : 0)) sum += 1;
@@ -230,7 +230,7 @@ void Func(){
   double x = 1.0;
   double y = 2.0;
   double z = 4.0;
-  network.setNodes({x / modulo_number, y / modulo_number, z / modulo_number});
+  network.setInput({x / modulo_number, y / modulo_number, z / modulo_number});
   network.forward();
   fmt::println(fg(fmt::color::violet), "{} * {} + {} = {}", x, y, z, network.getResult()[0] * modulo_number);
 };
