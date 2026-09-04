@@ -99,6 +99,13 @@ inline void NN::NeuralNetwork<First, Second, Rest...>::setInput(std::initializer
 
 
 template<unsigned int First, unsigned int Second, unsigned int... Rest>
+inline void NN::NeuralNetwork<First, Second, Rest...>::setInput(std::span<const double> nodes) noexcept {
+  std::get<0>(layers).setNodes(nodes);
+};
+
+
+
+template<unsigned int First, unsigned int Second, unsigned int... Rest>
 inline double* NN::NeuralNetwork<First, Second, Rest...>::getResult() noexcept {
   if constexpr(std::tuple_size_v<LayerTuple> <= 0) return nullptr;
   constexpr std::size_t last = std::tuple_size_v<LayerTuple> - 1;
@@ -136,6 +143,15 @@ inline void NN::NeuralNetwork<First, Second, Rest...>::backprop(std::initializer
 
 
 template<unsigned int First, unsigned int Second, unsigned int... Rest>
+inline void NN::NeuralNetwork<First, Second, Rest...>::backprop(std::span<const double> loss){
+  if constexpr(std::tuple_size_v<LayerTuple> <= 0) return;
+  backpropInitial(loss);
+  backpropImpl(reverse_sequence(std::make_index_sequence<std::tuple_size_v<LayerTuple> - 1>{}));
+};
+
+
+
+template<unsigned int First, unsigned int Second, unsigned int... Rest>
 template <std::size_t... I>
 inline void NN::NeuralNetwork<First, Second, Rest...>::backpropImpl(std::index_sequence<I...>){
   ((std::get<I>(layers).backprop(std::get<I + 1>(layers))), ...);
@@ -145,6 +161,15 @@ inline void NN::NeuralNetwork<First, Second, Rest...>::backpropImpl(std::index_s
 
 template<unsigned int First, unsigned int Second, unsigned int... Rest>
 inline void NN::NeuralNetwork<First, Second, Rest...>::backpropInitial(std::initializer_list<double> loss){
+  if constexpr(std::tuple_size_v<LayerTuple> <= 0) return;
+  constexpr std::size_t last = std::tuple_size_v<LayerTuple> - 1;
+  std::get<last>(layers).backprop_initial(loss);
+};
+
+
+
+template<unsigned int First, unsigned int Second, unsigned int... Rest>
+inline void NN::NeuralNetwork<First, Second, Rest...>::backpropInitial(std::span<const double> loss){
   if constexpr(std::tuple_size_v<LayerTuple> <= 0) return;
   constexpr std::size_t last = std::tuple_size_v<LayerTuple> - 1;
   std::get<last>(layers).backprop_initial(loss);

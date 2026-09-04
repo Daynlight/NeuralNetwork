@@ -12,7 +12,7 @@
 
 
 namespace NN::Utils{
-void progressBar(unsigned int current, unsigned int max_element, int barWidth = 50){
+inline void progressBar(unsigned int current, unsigned int max_element, int barWidth = 50){
   if (current % 100 == 0 || current + 1 == max_element) {
     float progress = (float)(current) / (max_element);
 

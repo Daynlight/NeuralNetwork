@@ -11,6 +11,7 @@
 #include <tuple>
 #include <utility>
 #include <memory>
+#include <span>
 
 
 
@@ -77,6 +78,7 @@ public:
   template<std::size_t I, typename T>
   void setLoss() noexcept;
   void setInput(std::initializer_list<double> nodes) noexcept;
+  void setInput(std::span<const double> nodes) noexcept;
   double* getResult() noexcept;
 
 // =========================== //
@@ -88,9 +90,11 @@ public:
   void forwardImpl(std::index_sequence<I...>);
   
   void backprop(std::initializer_list<double> loss);
+  void backprop(std::span<const double> loss);
   template <std::size_t... I>
   void backpropImpl(std::index_sequence<I...>);
   void backpropInitial(std::initializer_list<double> loss);
+  void backpropInitial(std::span<const double> loss);
 
 
 // =========================== //

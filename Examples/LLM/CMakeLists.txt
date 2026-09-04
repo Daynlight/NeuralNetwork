@@ -7,8 +7,8 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-########################### Example Project ########################### 
-project(Example LANGUAGES CXX)
+########################### LLM Project ########################### 
+project(LLM LANGUAGES CXX)
 
 find_package(fmt CONFIG REQUIRED)
 
@@ -19,14 +19,14 @@ set(headers
 
 set(src 
   main.cpp
+  LLM/LLM.cpp
 )
 
-add_executable(Example ${src})
+add_executable(LLM ${src})
 
-target_include_directories(Example PRIVATE ${headers})
-target_link_libraries(Example PRIVATE 
+target_include_directories(LLM PRIVATE ${headers})
+target_link_libraries(LLM PRIVATE 
   NeuralNetwork::NeuralNetwork
   fmt::fmt
 )
 
-add_subdirectory(LLM)

@@ -11,6 +11,7 @@
 #include <random>
 #include <memory>
 #include <cstring>
+#include <span>
 
 #include "../Activation/Activation.h"
 #include "../Loss/Loss.h"
@@ -90,6 +91,7 @@ public:
 public:
   double* getNodes() noexcept;   // O(1)
   void setNodes(std::initializer_list<double> nodes) noexcept;    // O(n)
+  void setNodes(std::span<const double> nodes) noexcept;    // O(n)
   double getActivatedNode(unsigned int i) const noexcept;    // O(1)
   
   double* getWeights() noexcept;   // O(1)
@@ -118,6 +120,7 @@ public:
   void forward(Layer<D, N> &layer);   // O(n^2)
 
   void backprop_initial(std::initializer_list<double> target) noexcept;
+  void backprop_initial(std::span<const double> target) noexcept;
   template<unsigned int N>
   void backprop(Layer<D, N> &layer) noexcept;
 
