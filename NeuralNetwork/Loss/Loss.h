@@ -20,7 +20,7 @@ public:
   double fun_prime(double x, double t) { return x - t; };
 };
 
-iLoss *getLossFromType(LossType type) {
+inline iLoss *getLossFromType(LossType type) {
   if(type == MSETYPE) return new MSE();
   return nullptr;
 };

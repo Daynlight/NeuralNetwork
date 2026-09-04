@@ -1,13 +1,33 @@
+// Neural Network
+// Copyright 2026 Daynlight
+// Licensed under the GNU General.
+// See LICENSE file for details.
+
+
+
 #include <fmt/base.h>
 #include <fmt/color.h>
-#include "NeuralNetwork.h"
+
+#include "Examples/Learn.h"
+#include "Examples/Operations.h"
+#include "Examples/App.h"
+
+
 
 int main(){
-  fmt::print(fg(fmt::color::dark_golden_rod) , "======================\n");
-  fmt::print(fg(fmt::color::dark_golden_rod) , "====== Examples ======\n");
-  fmt::print(fg(fmt::color::dark_golden_rod) , "======================\n");
+  fmt::println(fg(fmt::color::dark_golden_rod) , "============================================");
+  fmt::println(fg(fmt::color::dark_golden_rod) , "=========== ExamplesTemplatedCPU ===========");
+  fmt::println(fg(fmt::color::dark_golden_rod) , "============================================");
+  fmt::println("");
 
-  Examples::Examples();
+  ExamplesTemplatedCPU::Operations::BaseOperations();
+  ExamplesTemplatedCPU::Operations::Forward();
+  ExamplesTemplatedCPU::Operations::Backprop();
+  ExamplesTemplatedCPU::Learn::Minus();
+  // ExamplesTemplatedCPU::Learn::XOR(); // Broken
+  ExamplesTemplatedCPU::Learn::Func();
+  
+  ExamplesTemplatedCPU::App::Minus();
 
   return 0;
 };

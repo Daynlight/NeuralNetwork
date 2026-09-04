@@ -15,12 +15,14 @@ public:
 };
 
 class Linear : public iActivation{
+public:
   ActivationType getType() { return ActivationType::LINEARTYPE; };
   double fun(double x) { return x; };
   double fun_prime(double x) { return 1; };
 };
 
 class Sigmoid : public iActivation{
+public:
   ActivationType getType() { return ActivationType::SIGMOIDTYPE; };
   double fun(double x) { 
     if(x >= 0){
@@ -37,7 +39,7 @@ class Sigmoid : public iActivation{
   };
 };
 
-iActivation* getActivationFromType(ActivationType type){
+inline iActivation* getActivationFromType(ActivationType type){
   if(type == ActivationType::LINEARTYPE) return new Linear();
   if(type == ActivationType::SIGMOIDTYPE) return new Sigmoid();
   return nullptr;

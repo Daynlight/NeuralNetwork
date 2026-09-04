@@ -12,7 +12,10 @@ find_package(GTest CONFIG REQUIRED)
 
 
 set(tests_src
-  Unit/Test.cpp
+  Unit/CPUTemplated/Activation.cpp
+  Unit/CPUTemplated/Layer.cpp
+  Unit/CPUTemplated/Loss.cpp
+  Unit/CPUTemplated/NeuralNetwork.cpp
 )
 
 
@@ -20,6 +23,7 @@ set(tests_src
 add_executable(unit_tests ${tests_src})
 
 target_link_libraries(unit_tests PRIVATE
+  NeuralNetwork::NeuralNetwork
   GTest::gtest
   GTest::gtest_main
 )

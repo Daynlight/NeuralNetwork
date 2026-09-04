@@ -102,16 +102,14 @@ template <unsigned int N>
 inline void NN::Layer<S, D>::backprop_initial(Layer<N, S> &layer, 
 std::initializer_list<double> target) noexcept {
   unsigned int i = 0;
-  for (auto it = target.begin(); it != target.end() && i < S; ++it, ++i)
-    sigma[i] = loss->fun_prime(getActivatedNode(i), *it) 
-      * activation->fun_prime(layer[i]);
-  
-  double *weights_back = layer.getWeights();
+  for(auto it = target.begin(); it != target.end() && i < S; ++it, ++i) sigma[i] = loss->fun_prime(getActivatedNode(i), *it) * activation->fun_prime(nodes[i]);
+
+  double* weights_back = layer.getWeights();
+
   for(unsigned int i = 0; i < S; i++){
-    for(unsigned int j = 0; j < N; j++)
-      weights_back[i * (N + 1) + j] -= learning_rate * sigma[i] * nodes[j];
-    weights_back[i * (N + 1) + N] -= learning_rate * sigma[i] * 1.0;
-  }
+    for(unsigned int j = 0; j < N; j++) weights_back[i * (N + 1) + j] -= learning_rate * sigma[i] * layer.getActivatedNode(j);
+    weights_back[i * (N + 1) + N] -= learning_rate * sigma[i];
+  };
   
   layer.setWeights(weights_back);
 };
