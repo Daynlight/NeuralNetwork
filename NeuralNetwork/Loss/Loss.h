@@ -6,6 +6,8 @@
 
 
 #pragma once
+#include <algorithm>
+#include <cmath>
 
 
 
@@ -19,6 +21,12 @@ public:
 
 
 class MSE : public iLoss{
+public:
+  double fun(double x, double t) const noexcept;
+  double fun_prime(double x, double t) const noexcept;
+};
+
+class CrossEntropy : public iLoss{
 public:
   double fun(double x, double t) const noexcept;
   double fun_prime(double x, double t) const noexcept;

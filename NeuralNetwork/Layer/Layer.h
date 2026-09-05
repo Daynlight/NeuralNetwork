@@ -31,11 +31,14 @@ enum class Field : uint32_t{
 
 enum class Activation : uint32_t{
   LINEAR = 1,
-  SIGMOID = 2
+  SIGMOID = 2,
+  SOFTMAX = 3,
+  RELU = 4
 };
 
 enum class Loss : uint32_t{
-  MSE = 1
+  MSE = 1,
+  CROSSENTROPY = 2
 };
 
 
@@ -96,7 +99,8 @@ public:
   
   double* getWeights() noexcept;   // O(1)
   void setWeights(std::initializer_list<double> weights) noexcept;    // O(n)
-  void setWeights(const double* weights);
+  void setWeights(const double* weights) noexcept;
+  void setWeights(double min, double max) noexcept;
 
   double getLearningRate() const noexcept;    // O(1)
   void setLearningRate(double learning_rate) noexcept;    // O(1)

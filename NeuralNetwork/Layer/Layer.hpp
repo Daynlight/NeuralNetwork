@@ -15,11 +15,7 @@
 // core
 template <unsigned int S, unsigned int D>
 inline NN::Layer<S, D>::Layer() noexcept {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_real_distribution<double> dist(-1.0, 1.0);
-  
-  for(double &el : weights) el = dist(gen);
+  setWeights(-1, 1);
 
   loss = std::make_unique<NN::MSE>();
   activation = std::make_unique<NN::Linear>();
@@ -63,7 +59,9 @@ inline void NN::Layer<S, D>::setNodes(std::span<const double> nodes) noexcept {
 
 template <unsigned int S, unsigned int D>
 inline double NN::Layer<S, D>::getActivatedNode(unsigned int i) const noexcept {
-  return activation->fun(nodes[i]);
+  std::span<const double> layer(nodes, S);
+  return activation->fun(layer, i);
+
 };
 
 
@@ -84,8 +82,21 @@ inline void NN::Layer<S, D>::setWeights(std::initializer_list<double> weights) n
 
 
 template <unsigned int S, unsigned int D>
-inline void NN::Layer<S, D>::setWeights(const double* weights) {
+inline void NN::Layer<S, D>::setWeights(const double* weights) noexcept {
   for (unsigned int i = 0; i < (S + 1) * D; ++i) this->weights[i] = weights[i];
+};
+
+
+
+template <unsigned int S, unsigned int D>
+inline void NN::Layer<S, D>::setWeights(double min, double max) noexcept {  
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<double> dist(min, max);
+  
+  for(double &el : weights) el = dist(gen);
+  
+  for(size_t j = 0; j < D; j++) weights[j * (S + 1) + S] = 0.0;
 };
 
 
@@ -173,38 +184,79 @@ inline void NN::Layer<S, D>::forward(NN::Layer<D, N> &layer) {
 
 template <unsigned int S, unsigned int D>
 inline void NN::Layer<S, D>::backprop_initial(std::initializer_list<double> target) noexcept {
-  unsigned int i = 0;
-  for(auto it = target.begin(); it != target.end() && i < S; ++it, ++i)
-    sigma[i] = loss->fun_prime(getActivatedNode(i), *it) * activation->fun_prime(nodes[i]);
+  backprop_initial(std::span<const double>(target.begin(), target.size()));
 };
 
 
 
 template <unsigned int S, unsigned int D>
 inline void NN::Layer<S, D>::backprop_initial(std::span<const double> target) noexcept {
-  unsigned int i = 0;
-  for(auto it = target.begin(); it != target.end() && i < S; ++it, ++i)
-    sigma[i] = loss->fun_prime(getActivatedNode(i), *it) * activation->fun_prime(nodes[i]);
+  if(dynamic_cast<NN::Softmax*>(activation.get()) && dynamic_cast<NN::CrossEntropy*>(loss.get())){
+    double max = nodes[0];
+
+    for(size_t i = 1; i < S; i++)
+      if(nodes[i] > max) max = nodes[i];
+
+    double sum = 0.0;
+
+    for(size_t i = 0; i < S; i++)
+      sum += std::exp(nodes[i] - max);
+
+    for(size_t i = 0; i < S && i < target.size(); i++){
+      double probability = std::exp(nodes[i] - max) / sum;
+      sigma[i] = probability - target[i];
+    };
+    return;
+  };
+
+  std::span<const double> layer(nodes, S);
+
+  for(size_t i = 0; i < S; i++){
+    sigma[i] = 0.0;
+    for(size_t j = 0; j < S && j < target.size(); j++){
+      double loss_gradient = loss->fun_prime(getActivatedNode(j), target[j]);
+
+      sigma[i] += loss_gradient * activation->fun_prime(layer, j, i);
+    };
+  };
 };
 
 
 
 template <unsigned int S, unsigned int D>
 template <unsigned int N>
-inline void NN::Layer<S, D>::backprop(Layer<D, N> &next_layer) noexcept {
+inline void NN::Layer<S, D>::backprop(Layer<D, N>& next_layer) noexcept {
   const double* sigma_next = next_layer.getSigma();
 
-  for(unsigned int i = 0; i < S; ++i){
-    double sum = 0;
-    for(unsigned int j = 0; j < D; ++j) sum += weights[j * (S + 1) + i] * sigma_next[j];
-    sigma[i] = sum * activation->fun_prime(nodes[i]);
+  double gradient[S];
+  for(size_t i = 0; i < S; i++){
+    gradient[i] = 0.0;
+    for(size_t j = 0; j < D; j++)
+      gradient[i] += weights[j * (S + 1) + i] * sigma_next[j];
   };
 
-  double* weights_back = getWeights();
-  for(unsigned int j = 0; j < D; ++j){
-    for(unsigned int i = 0; i < S; ++i)
-      weights_back[j * (S + 1) + i] -= learning_rate * getActivatedNode(i) * sigma_next[j];
-    weights_back[j * (S + 1) + S] -= learning_rate * 1.0 * sigma_next[j];
+  std::span<const double> layer(nodes, S);
+
+  if(dynamic_cast<NN::Linear*>(activation.get())){
+    for(size_t i = 0; i < S; i++)
+      sigma[i] = gradient[i];
+  }
+  else if(dynamic_cast<NN::Sigmoid*>(activation.get()) || dynamic_cast<NN::ReLU*>(activation.get())){
+    for(size_t i = 0; i < S; i++)
+      sigma[i] = gradient[i] * activation->fun_prime(layer, i, i);
+  }
+  else{
+    for(size_t i = 0; i < S; i++){
+      sigma[i] = 0.0;
+      for(size_t j = 0; j < S; j++)
+        sigma[i] += gradient[j] * activation->fun_prime(layer, j, i);
+    };
+  };
+
+  for(size_t j = 0; j < D; j++){
+    for(size_t i = 0; i < S; i++)
+      weights[j * (S + 1) + i] -= learning_rate * getActivatedNode(i) * sigma_next[j];
+    weights[j * (S + 1) + S] -= learning_rate * sigma_next[j];
   };
 };
 
@@ -282,16 +334,21 @@ inline std::string NN::Layer<S, D>::serialize() const noexcept {
 
   if(dynamic_cast<NN::Linear*>(activation.get()))
     activation_id = static_cast<uint32_t>(Activation::LINEAR);
-
   else if(dynamic_cast<NN::Sigmoid*>(activation.get()))
     activation_id = static_cast<uint32_t>(Activation::SIGMOID);
+  else if(dynamic_cast<NN::Softmax*>(activation.get()))
+    activation_id = static_cast<uint32_t>(Activation::SOFTMAX);
+  else if(dynamic_cast<NN::ReLU*>(activation.get()))
+    activation_id = static_cast<uint32_t>(Activation::RELU);
 
   write(Field::ACTIVATION, &activation_id, sizeof(activation_id));
 
   uint32_t loss_id = 0;
 
   if(dynamic_cast<NN::MSE*>(loss.get()))
-    loss_id = static_cast<uint32_t>(Loss::MSE);
+  loss_id = static_cast<uint32_t>(Loss::MSE);
+  else if(dynamic_cast<NN::CrossEntropy*>(loss.get()))
+    loss_id = static_cast<uint32_t>(Loss::CROSSENTROPY);
 
   write(Field::LOSS, &loss_id, sizeof(loss_id));
 
@@ -364,6 +421,12 @@ inline void NN::Layer<S, D>::deserialize(const std::string &data){
           case Activation::SIGMOID:
             setActivation<NN::Sigmoid>();
             break;
+          case Activation::SOFTMAX:
+            setActivation<NN::Softmax>();
+            break;
+          case Activation::RELU:
+            setActivation<NN::ReLU>();
+            break;
           default:
             throw std::runtime_error("Unknown activation type");
         };
@@ -377,6 +440,9 @@ inline void NN::Layer<S, D>::deserialize(const std::string &data){
         switch(static_cast<Loss>(loss_id)){
           case Loss::MSE:
             setLoss<NN::MSE>();
+            break;
+          case Loss::CROSSENTROPY:
+            setLoss<NN::CrossEntropy>();
             break;
           default:
             throw std::runtime_error("Unknown loss type");

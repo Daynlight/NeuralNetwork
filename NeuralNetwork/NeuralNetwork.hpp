@@ -105,6 +105,15 @@ inline void NN::NeuralNetwork<First, Second, Rest...>::setInput(std::span<const 
 
 
 
+template <unsigned int First, unsigned int Second, unsigned int... Rest>
+inline void NN::NeuralNetwork<First, Second, Rest...>::setWeights(double min, double max) noexcept {
+  std::apply([&](auto&... layer) {
+    (layer.setWeights(min, max), ...);
+  }, layers);
+};
+
+
+
 template<unsigned int First, unsigned int Second, unsigned int... Rest>
 inline double* NN::NeuralNetwork<First, Second, Rest...>::getResult() noexcept {
   if constexpr(std::tuple_size_v<LayerTuple> <= 0) return nullptr;

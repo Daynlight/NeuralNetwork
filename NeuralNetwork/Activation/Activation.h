@@ -7,28 +7,42 @@
 
 #pragma once
 #include <math.h>
+#include <span>
+#include <algorithm>
 
 
 
 namespace NN{
 class iActivation{
 public:
-  virtual double fun(double x) const noexcept = 0;
-  virtual double fun_prime(double x) const noexcept = 0;
+  virtual double fun(std::span<const double> layer, size_t i) const noexcept = 0;
+  virtual double fun_prime(std::span<const double> layer, size_t i, size_t j) const noexcept = 0;
 };
 
 
 
 class Linear : public iActivation{
 public:
-  double fun(double x) const noexcept;
-  double fun_prime(double x) const noexcept;
+  double fun(std::span<const double> layer, size_t i) const noexcept;
+  double fun_prime(std::span<const double> layer, size_t i, size_t j) const noexcept;
 };
 
 class Sigmoid : public iActivation{
 public:
-  double fun(double x) const noexcept;
-  double fun_prime(double x) const noexcept;
+  double fun(std::span<const double> layer, size_t i) const noexcept;
+  double fun_prime(std::span<const double> layer, size_t i, size_t j) const noexcept;
+};
+
+class Softmax : public iActivation{
+public:
+  double fun(std::span<const double> layer, size_t i) const noexcept;
+  double fun_prime(std::span<const double> layer, size_t i, size_t j) const noexcept;
+};
+
+class ReLU : public iActivation{
+public:
+  double fun(std::span<const double> layer, size_t i) const noexcept;
+  double fun_prime(std::span<const double> layer, size_t i, size_t j) const noexcept;
 };
 };
 
