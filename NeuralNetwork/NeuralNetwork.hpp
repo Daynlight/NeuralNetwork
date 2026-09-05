@@ -114,6 +114,16 @@ inline void NN::NeuralNetwork<First, Second, Rest...>::setWeights(double min, do
 
 
 
+template <unsigned int First, unsigned int Second, unsigned int... Rest>
+template<std::size_t I>
+inline void NN::NeuralNetwork<First, Second, Rest...>::setWeights(double min, double max) noexcept {
+  if constexpr(I < 0) return;
+  if constexpr(I >= std::tuple_size_v<LayerTuple>) return;
+  std::get<I>(layers).setWeights(min, max);
+};
+
+
+
 template<unsigned int First, unsigned int Second, unsigned int... Rest>
 inline double* NN::NeuralNetwork<First, Second, Rest...>::getResult() noexcept {
   if constexpr(std::tuple_size_v<LayerTuple> <= 0) return nullptr;

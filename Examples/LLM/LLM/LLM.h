@@ -32,16 +32,17 @@ private:
   bool model_is_loaded_from_file = false;
   bool is_running = true;
 
-  double learning_rate = 0.00005;
-  unsigned int learn_samples = 100;
+  double learning_rate = 0.001;
+  unsigned int learn_samples = 10;
   unsigned int epoch = 100;
-  bool additional_acuracy_show = false;
+  unsigned int learning_set_repeats = 10;
+  bool additional_acuracy_show = true;
   static constexpr size_t context_size = 16;
   static constexpr size_t alphabet_size = 128;
   static constexpr size_t input_size = context_size * alphabet_size;
   static constexpr size_t response_size = 256;
   
-  NN::NeuralNetwork<input_size, 512, 256, 128, 1> model;
+  NN::NeuralNetwork<input_size, 512, 256, alphabet_size, 1> model;
 
 
 // ======================================== //
@@ -63,6 +64,7 @@ public:
   void setLearningRate(double value) noexcept;
   void setLearningEpoch(int value) noexcept;
   void setLearningSamples(int value) noexcept;
+  void setLearningSetRepeats(int value) noexcept;
   void setAdditionalAcuracyShow(int value) noexcept;
   void setModelFilePath(std::filesystem::path path) noexcept;
   std::filesystem::path getModelFilePath() const noexcept;
@@ -73,6 +75,17 @@ public:
 public:
   void loadModelFromFile() noexcept;
   void saveModelToFile() noexcept;
+
+// =========================== //
+// ========= Helpers ========= //
+// =========================== //
+public:
+  std::string readLearningSet() const noexcept;
+  std::string prepareLearningSet(const std::string& text) const noexcept;
+  template<size_t S>
+  std::pair<double, std::array<double, S>> calculateLearningSetEntropy(const std::string& text) const noexcept;
+  void setModel() noexcept;
+  void learningInfo(bool show_learning_ifno, const std::array<double, alphabet_size>& target, unsigned char expected, double& ce_sum, double& mse_sum, size_t& correct, size_t& log_samples) noexcept;
 
 // =========================== //
 // ======= Application ======= //
@@ -87,5 +100,6 @@ public:
   void onUpdate() noexcept;
   void onEnd() noexcept;
   void application() noexcept;
+
 };
 };

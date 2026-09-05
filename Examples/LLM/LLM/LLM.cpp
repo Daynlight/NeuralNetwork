@@ -71,6 +71,13 @@ void LLM::LLM::setLearningSamples(int value) noexcept {
 
 
 
+void LLM::LLM::setLearningSetRepeats(int value) noexcept {
+  if(value < 0) return;
+  learning_set_repeats = value;
+};
+
+
+
 void LLM::LLM::setAdditionalAcuracyShow(int value) noexcept {
   if(value <= 0) additional_acuracy_show = false;
   else  additional_acuracy_show = true;
@@ -97,7 +104,9 @@ std::filesystem::path LLM::LLM::getModelFilePath() const noexcept {
 // =========================== //
 void LLM::LLM::loadModelFromFile() noexcept {
   if(!std::filesystem::exists(path_to_model_data) || std::filesystem::is_directory(path_to_model_data)){
-    model.setWeights(-0.05, 0.05);
+    model.setWeights<0>(-0.05, 0.05);
+    model.setWeights<1>(-0.1, 0.1);
+    model.setWeights<2>(-0.1, 0.1);
     return;
   };
   std::ifstream file(path_to_model_data, std::ios::binary);
@@ -127,21 +136,28 @@ void LLM::LLM::saveModelToFile() noexcept {
 
 
 // =========================== //
-// ======= Application ======= //
+// ========= Helpers ========= //
 // =========================== //
-void LLM::LLM::learn() noexcept {
-  if(!std::filesystem::exists(path_to_learning_set) || std::filesystem::is_directory(path_to_learning_set)) return;
+std::string LLM::LLM::readLearningSet() const noexcept {
+  if(!std::filesystem::exists(path_to_learning_set) || std::filesystem::is_directory(path_to_learning_set)) return "";
 
   std::ifstream file(path_to_learning_set, std::ios::binary);
-  if(!file.is_open()) return;
+  if(!file.is_open()) return "";
   file.seekg(0, std::ios::end);
   size_t file_size = file.tellg();
   file.seekg(0, std::ios::beg);
-  if(file_size <= context_size) return;
+  if(file_size <= context_size) return "";
+
   std::string text(file_size, '\0');
   file.read(text.data(), file_size);
-  if(!file) return;
+  if(!file) return "";
 
+  return text;
+};
+
+
+
+std::string LLM::LLM::prepareLearningSet(const std::string& text) const noexcept {
   std::stringstream stream(text);
 
   std::string line;
@@ -173,128 +189,184 @@ void LLM::LLM::learn() noexcept {
     };
   };
 
-  text = std::move(normalized_text);
+  return normalized_text;
+};
 
-  std::array<size_t, alphabet_size> frequency{};
+
+
+template<size_t S>
+std::pair<double, std::array<double, S>> LLM::LLM::calculateLearningSetEntropy(const std::string &text) const noexcept {
+  std::array<double, S> frequency{};
   size_t total = 0;
 
   for(unsigned char c : text){
-    if(c >= alphabet_size) c = '?';
+    if(c >= S) c = '?';
     frequency[c]++;
     total++;
   };
 
   double entropy = 0.0;
-
-  for(size_t i = 0; i < alphabet_size; i++){
+  for(size_t i = 0; i < S; i++){
     if(frequency[i] == 0) continue;
-
-    double p =
-      static_cast<double>(frequency[i]) /
-      static_cast<double>(total);
-
-    entropy -= p * std::log(p);
+    frequency[i] = static_cast<double>(frequency[i]) / static_cast<double>(total);
+    entropy -= frequency[i] * std::log(frequency[i]);
   };
 
-  fmt::println(
-    "Dataset entropy: {}, Space frequency: {}%",
-    entropy,
-    100.0 * static_cast<double>(frequency[' ']) / total
-  );
+  return {entropy, frequency};
+};
 
+
+
+void LLM::LLM::setModel() noexcept {
+  model.setLearningRate(learning_rate);
+  model.setActivation<0, NN::ReLU>();
+  model.setActivation<1, NN::ReLU>();
+  model.setActivation<2, NN::Softmax>();
+  model.setLoss<2, NN::CrossEntropy>();
+};
+
+
+
+void LLM::LLM::learningInfo(bool show_learning_ifno, const std::array<double, alphabet_size>& target, unsigned char expected, double &ce_sum, double &mse_sum, size_t &correct, size_t &log_samples) noexcept {
+  double* result = model.getResult();
+  size_t predicted = 0;
+  for(size_t k = 1; k < alphabet_size; k++)
+    if(result[k] > result[predicted])
+      predicted = k;
+
+  double mse = 0.0;
+  for(size_t k = 0; k < alphabet_size; k++){
+    double diff = result[k] - target[k];
+    mse += diff * diff / 2.0;
+  };
+
+  mse /= alphabet_size;
+
+  double probability = result[expected];
+  double ce = -std::log(std::max(probability, 1e-12));
+
+  mse_sum += mse;
+  ce_sum += ce;
+  correct += predicted == expected;
+  log_samples++;
+
+  if(show_learning_ifno){
+    fmt::println("");
+    fmt::println(
+      "Average MSE: {}, CE: {}, Accuracy: {}%",
+      mse_sum / log_samples,
+      ce_sum / log_samples,
+      100.0 * correct / log_samples
+    );
+
+    mse_sum = 0.0;
+    ce_sum = 0.0;
+
+    correct = 0;
+    log_samples = 0;
+  };
+};
+
+
+
+// =========================== //
+// ======= Application ======= //
+// =========================== //
+void LLM::LLM::learn() noexcept {
+  if(!std::filesystem::exists(path_to_learning_set) || std::filesystem::is_directory(path_to_learning_set)) return;
+
+  fmt::println(fg(fmt::color::yellow), "-- Prepering Data");
+  std::string text_io = readLearningSet();
+  std::string text = prepareLearningSet(text_io);
   if(text.size() <= context_size) return;
+
+  std::pair<double, std::array<double, alphabet_size>> entropy = calculateLearningSetEntropy<alphabet_size>(text);
+
+  if(additional_acuracy_show){
+    fmt::println(fg(fmt::color::yellow), "-- Entropy");
+    fmt::println(fg(fmt::color::white), "Dataset entropy: {}", entropy.first);
+    for(unsigned int i = 0; i < alphabet_size; i++) fmt::println("{} - {}%", (char)(i), entropy.second[i] * 100);
+  };
 
   fmt::println(fg(fmt::color::yellow), "-- Learning");
   fmt::println(fg(fmt::color::white), "enter to abort without lossing");
+  setModel();
 
   std::array<double, input_size> input;
   std::array<double, alphabet_size> target;
+  std::array<std::vector<size_t>, alphabet_size> character_positions;
+  std::vector<unsigned char> available_characters;
+  std::vector<size_t> learning_set(learn_samples);
 
-  model.setLearningRate(learning_rate);
+  for(size_t i = context_size; i < text.size(); i++){
+    unsigned char character = static_cast<unsigned char>(text[i]);
+    if(character >= alphabet_size) character = '?';
+    character_positions[character].push_back(i);
+  };
 
-  model.setActivation<1, NN::Sigmoid>();
-  model.setActivation<2, NN::Sigmoid>();
-  model.setActivation<3, NN::Linear>();
-  model.setLoss<3, NN::MSE>();
+  for(unsigned int i = 0; i < alphabet_size; i++)
+    if(!character_positions[i].empty()) available_characters.push_back(i);
 
-  double ce_sum = 0.0;
-  size_t correct = 0;
-  size_t log_samples = 0;
+  if(available_characters.empty()) return;
 
   for(unsigned int j = 0; j < epoch; j++){
-    for(unsigned int i = 0; i < learn_samples; i++) {
-      if(hasInput()){
-        std::string input;
-        std::getline(std::cin, input);
-        fmt::println("");
-        fmt::println(fg(fmt::color::yellow), "-- Learning aborted");
-        saveModelToFile();
-        return;
-      };
-
-      input.fill(0.0);
-      target.fill(0.0);
-
-      size_t offset = rand() % (text.size() - context_size);
-
-      for(size_t k = 0; k < context_size; k++){
-        unsigned char character = static_cast<unsigned char>(text[offset + k]);
-        if(character >= alphabet_size) character = '?';
-        input[k * alphabet_size + character] = 1.0;
-      };
-
-      unsigned char expected = static_cast<unsigned char>(text[offset + context_size]);
-
-      if(expected >= alphabet_size) expected = '?';
-      target[expected] = 1.0;
-
-      model.setInput(input);
-      model.forward();
-
-      if(additional_acuracy_show){
-        double* logits = model.getResult();
-
-        double max_logit = logits[0];
-        size_t predicted = 0;
-
-        for(size_t k = 1; k < alphabet_size; k++){
-          if(logits[k] > max_logit)
-            max_logit = logits[k];
-
-          if(logits[k] > logits[predicted])
-            predicted = k;
-        };
-
-        double sum = 0.0;
-
-        for(size_t k = 0; k < alphabet_size; k++)
-          sum += std::exp(logits[k] - max_logit);
-
-        double probability =
-          std::exp(logits[expected] - max_logit) / sum;
-
-        ce_sum += -std::log(std::max(probability, 1e-12));
-        correct += predicted == expected;
-        log_samples++;
-
-        if((j * learn_samples + i + 1) % 100 == 0){
-          fmt::println("");
-          fmt::println(
-            "Average CE: {}, Accuracy: {}%",
-            ce_sum / log_samples,
-            100.0 * correct / log_samples
-          );
-
-          ce_sum = 0.0;
-          correct = 0;
-          log_samples = 0;
-        };
-      }
-      
-      model.backprop(target);
-      
-      NN::Utils::progressBar(i + j * learn_samples, learn_samples * epoch);
+    for(unsigned int i = 0; i < learn_samples; i++){
+      unsigned char character = available_characters[rand() % available_characters.size()];
+      const std::vector<size_t>& positions = character_positions[character];
+      learning_set[i] = positions[rand() % positions.size()];
     };
+
+    fmt::println("");
+    fmt::println(fg(fmt::color::yellow), "-- Epoch {}/{}", j + 1, epoch);
+
+    for(unsigned int r = 0; r < learning_set_repeats; r++){
+      double ce_sum = 0.0;
+      double mse_sum = 0.0;
+      size_t correct = 0;
+      size_t log_samples = 0;
+
+      fmt::println(fg(fmt::color::white), "-- Repeat {}/{}", r + 1, learning_set_repeats);
+
+      for(unsigned int i = 0; i < learn_samples; i++) {
+        if(hasInput()){
+          std::string input_io;
+          std::getline(std::cin, input_io);
+          fmt::println("");
+          fmt::println(fg(fmt::color::yellow), "-- Learning aborted");
+          saveModelToFile();
+          return;
+        };
+
+        input.fill(0.0);
+        target.fill(0.0);
+
+        size_t expected_position = learning_set[i];
+        size_t offset = expected_position - context_size;
+
+        for(size_t k = 0; k < context_size; k++){
+          unsigned char character = static_cast<unsigned char>(text[offset + k]);
+          if(character >= alphabet_size) character = '?';
+          input[k * alphabet_size + character] = 1.0;
+        };
+
+        unsigned char expected = static_cast<unsigned char>(text[expected_position]);
+        if(expected >= alphabet_size) expected = '?';
+        target[expected] = 1.0;
+
+        model.setInput(input);
+        model.forward();
+
+        if(additional_acuracy_show){
+          bool show_learning_ifno = ((i + 1) % 100 == 0 || i + 1 == learn_samples);
+          learningInfo(show_learning_ifno, target, expected, ce_sum, mse_sum, correct, log_samples);
+        };
+
+        model.backprop(target);
+        NN::Utils::progressBar(i + r * learn_samples + 1, learn_samples * learning_set_repeats);
+      };
+    };
+
+    saveModelToFile();
   };
 
   saveModelToFile();
@@ -306,8 +378,9 @@ std::string LLM::LLM::getRespond(const std::string &message) noexcept {
   std::string context = message;
   std::string response = "";
 
-  std::array<double, input_size> input;
+  setModel();
 
+  std::array<double, input_size> input;
   for(size_t i = 0; i < response_size; i++){
     input.fill(0.0);
 
@@ -350,7 +423,9 @@ void LLM::LLM::printHelp() const noexcept {
   fmt::println(fg(fmt::color::blue), "set_learn_rate - to set learn rate");
   fmt::println(fg(fmt::color::blue), "set_learn_epoch - to set learn epoch");
   fmt::println(fg(fmt::color::blue), "set_learn_samples - to set learn samples");
+  fmt::println(fg(fmt::color::blue), "learning_set_repeats - to set learn repeats");
   fmt::println(fg(fmt::color::blue), "set_learn_additional_log - to set learn logs");
+  fmt::println(fg(fmt::color::blue), "print_model - print model");
   fmt::println(fg(fmt::color::blue), "quit - exit");
 };
 
@@ -372,14 +447,17 @@ void LLM::LLM::onUpdate() noexcept {
     is_running = false; 
     return; 
   };
+
   if(input == "help") {
     printHelp();
     return;
   };
+
   if(input == "learn") {
     learn();
     return;
   };
+
   if(input == "set_learn_file") {
     std::string file_name = "";
     fmt::print(fg(fmt::color::white), "file_name > ");
@@ -395,6 +473,7 @@ void LLM::LLM::onUpdate() noexcept {
     fmt::println(fg(fmt::color::green) | fmt::emphasis::bold, "Current Learn File: {}", getLearnFilePath().string()); 
     return;
   };
+
   if(input == "set_learn_rate"){
     std::string new_rate = "";
     fmt::print(fg(fmt::color::white), "new_rate > ");
@@ -412,6 +491,7 @@ void LLM::LLM::onUpdate() noexcept {
     setLearningRate(new_rate_val);
     return;
   };
+
   if(input == "set_learn_epoch"){
     std::string new_epoch = "";
     fmt::print(fg(fmt::color::white), "new_epoch > ");
@@ -428,7 +508,8 @@ void LLM::LLM::onUpdate() noexcept {
     
     setLearningEpoch(new_epoch_val);
     return;
-  }
+  };
+
   if(input == "set_learn_samples"){
     std::string new_samples = "";
     fmt::print(fg(fmt::color::white), "new_samples > ");
@@ -446,6 +527,24 @@ void LLM::LLM::onUpdate() noexcept {
     setLearningSamples(new_samples_val);
     return;
   };
+
+  if(input == "learning_set_repeats"){
+    std::string new_repeat = "";
+    fmt::print(fg(fmt::color::white), "new_repeat > ");
+    std::getline(std::cin, new_repeat);
+    
+    int new_repeat_val = 0;
+    try{
+      new_repeat_val = std::stoi(new_repeat);
+    }
+    catch(...){
+      fmt::println(fg(fmt::color::red), "Invalid integer");
+      return;
+    };
+    setLearningSetRepeats(new_repeat_val);
+    return;
+  };
+
   if(input == "set_learn_additional_log"){
     std::string new_samples = "";
     fmt::print(fg(fmt::color::white), "new_logs > ");
@@ -461,6 +560,11 @@ void LLM::LLM::onUpdate() noexcept {
     };
     
     setAdditionalAcuracyShow(new_samples_val);
+    return;
+  };
+
+  if(input == "print_model"){
+    fmt::println(fg(fmt::color::blue), "{}", model.print());
     return;
   };
 

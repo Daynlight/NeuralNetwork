@@ -80,6 +80,8 @@ public:
   void setInput(std::initializer_list<double> nodes) noexcept;
   void setInput(std::span<const double> nodes) noexcept;
   void setWeights(double min, double max) noexcept;
+  template<std::size_t I>
+  void setWeights(double min, double max) noexcept;
   double* getResult() noexcept;
 
 // =========================== //
