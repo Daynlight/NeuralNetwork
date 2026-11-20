@@ -467,7 +467,10 @@ std::string LLM::LLM::readLearningSet() const noexcept {
   std::string text(file_size, '\0');
   file.read(text.data(), file_size);
   if(!file) return "";
-
+  
+  json parsed = json::parse(text);
+  json_items = parsed.get<std::vector<EvalItem>>();
+  
   return text;
 };
 
@@ -759,9 +762,22 @@ void LLM::LLM::learn() noexcept {
 
   fmt::println(fg(fmt::color::yellow), "-- Prepering Data");
   std::string text_io = readLearningSet();
-  std::string text = prepareLearningSet(text_io);
-  if(context_size == 0 || text.empty()) return;
+  
+ size_t used_pairs = 0; 
+ std::string qa_text;
+  for(const auto& item : json_items){
+    if(item.vars.question.empty() || item.vars.answer.empty()) continue;
+    qa_text += item.vars.question + "\n" + item.vars.answer + "\n\n";
+    used_pairs++;
+  };
 
+  if(used_pairs > 0)fmt::println(fg(fmt::color::green), "Using {} JSON question/answer pairs (of {} items)", used_pairs, json_items.size());
+  else fmt::println(fg(fmt::color::yellow), "No valid JSON question/answer pairs found; falling back to raw text");
+
+  std::string text = prepareLearningSet(qa_text.empty() ? text_io : qa_text);
+  if(context_size == 0 || text.empty() || json_items.empty()) return;
+
+  
   if(!loadTokensFromFile() && std::filesystem::exists(path_to_model_data)){
     fmt::println(fg(fmt::color::red), "Vocabulary missing or invalid for existing model");
     return;

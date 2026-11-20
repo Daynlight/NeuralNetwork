@@ -25,3 +25,6 @@ vendor/
 model*
 tokens*
 info*
+
+## Vim
+*.sw*

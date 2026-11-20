@@ -4,6 +4,7 @@
   "dependencies": [
     "cwindow",
     "fmt",
-    "gtest"
+    "gtest",
+    "nlohmann-json"
   ]
 }

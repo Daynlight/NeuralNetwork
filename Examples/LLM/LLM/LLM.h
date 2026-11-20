@@ -27,6 +27,7 @@
 
 #include <NeuralNetwork/NeuralNetwork.h>
 #include <NeuralNetwork/Utils.h>
+#include "Json.h"
 
 
 
@@ -65,10 +66,12 @@ class LLM{
 // ================= Data ================= //
 // ======================================== //
 private:
-  std::filesystem::path path_to_learning_set = std::filesystem::path("learn") / std::filesystem::path("learn_set.txt");
-  std::filesystem::path path_to_model_data = std::filesystem::path("model") / std::filesystem::path("model");
+  std::filesystem::path path_to_learning_set = std::filesystem::path(__FILE__).parent_path() / "../data/" / std::filesystem::path("learn") / std::filesystem::path("learn_set.json");
+  std::filesystem::path path_to_model_data = std::filesystem::path(__FILE__).parent_path() / "../data/" / std::filesystem::path("model") / std::filesystem::path("model");
   bool model_is_loaded_from_file = false;
   bool is_running = true;
+  
+  mutable std::vector<EvalItem> json_items = {};
 
   float learning_rate = 0.001;
   unsigned int learn_samples = 1000;
@@ -90,7 +93,7 @@ private:
   static constexpr std::array<size_t, 7> model_shape = {input_size, 8192, 4096, 2048, 1024, vocab_size, 1};
   NN::NeuralNetwork<input_size, 8192, 4096, 2048, 1024, vocab_size, 1> model;
 
-  std::filesystem::path path_to_tokens = std::filesystem::path("model") / std::filesystem::path("tokens");
+  std::filesystem::path path_to_tokens = std::filesystem::path(__FILE__).parent_path() / "../data/" / std::filesystem::path("model") / std::filesystem::path("tokens");
 
   std::vector<std::string> tokens;
   std::unordered_map<std::string, size_t> token_to_id;
@@ -98,8 +101,8 @@ private:
   static constexpr size_t unk_token = 0;
   static constexpr size_t pad_token = 1;
 
-  std::filesystem::path path_to_embedding = std::filesystem::path("model") / std::filesystem::path("embedding");
-  std::filesystem::path path_to_info = std::filesystem::path("model") / std::filesystem::path("info");
+  std::filesystem::path path_to_embedding = std::filesystem::path(__FILE__).parent_path() / "../data/" / std::filesystem::path("model") / std::filesystem::path("embedding");
+  std::filesystem::path path_to_info = std::filesystem::path(__FILE__).parent_path() / "../data/" / std::filesystem::path("model") / std::filesystem::path("info");
   unsigned int update_counter = 0;
   unsigned int request_counter = 0;
   float last_ce = 0.0f;

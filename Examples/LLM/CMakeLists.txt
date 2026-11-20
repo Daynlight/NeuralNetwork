@@ -11,6 +11,7 @@ cmake_minimum_required(VERSION 3.10)
 project(LLM LANGUAGES CXX)
 
 find_package(fmt CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 set(headers
   ${CMAKE_CURRENT_SOURCE_DIR}/
@@ -28,5 +29,6 @@ target_include_directories(LLM PRIVATE ${headers})
 target_link_libraries(LLM PRIVATE 
   NeuralNetwork::NeuralNetwork
   fmt::fmt
+  nlohmann_json::nlohmann_json
 )
 
