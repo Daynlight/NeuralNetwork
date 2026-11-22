@@ -468,11 +468,20 @@ std::string LLM::LLM::readLearningSet() const noexcept {
   file.read(text.data(), file_size);
   if(!file) return "";
   
-  json parsed = json::parse(text);
-  json_items = parsed.get<std::vector<EvalItem>>();
-  
+   json parsed;
+  try{
+    parsed = json::parse(text);
+    json_items = parsed.get<std::vector<EvalItem>>();
+  }
+  catch(...){
+    fmt::println(fg(fmt::color::red), "Invalid JSON learning set");
+    json_items.clear();
+    return "";
+  };
+
   return text;
 };
+
 
 
 
@@ -483,33 +492,50 @@ std::string LLM::LLM::prepareLearningSet(const std::string& text) const noexcept
   std::string compact_text;
 
   while(std::getline(stream, line)){
-    if(line.empty()) continue;
     while(!line.empty() && std::isspace(static_cast<unsigned char>(line.back())))
       line.pop_back();
     if(line.empty()) continue;
     if(line.back() == ':') continue;
-    if(!compact_text.empty())
-      compact_text += ' ';
+    if(!compact_text.empty()) compact_text += ' ';
     compact_text += line;
   };
 
-  std::string normalized_text;
-  normalized_text.reserve(compact_text.size());
-  bool last_was_space = false;
-
-  for(unsigned char character : compact_text){
-    if(std::isspace(character)){
-      if(!last_was_space)
-        normalized_text += ' ';
-      last_was_space = true;
-    }else{
-      normalized_text += static_cast<char>(character);
-      last_was_space = false;
-    };
+  auto isPunct = [](unsigned char c){
+    return c == '.' || c == ',' || c == '!' || c == '?' || c == ';' || c == ':' ||
+           c == '(' || c == ')' || c == '"';
   };
+
+  std::string normalized_text;
+  normalized_text.reserve(compact_text.size() * 2);
+  bool last_was_space = true;
+
+  for(size_t i = 0; i < compact_text.size(); i++){
+    unsigned char c = static_cast<unsigned char>(compact_text[i]);
+
+    if(std::isspace(c)){
+      if(!last_was_space) normalized_text += ' ';
+      last_was_space = true;
+      continue;
+    };
+
+    if(isPunct(c)){
+      if(!last_was_space) normalized_text += ' ';
+      normalized_text += static_cast<char>(c);
+      normalized_text += ' ';
+      last_was_space = true;
+      continue;
+    };
+
+    normalized_text += (c < 128) ? static_cast<char>(std::tolower(c)) : static_cast<char>(c);
+    last_was_space = false;
+  };
+
+  while(!normalized_text.empty() && normalized_text.back() == ' ')
+    normalized_text.pop_back();
 
   return normalized_text;
 };
+
 
 
 
@@ -606,8 +632,16 @@ void LLM::LLM::createTokens(const std::string& text) noexcept {
   if(tokens.empty()){
     tokens.emplace_back("<UNK>");
     tokens.emplace_back("<PAD>");
+    tokens.emplace_back("<EOS>");
+    tokens.emplace_back("<SEP>");
     token_to_id.emplace("<UNK>", unk_token);
     token_to_id.emplace("<PAD>", pad_token);
+    token_to_id.emplace("<EOS>", eos_token);
+    token_to_id.emplace("<SEP>", sep_token);
+  }
+  else if(tokens.size() <= sep_token || tokens[eos_token] != "<EOS>" || tokens[sep_token] != "<SEP>"){
+    fmt::println(fg(fmt::color::red), "Vocabulary has no <EOS>/<SEP> at ids {}/{} - delete the old tokens and model files", eos_token, sep_token);
+    return;
   }
 
   std::unordered_map<std::string, size_t> frequency;
@@ -628,7 +662,7 @@ void LLM::LLM::createTokens(const std::string& text) noexcept {
     return a.first < b.first;
   });
 
-  size_t next = 0;
+  size_t next = sep_token + 1;
 
   for(const auto& [word, count] : sorted){
     while(next < tokens.size() && tokens[next].rfind("<UNUSED_", 0) != 0) next++;
@@ -695,7 +729,7 @@ bool LLM::LLM::loadTokensFromFile() noexcept {
     loaded_tokens.push_back(std::move(token));
   };
 
-  if(loaded_tokens[unk_token] != "<UNK>" || loaded_tokens[pad_token] != "<PAD>") return false;
+  if(loaded_tokens[unk_token] != "<UNK>" || loaded_tokens[pad_token] != "<PAD>" || loaded_tokens[eos_token] != "<EOS>" || loaded_tokens[sep_token] != "<SEP>") return false;
 
   tokens = std::move(loaded_tokens);
   token_to_id = std::move(loaded_ids);
@@ -727,9 +761,16 @@ std::string LLM::LLM::decodeTokens(const std::vector<size_t>& ids) const noexcep
 
   for(size_t id : ids){
     if(id >= tokens.size()) continue;
-    if(id == pad_token) continue;
-    if(!result.empty()) result += ' ';
-    result += tokens[id];
+    if(id == pad_token || id == unk_token || id == eos_token || id == sep_token) continue;
+
+    const std::string& token = tokens[id];
+    if(token.rfind("<UNUSED_", 0) == 0) continue;
+
+    const bool closing = token == "." || token == "," || token == "!" ||
+                         token == "?" || token == ";" || token == ":" || token == ")";
+
+    if(!result.empty() && !closing && result.back() != '(') result += ' ';
+    result += token;
   };
 
   return result;
@@ -743,52 +784,94 @@ std::string LLM::LLM::decodeTokens(const std::vector<size_t>& ids) const noexcep
 void LLM::LLM::learn() noexcept {
   if(!std::filesystem::exists(path_to_learning_set) || std::filesystem::is_directory(path_to_learning_set)) return;
 
-  fmt::println(fg(fmt::color::yellow), "-- Parameters");
-  fmt::println(fg(fmt::color::blue), "Path To Learning Set: {}", path_to_learning_set);
-  fmt::println(fg(fmt::color::blue), "Path To Model Data: {}", path_to_model_data);
-  fmt::println(fg(fmt::color::blue), "Path To Tokens: {}", path_to_tokens);
-  fmt::println(fg(fmt::color::blue), "Context Size: {}", context_size);
-  fmt::println(fg(fmt::color::blue), "Vocab Size: {}", vocab_size);
-  fmt::println(fg(fmt::color::blue), "Input Size: {}", input_size);
-  fmt::println(fg(fmt::color::blue), "Epoch: {}", epoch);
-  fmt::println(fg(fmt::color::blue), "Learn Samples: {}", learn_samples);
-  fmt::println(fg(fmt::color::blue), "Learning Repeat: {}", learning_set_repeats);
-  fmt::println(fg(fmt::color::blue), "Learning Rate: {}", learning_rate);
-  fmt::println(fg(fmt::color::blue), "Dynamic Learning Rate: {}", dynamic_lr);
-  fmt::println(fg(fmt::color::blue), "Max Dynamic Learning Rate Reduction: {}", max_lr_reductions);
-  fmt::println(fg(fmt::color::blue), "Balanced Learning: {}", balanced_learning);
-  fmt::println(fg(fmt::color::blue), "GPU Acceleration: {}", gpu_acceleration);
-  fmt::println(fg(fmt::color::blue), "Additional Info: {}", additional_acuracy_show);
-
-  fmt::println(fg(fmt::color::yellow), "-- Prepering Data");
-  std::string text_io = readLearningSet();
-  
- size_t used_pairs = 0; 
- std::string qa_text;
-  for(const auto& item : json_items){
-    if(item.vars.question.empty() || item.vars.answer.empty()) continue;
-    qa_text += item.vars.question + "\n" + item.vars.answer + "\n\n";
-    used_pairs++;
+  auto printParameters = [&]{
+    fmt::println(fg(fmt::color::yellow), "-- Parameters");
+    fmt::println(fg(fmt::color::blue), "Path To Learning Set: {}", path_to_learning_set);
+    fmt::println(fg(fmt::color::blue), "Path To Model Data: {}", path_to_model_data);
+    fmt::println(fg(fmt::color::blue), "Path To Tokens: {}", path_to_tokens);
+    fmt::println(fg(fmt::color::blue), "Context Size: {}", context_size);
+    fmt::println(fg(fmt::color::blue), "Vocab Size: {}", vocab_size);
+    fmt::println(fg(fmt::color::blue), "Input Size: {}", input_size);
+    fmt::println(fg(fmt::color::blue), "Epoch: {}", epoch);
+    fmt::println(fg(fmt::color::blue), "Learn Samples: {}", learn_samples);
+    fmt::println(fg(fmt::color::blue), "Learning Repeat: {}", learning_set_repeats);
+    fmt::println(fg(fmt::color::blue), "Learning Rate: {}", learning_rate);
+    fmt::println(fg(fmt::color::blue), "Dynamic Learning Rate: {}", dynamic_lr);
+    fmt::println(fg(fmt::color::blue), "Max Dynamic Learning Rate Reduction: {}", max_lr_reductions);
+    fmt::println(fg(fmt::color::blue), "Balanced Learning: {}", balanced_learning);
+    fmt::println(fg(fmt::color::blue), "GPU Acceleration: {}", gpu_acceleration);
+    fmt::println(fg(fmt::color::blue), "Additional Info: {}", additional_acuracy_show);
   };
 
-  if(used_pairs > 0)fmt::println(fg(fmt::color::green), "Using {} JSON question/answer pairs (of {} items)", used_pairs, json_items.size());
-  else fmt::println(fg(fmt::color::yellow), "No valid JSON question/answer pairs found; falling back to raw text");
+  printParameters();
 
-  std::string text = prepareLearningSet(qa_text.empty() ? text_io : qa_text);
-  if(context_size == 0 || text.empty() || json_items.empty()) return;
+  fmt::println(fg(fmt::color::yellow), "-- Prepering Data");
+  readLearningSet();
 
-  
+  std::vector<std::pair<std::string, std::string>> pairs;
+  std::string token_text;
+
+  for(const auto& item : json_items){
+    if(item.vars.question.empty() || item.vars.answer.empty()) continue;
+
+    std::string q = prepareLearningSet(item.vars.question);
+    std::string a = prepareLearningSet(item.vars.answer);
+    if(q.empty() || a.empty()) continue;
+
+    token_text += q + "\n" + a + "\n";
+    pairs.emplace_back(std::move(q), std::move(a));
+  };
+
+  if(pairs.empty() || context_size == 0){
+    fmt::println(fg(fmt::color::red), "No valid JSON question/answer pairs found");
+    return;
+  };
+
+  fmt::println(fg(fmt::color::green), "Using {} JSON question/answer pairs (of {} items)", pairs.size(), json_items.size());
+
   if(!loadTokensFromFile() && std::filesystem::exists(path_to_model_data)){
     fmt::println(fg(fmt::color::red), "Vocabulary missing or invalid for existing model");
     return;
   };
 
-  createTokens(text);
+  createTokens(token_text);
   saveTokensToFile();
-
-  std::vector<size_t> encoded_text = encodeTokens(text);
-  if(encoded_text.size() <= context_size) return;
   if(tokens.size() != vocab_size) return;
+
+  struct Sequence {
+    std::vector<size_t> question;
+    std::vector<size_t> answer;
+  };
+
+  struct Sample {
+    size_t pair;
+    size_t pos;
+  };
+
+  std::vector<Sequence> sequences;
+  std::vector<Sample> valid_samples;
+
+  for(const auto& [q, a] : pairs){
+    Sequence seq;
+    seq.question = encodeTokens(q);
+    seq.answer = encodeTokens(a);
+    if(seq.question.empty() || seq.answer.empty()) continue;
+
+    seq.question.push_back(sep_token);
+    seq.answer.push_back(eos_token);
+
+    const size_t index = sequences.size();
+
+    for(size_t p = 0; p < seq.answer.size(); p++){
+      const size_t t = seq.answer[p];
+      if(t == unk_token || t == pad_token) continue;
+      valid_samples.push_back({index, p});
+    };
+
+    sequences.push_back(std::move(seq));
+  };
+
+  if(valid_samples.empty()) return;
 
   fmt::println(fg(fmt::color::yellow), "-- Learning");
   fmt::println(fg(fmt::color::white), "enter to abort without lossing");
@@ -807,47 +890,59 @@ void LLM::LLM::learn() noexcept {
   unsigned int stale_epochs = 0;
   unsigned int lr_reductions = 0;
 
-  std::vector<std::vector<size_t>> token_positions(vocab_size);
+  // warmup + cosine schedule (used only when dynamic_lr is off)
+  const float base_lr = learning_rate;
+  const size_t total_steps = static_cast<size_t>(epoch) * learning_set_repeats * learn_samples;
+  const size_t warmup_steps = std::max<size_t>(1, total_steps / 20);
+  size_t global_step = 0;
+  float current_lr = base_lr;
+
+  std::vector<std::vector<Sample>> token_samples(vocab_size);
   std::vector<size_t> available_tokens;
-  std::vector<size_t> valid_positions;
-  std::vector<size_t> learning_set(learn_samples);
+  std::vector<Sample> learning_set(learn_samples);
+  std::vector<size_t> context;
+  context.reserve(context_size * 4);
 
-  for(size_t i = 1; i < encoded_text.size(); i++){
-    size_t token = encoded_text[i];
-    if(token == unk_token || token == pad_token) continue;
+  for(const Sample& s : valid_samples)
+    token_samples[sequences[s.pair].answer[s.pos]].push_back(s);
 
-    token_positions[token].push_back(i);
-    valid_positions.push_back(i);
+  for(size_t i = 0; i < vocab_size; i++)
+    if(!token_samples[i].empty()) available_tokens.push_back(i);
+
+  const size_t frequent_limit = sep_token + 1 + vocab_size / 20;
+  auto chance = [](float p){ return (rand() / (float)RAND_MAX) < p; };
+
+  auto appendQuestion = [&](const std::vector<size_t>& q){
+    if(q.size() <= 3 || !chance(0.5f)){
+      context.insert(context.end(), q.begin(), q.end());
+      return;
+    };
+
+    const size_t before = context.size();
+
+    for(size_t k = 0; k < q.size(); k++){
+      const bool keep_always = (k + 2 >= q.size());
+      const float p = (q[k] < frequent_limit) ? 0.30f : 0.08f;
+
+      if(keep_always){
+        context.push_back(q[k]);
+        continue;
+      };
+
+      if(chance(p)) continue;
+      context.push_back(chance(0.05f) ? unk_token : q[k]);
+    };
+
+    if(context.size() == before) context.push_back(q.back());
   };
-
-  for(size_t i = 0; i < vocab_size; i++) if(!token_positions[i].empty()) available_tokens.push_back(i);
-  if(valid_positions.empty()) return;
 
   for(unsigned int j = 0; j < epoch; j++){
     updateInfo();
     learning_set.resize(learn_samples);
     auto last = std::chrono::steady_clock::now();
 
-    fmt::println(fg(fmt::color::yellow), "-- Parameters");
-    fmt::println(fg(fmt::color::blue), "Path To Learning Set: {}", path_to_learning_set);
-    fmt::println(fg(fmt::color::blue), "Path To Model Data: {}", path_to_model_data);
-    fmt::println(fg(fmt::color::blue), "Path To Tokens: {}", path_to_tokens);
-    fmt::println(fg(fmt::color::blue), "Context Size: {}", context_size);
-    fmt::println(fg(fmt::color::blue), "Vocab Size: {}", vocab_size);
-    fmt::println(fg(fmt::color::blue), "Input Size: {}", input_size);
-    fmt::println(fg(fmt::color::blue), "Epoch: {}", epoch);
-    fmt::println(fg(fmt::color::blue), "Learn Samples: {}", learn_samples);
-    fmt::println(fg(fmt::color::blue), "Learning Repeat: {}", learning_set_repeats);
-    fmt::println(fg(fmt::color::blue), "Learning Rate: {}", learning_rate);
-    fmt::println(fg(fmt::color::blue), "Dynamic Learning Rate: {}", dynamic_lr);
-    fmt::println(fg(fmt::color::blue), "Max Dynamic Learning Rate Reduction: {}", max_lr_reductions);
-    fmt::println(fg(fmt::color::blue), "Balanced Learning: {}", balanced_learning);
-    fmt::println(fg(fmt::color::blue), "GPU Acceleration: {}", gpu_acceleration);
-    fmt::println(fg(fmt::color::blue), "Additional Info: {}", additional_acuracy_show);
-
-    fmt::println("learn_samples: {}", learn_samples);
-    fmt::println("learning_set_repeats: {}", learning_set_repeats);
-    fmt::println("valid_positions: {}", valid_positions.size());
+    printParameters();
+    fmt::println("valid_samples: {}", valid_samples.size());
 
     float epoch_ce_sum = 0.0;
     size_t epoch_samples = 0;
@@ -855,11 +950,11 @@ void LLM::LLM::learn() noexcept {
     for(unsigned int i = 0; i < learn_samples; i++){
       if(balanced_learning){
         size_t token = available_tokens[rand() % available_tokens.size()];
-        const std::vector<size_t>& positions = token_positions[token];
+        const std::vector<Sample>& samples = token_samples[token];
 
-        learning_set[i] = positions[rand() % positions.size()];
+        learning_set[i] = samples[rand() % samples.size()];
       }
-      else learning_set[i] = valid_positions[rand() % valid_positions.size()];
+      else learning_set[i] = valid_samples[rand() % valid_samples.size()];
     };
 
     fmt::println("");
@@ -883,28 +978,49 @@ void LLM::LLM::learn() noexcept {
           fmt::println("");
           fmt::println(fg(fmt::color::yellow), "-- Learning aborted");
 
+          model.setLearningRate(learning_rate);
           saveModelToFile();
           return;
         };
 
+        if(!dynamic_lr){
+          const float progress = static_cast<float>(global_step) / static_cast<float>(std::max<size_t>(1, total_steps));
+          const float warmup = std::min(1.0f, static_cast<float>(global_step + 1) / static_cast<float>(warmup_steps));
+          current_lr = base_lr * warmup * (0.1f + 0.9f * 0.5f * (1.0f + std::cos(3.14159265f * progress)));
+          if(global_step % 50 == 0) model.setLearningRate(current_lr);
+        }
+        else current_lr = learning_rate;
+        global_step++;
+
         if(has_previous_sample)
           target[previous_expected] = 0.0;
 
-        const size_t expected_position = learning_set[i];
-        const size_t available = std::min(expected_position, context_size);
-        const size_t words = 1 + rand() % available;
-        const size_t padding = context_size - words;
-        const size_t offset = expected_position - words;
+        const Sample& sample = learning_set[i];
+        const Sequence& seq = sequences[sample.pair];
+
+        context.clear();
+        appendQuestion(seq.question);
+        const size_t q_len = context.size();
+        context.insert(context.end(), seq.answer.begin(), seq.answer.begin() + sample.pos);
+        const size_t a_len = context.size() - q_len;
+
+        size_t q_take = std::min(q_len, context_size / 2);
+        const size_t a_take = std::min(a_len, context_size - q_take);
+        q_take = std::min(q_len, context_size - a_take);
+        const size_t padding = context_size - q_take - a_take;
 
         for(size_t k = 0; k < padding; k++)
           active_input[k] = pad_token;
 
-        for(size_t k = 0; k < words; k++)
-          active_input[padding + k] = encoded_text[offset + k];
+        for(size_t k = 0; k < q_take; k++)
+          active_input[padding + k] = context[q_len - q_take + k];
+
+        for(size_t k = 0; k < a_take; k++)
+          active_input[padding + q_take + k] = context[context.size() - a_take + k];
 
         embedding.forward(active_input, input);
 
-        const size_t expected = encoded_text[expected_position];
+        const size_t expected = seq.answer[sample.pos];
 
         target[expected] = 1.0;
         previous_expected = expected;
@@ -928,14 +1044,12 @@ void LLM::LLM::learn() noexcept {
 
         model.backprop(target);
 
-        
         embedding.backprop(
           active_input,
           model.getInputSigma(),
-          learning_rate,
+          current_lr,
           pad_token
         );
-        
 
         glFinish();
         auto end_update = std::chrono::steady_clock::now();
@@ -974,13 +1088,12 @@ void LLM::LLM::learn() noexcept {
 
     auto now = std::chrono::steady_clock::now();
     float elapsed = std::chrono::duration<float>(now - last).count();
-
     fmt::println("Elapsed: {:.3f}s", elapsed);
 
-    last = now;
     saveModelToFile();
   };
 
+  model.setLearningRate(learning_rate);
   saveModelToFile();
 };
 
@@ -989,12 +1102,23 @@ void LLM::LLM::learn() noexcept {
 std::string LLM::LLM::getRespond(const std::string &message) noexcept {
   if(tokens.size() != vocab_size) return "";
 
-  if(!loadTokensFromFile() && std::filesystem::exists(path_to_model_data)){
-    fmt::println(fg(fmt::color::red), "Vocabulary missing or invalid for existing model");
-    return "";
+  std::vector<size_t> question = encodeTokens(prepareLearningSet(message));
+  if(question.empty()) return "";
+  question.push_back(sep_token);
+
+  constexpr float temperature = 0.6f;
+  constexpr float top_p = 0.9f;
+  constexpr size_t top_k = 20;
+  constexpr float repetition_penalty = 1.1f;
+  constexpr size_t repetition_window = 8;
+
+  static thread_local std::mt19937 rng{std::random_device{}()};
+
+  auto banned = [&](size_t id){
+    return id == unk_token || id == pad_token || id == sep_token ||
+           tokens[id].rfind("<UNUSED_", 0) == 0;
   };
 
-  std::vector<size_t> context = encodeTokens(message);
   std::vector<size_t> response;
   response.reserve(response_size);
 
@@ -1002,32 +1126,84 @@ std::string LLM::LLM::getRespond(const std::string &message) noexcept {
 
   std::array<float, input_size> input{};
   std::array<size_t, context_size> active_input{};
+  std::vector<std::pair<float, size_t>> candidates;
+  candidates.reserve(vocab_size);
 
   for(size_t i = 0; i < response_size; i++){
-    size_t words = std::min(context.size(), context_size);
-    size_t padding = context_size - words;
-    size_t start = context.size() - words;
+    const size_t q_len = question.size();
+    const size_t a_len = response.size();
+
+    size_t q_take = std::min(q_len, context_size / 2);
+    const size_t a_take = std::min(a_len, context_size - q_take);
+    q_take = std::min(q_len, context_size - a_take);
+    const size_t padding = context_size - q_take - a_take;
 
     for(size_t k = 0; k < padding; k++)
       active_input[k] = pad_token;
 
-    for(size_t k = 0; k < words; k++)
-      active_input[padding + k] = context[start + k];
+    for(size_t k = 0; k < q_take; k++)
+      active_input[padding + k] = question[q_len - q_take + k];
+
+    for(size_t k = 0; k < a_take; k++)
+      active_input[padding + q_take + k] = response[a_len - a_take + k];
 
     embedding.forward(active_input, input);
 
     model.setInput(input);
     model.forward();
 
-    float* result = model.getResult();
+    const float* result = model.getActivatedResult();
 
-    size_t predicted = 0;
+    candidates.clear();
 
-    for(size_t j = 1; j < vocab_size; j++)
-      if(result[j] > result[predicted]) predicted = j;
+    const size_t recent_begin = response.size() > repetition_window
+      ? response.size() - repetition_window
+      : 0;
+
+    for(size_t j = 0; j < vocab_size; j++){
+      if(banned(j)) continue;
+      if(j == eos_token && response.empty()) continue;
+
+      float p = result[j];
+
+      if(std::find(response.begin() + recent_begin, response.end(), j) != response.end())
+        p /= repetition_penalty;
+
+      candidates.emplace_back(std::pow(std::max(p, 1e-9f), 1.0f / temperature), j);
+    };
+
+    if(candidates.empty()) break;
+
+    const size_t k = std::min(top_k, candidates.size());
+    std::partial_sort(candidates.begin(), candidates.begin() + k, candidates.end(),
+      [](const auto& a, const auto& b){ return a.first > b.first; });
+
+    float total = 0.0f;
+    for(size_t c = 0; c < k; c++) total += candidates[c].first;
+
+    size_t keep = 0;
+    float cumulative = 0.0f;
+    while(keep < k){
+      cumulative += candidates[keep].first / total;
+      keep++;
+      if(cumulative >= top_p) break;
+    };
+
+    float sum = 0.0f;
+    for(size_t c = 0; c < keep; c++) sum += candidates[c].first;
+
+    std::uniform_real_distribution<float> dist(0.0f, sum);
+    float pick = dist(rng);
+    size_t predicted = candidates[keep - 1].second;
+
+    for(size_t c = 0; c < keep; c++){
+      pick -= candidates[c].first;
+      if(pick <= 0.0f){ predicted = candidates[c].second; break; }
+    };
+
+    if(predicted == eos_token) break;
 
     response.push_back(predicted);
-    context.push_back(predicted);
   };
 
   request_counter++;
@@ -1122,7 +1298,7 @@ void LLM::LLM::onUpdate() noexcept {
     
     float new_rate_val = 0;
     try{
-      new_rate_val = std::stod(new_rate);
+      new_rate_val = std::stof(new_rate);
     }
     catch(...){
       fmt::println(fg(fmt::color::red), "Invalid float");
@@ -1263,6 +1439,7 @@ void LLM::LLM::onUpdate() noexcept {
     return;
   };
 
+  if(input.empty()) return;
   updateInfo();
   std::string res = getRespond(input);
   fmt::println(fg(fmt::color::azure), "{}", res);

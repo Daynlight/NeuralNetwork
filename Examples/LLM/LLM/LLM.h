@@ -100,6 +100,8 @@ private:
 
   static constexpr size_t unk_token = 0;
   static constexpr size_t pad_token = 1;
+  static constexpr size_t eos_token = 2;
+  static constexpr size_t sep_token = 3;
 
   std::filesystem::path path_to_embedding = std::filesystem::path(__FILE__).parent_path() / "../data/" / std::filesystem::path("model") / std::filesystem::path("embedding");
   std::filesystem::path path_to_info = std::filesystem::path(__FILE__).parent_path() / "../data/" / std::filesystem::path("model") / std::filesystem::path("info");
